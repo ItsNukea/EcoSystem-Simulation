@@ -39,6 +39,7 @@ public class THISCLASSHASINFORMATIONABOUTLOGGING {
         mainLogger.debug("X value: " + x + ", Y value: " + y);
 
         //Instead of using String concatenation (which looks ugly), we can use parametrized log messages
+
         mainLogger.debug("X value: {}", x);
         mainLogger.debug("Y value: {}", y);
         mainLogger.debug("X value: {}, Y value: {}", x, y);
