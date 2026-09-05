@@ -1,0 +1,34 @@
+<configuration>
+    <conversionRule conversionWord="levelColor" converterClass="es.sim.logging.LevelColorConverter" />
+    <conversionRule conversionWord="msgColor" converterClass="es.sim.logging.LevelColorMessageConverter" />
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%blue([%d{HH:mm:ss}]) %levelColor([%thread/%level]) %cyan(\(%logger{36}\)) %msgColor(%msg) %n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="LATEST" class="ch.qos.logback.core.FileAppender">
+        <file>logs/latest.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>[%d{HH:mm:ss}] [%thread/%level] \(%logger{36}\) %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="TIMED" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/%d{dd.MM.yyyy-HH.mm.ss}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%d{HH:mm:ss}] [%thread/%level] \(%logger{36}\) %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="LATEST" />
+        <appender-ref ref="TIMED" />
+    </root>
+</configuration>
