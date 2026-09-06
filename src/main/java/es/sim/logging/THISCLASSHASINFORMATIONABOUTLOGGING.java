@@ -3,6 +3,7 @@ package es.sim.logging;
 import es.sim.*;
 import org.slf4j.*;
 
+@SuppressWarnings("StringConcatenationArgumentToLogCall")
 public class THISCLASSHASINFORMATIONABOUTLOGGING {
     private static void LOGINFORMATION() {
         //A brief explanation on logging and how to use Main.LOGGER:
