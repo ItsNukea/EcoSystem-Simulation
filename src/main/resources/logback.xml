@@ -31,4 +31,5 @@
         <appender-ref ref="LATEST" />
         <appender-ref ref="TIMED" />
     </root>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
 </configuration>

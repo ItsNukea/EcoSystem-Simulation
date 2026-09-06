@@ -1,12 +1,33 @@
 package es.sim;
 
+import es.sim.gui.*;
 import org.slf4j.*;
 import org.slf4j.Logger;
 
+import javax.swing.*;
+
 public class Main {
-    public static Logger LOGGER = LoggerFactory.getLogger("main");
+    public static final String DEFAULT_NAMESPACE = "ess";
+    public static final Logger LOGGER = LoggerFactory.getLogger("main");
+    private static Window window;
 
-    static void main() {
+    static void main(String[] args) {
+        LOGGER.info("Starting application...");
 
+        SwingUtilities.invokeLater(() -> {
+            window = new Window();
+            LOGGER.info("Initalizing window");
+            window.init();
+            window.setVisible(true);
+            LOGGER.info("Window initalized");
+            window.showScreen(new TitleScreen());
+        });
+
+
+
+    }
+
+    public static Window getWindow() {
+        return window;
     }
 }
