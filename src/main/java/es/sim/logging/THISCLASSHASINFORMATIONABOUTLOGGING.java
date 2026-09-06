@@ -3,10 +3,10 @@ package es.sim.logging;
 import es.sim.*;
 import org.slf4j.*;
 
-@SuppressWarnings("StringConcatenationArgumentToLogCall")
+@SuppressWarnings("ALL")
 public class THISCLASSHASINFORMATIONABOUTLOGGING {
     private static void LOGINFORMATION() {
-        //A brief explanation on logging and how to use Main.LOGGER:
+        //A brief explanation on logging and how to use Main.LOGGER, or create your own!
 
         //Logging is useful to display handy information, like if a certain piece of code ran
         //successfully, or with an error
