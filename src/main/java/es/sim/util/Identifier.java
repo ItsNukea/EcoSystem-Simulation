@@ -20,6 +20,17 @@ public record Identifier(String namespace, String path) {
     public static Identifier of(String namespace, String path) {
         return new Identifier(namespace, path);
     }
+    
+    public static Identifier of(String id) {
+        int index = id.indexOf(':');
+        int lastIndex = id.lastIndexOf(':');
+        if(index == -1 || index != lastIndex) {
+            throw new InvalidIdentifierException("Identifier does not contain exactly one char ':'");
+        }
+        String namespace = id.substring(0, index);
+        String path = id.substring(index + 1);
+        return of(namespace, path);
+    }
 
     public static Identifier withDefaultNamespace(String path) {
         return new Identifier(path);

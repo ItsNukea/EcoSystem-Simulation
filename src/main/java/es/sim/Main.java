@@ -1,5 +1,6 @@
 package es.sim;
 
+import es.sim.game.board.Board;
 import es.sim.gui.*;
 import org.slf4j.*;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ public class Main {
     public static final String DEFAULT_NAMESPACE = "ess";
     public static final Logger LOGGER = LoggerFactory.getLogger("main");
     private static Window window;
+    public static Board board;
 
     static void main(String[] args) {
         LOGGER.info("Starting application...");
@@ -24,6 +26,8 @@ public class Main {
             window.showScreen(new TitleScreen());
         });
         //TODO: do something with String[] args
+
+        board = new Board(30, 30);
     }
 
     public static Window getWindow() {
