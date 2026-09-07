@@ -5,6 +5,7 @@ import org.slf4j.*;
 import org.slf4j.Logger;
 
 import javax.swing.*;
+import java.util.*;
 
 public class Main {
     public static final String DEFAULT_NAMESPACE = "ess";
@@ -22,9 +23,7 @@ public class Main {
             LOGGER.info("Window initalized");
             window.showScreen(new TitleScreen());
         });
-
-
-
+        //TODO: do something with String[] args
     }
 
     public static Window getWindow() {

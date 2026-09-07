@@ -1,9 +1,16 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'com.gradleup.shadow' version '9.6.1'
 }
 
 group = 'es.sim'
 version = '1.0'
+def uuid = "3aba9791-36f3-4970-aa05-5fe051df6c31"       //Windows upgrade uuid DO NOT CHANGE
+
+application {
+    mainClass = "es.sim.Main"
+}
 
 repositories {
     mavenCentral()
@@ -13,4 +20,28 @@ dependencies {
     implementation "ch.qos.logback:logback-classic:1.6.3"       //Logging library
     implementation "tools.jackson.core:jackson-core:3.2.2"      //JSON (de)serialization library
     implementation "org.jetbrains:annotations:26.1.0"           //for handy @Annotations like @Nullable
+}
+
+shadowJar {
+    archiveBaseName.set("ecosystem-simulator")
+    archiveClassifier.set("")
+}
+
+tasks.register('jpackage', Exec) {
+    dependsOn 'shadowJar'
+
+    File libDir = layout.buildDirectory.dir("libs").get().asFile
+//TODO: create appicon.ico
+    commandLine 'jpackage',
+            '--input', libDir,
+            '--name', 'Ecosystem Simulator',
+            '--icon', "src/main/resources/textures/ess/appicon.ico",
+            '--main-jar', "ecosystem-simulator-${version}.jar",
+            '--main-class', 'es.sim.Main',
+            '--type', 'exe',
+            '--app-version', version,
+            '--vendor', 'Your Name',
+            '--win-shortcut-prompt',
+            '--win-upgrade-uuid', uuid
+            '--win-menu'
 }

@@ -15,7 +15,7 @@ public class Texture {
 
     private final Identifier id;
     private boolean loaded = false;
-    private BufferedImage image;
+    private BufferedImage image = null;
 
     public Texture(Identifier id) {
         this.id = id;

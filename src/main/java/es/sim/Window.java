@@ -2,8 +2,13 @@ package es.sim;
 
 import es.sim.gui.*;
 
+import javax.imageio.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
+
+import static es.sim.Main.LOGGER;
 
 public class Window extends JFrame {
 
@@ -19,6 +24,13 @@ public class Window extends JFrame {
         this.setSize(new Dimension(bounds.width, bounds.height));
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        try {
+            BufferedImage image = ImageIO.read(new File("/resources/textures/ess/appicon.ico"));
+            this.setIconImage(image);
+        } catch (IOException e) {
+            LOGGER.error("Unable to set icon image");
+        }
     }
 
     public void showScreen(Screen screen) {
