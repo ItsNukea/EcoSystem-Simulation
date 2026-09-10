@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class Board {
     private Cell[][] grid;
-    private ArrayList<Entity> entities;
+    private final ArrayList<Entity> entities = new ArrayList<>();
     private final int rows;
     private final int columns;
 
