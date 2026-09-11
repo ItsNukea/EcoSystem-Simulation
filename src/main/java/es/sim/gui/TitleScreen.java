@@ -2,15 +2,14 @@ package es.sim.gui;
 
 import es.sim.*;
 import es.sim.game.*;
-import es.sim.game.board.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 
 import static es.sim.Main.*;
 
 public class TitleScreen extends Screen {
-
     public TitleScreen() {
         super(null);
 
@@ -36,14 +35,24 @@ public class TitleScreen extends Screen {
             Main.getWindow().showScreen(board);
         });
 
+        JButton fullScreenButton = new JButton("Toggle fullscreen");
+        fullScreenButton.setBounds(midX - buttonWidth / 2, midY - buttonHeight / 2, buttonWidth, buttonHeight);
+        fullScreenButton.addActionListener(_ -> Main.getWindow().toggleFullScreen());
+
         add(startButton);
+        add(fullScreenButton);
     }
 
     @Override
     public void render(Graphics2D g) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-        g.setColor(new Color(167, 200, 210));
-        g.fillRect(0, 0, screenSize.width, screenSize.height);
+        g.setFont(new Font("Sans Serif", Font.PLAIN, 80));
+        drawCenteredString(g, "Hello Testfjdsljeoif jsdmkjfo", screenSize.width / 2, screenSize.height / 2);
+    }
+
+    @Override
+    public void onClose() {
+        System.exit(0);
     }
 }

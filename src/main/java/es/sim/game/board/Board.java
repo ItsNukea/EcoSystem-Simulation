@@ -1,19 +1,20 @@
 package es.sim.game.board;
 
-import es.sim.game.entities.Entity;
+import es.sim.*;
+import es.sim.game.entities.*;
 import es.sim.gui.*;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 
-import static es.sim.Main.LOGGER;
+import static es.sim.Main.*;
 
 public class Board extends Screen {
-    public static final int DEFAULT_ROWS = 19;
-    public static final int DEFAULT_COLUMNS = 40;
+    public static final int DEFAULT_ROWS = 10;
+    public static final int DEFAULT_COLUMNS = 10;
 
     private Cell[][] grid;
-    private ArrayList<Entity> entities = new ArrayList<>();
+    private final ArrayList<Entity> entities = new ArrayList<>();
     private final int rows;
     private final int columns;
 
@@ -37,6 +38,10 @@ public class Board extends Screen {
         grid[x][y] = cell;
     }
 
+    public void registerEntity(Entity e) {
+        entities.add(e);
+    }
+
     public void tick() {
         for(Entity entity : entities) {
             entity.tick();
@@ -51,11 +56,10 @@ public class Board extends Screen {
         Color white = new Color(255, 255, 255);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int minY = 0;
-        int maxY = Toolkit.getDefaultToolkit().getScreenSize().height;
+        int maxY = Main.getWindow().getHeight();
         int gridSize = maxY / rows;
 
         int minX = (screenSize.width - gridSize * rows) / 2;
-        int maxX = screenSize.width - minX;
 
         for(int x = 0; x < columns; x++) {
             for(int y = 0; y < rows; y++) {

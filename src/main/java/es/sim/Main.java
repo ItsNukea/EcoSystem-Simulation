@@ -53,7 +53,7 @@ public class Main {
             LOGGER.info("Window initalized");
             window.showScreen(new TitleScreen());
 
-            board = new Board(30, 30, window.getScreen());
+            board = new Board(Board.DEFAULT_ROWS, Board.DEFAULT_COLUMNS, window.getScreen());
         });
     }
 
