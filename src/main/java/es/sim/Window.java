@@ -38,6 +38,11 @@ public class Window extends JFrame {
         this.repaint();
     }
 
+    ///Returns the current shown screen
+    public Screen getScreen() {
+        return (Screen) getContentPane();
+    }
+
     public void setFullscreen() {
         GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(this);
     }

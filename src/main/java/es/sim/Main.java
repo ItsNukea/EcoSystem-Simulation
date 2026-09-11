@@ -52,9 +52,9 @@ public class Main {
             window.requestFocus();
             LOGGER.info("Window initalized");
             window.showScreen(new TitleScreen());
-        });
 
-        board = new Board(30, 30);
+            board = new Board(30, 30, window.getScreen());
+        });
     }
 
     public static Window getWindow() {

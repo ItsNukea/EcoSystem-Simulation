@@ -1,11 +1,13 @@
 package es.sim.gui;
 
+import es.sim.*;
 import es.sim.game.*;
+import es.sim.game.board.*;
 
 import javax.swing.*;
 import java.awt.*;
 
-import static es.sim.Main.LOGGER;
+import static es.sim.Main.*;
 
 public class TitleScreen extends Screen {
 
@@ -31,6 +33,7 @@ public class TitleScreen extends Screen {
         startButton.addActionListener(_ -> {
             LOGGER.info("Starting Simulation...");
             TickLoop.start(30);
+            Main.getWindow().showScreen(board);
         });
 
         add(startButton);

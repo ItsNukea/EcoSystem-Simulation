@@ -7,7 +7,7 @@ import java.nio.file.*;
 
 import static es.sim.Main.LOGGER;
 
-/// This class has some IO helper methods
+/// This class has some helper methods related to IO
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class FileManager {
     public static void generateFiles() {
