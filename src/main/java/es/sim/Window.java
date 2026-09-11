@@ -8,8 +8,6 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 
-import static es.sim.Main.LOGGER;
-
 public class Window extends JFrame {
 
     public Window() {
@@ -21,15 +19,16 @@ public class Window extends JFrame {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice device = ge.getDefaultScreenDevice();
         Rectangle bounds = device.getDefaultConfiguration().getBounds();
+
         this.setSize(new Dimension(bounds.width, bounds.height));
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        try {
-            BufferedImage image = ImageIO.read(new File("/resources/textures/ess/appicon.ico"));
+        try(InputStream in = Main.class.getResourceAsStream("/textures/ess/appicon.png")) {
+            assert in != null;
+            BufferedImage image = ImageIO.read(in);
             this.setIconImage(image);
         } catch (IOException e) {
-            LOGGER.error("Unable to set icon image");
+            throw new RuntimeException(e);
         }
     }
 

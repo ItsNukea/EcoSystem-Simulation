@@ -4,6 +4,7 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="es.sim.Main" />
     <module name="EcoSystemSimulation.main" />
+    <option name="PROGRAM_PARAMETERS" value="--devEnv -clearLogFiles" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

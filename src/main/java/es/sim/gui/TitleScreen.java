@@ -1,13 +1,11 @@
 package es.sim.gui;
 
-import es.sim.*;
-import es.sim.game.TickLoop;
-import es.sim.texture.*;
-import es.sim.util.*;
+import es.sim.game.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
+
+import static es.sim.Main.LOGGER;
 
 public class TitleScreen extends Screen {
 
@@ -31,6 +29,7 @@ public class TitleScreen extends Screen {
                 buttonHeight
         );
         startButton.addActionListener(_ -> {
+            LOGGER.info("Starting Simulation...");
             TickLoop.start(30);
         });
 
