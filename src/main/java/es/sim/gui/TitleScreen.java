@@ -23,7 +23,7 @@ public class TitleScreen extends Screen {
         int buttonWidth = 200;
         int buttonHeight = 50;
 
-        JButton startButton = new JButton("START!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        JButton startButton = new JButton("START!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         startButton.setBounds(
                 midX - buttonWidth / 2,
                 midY - buttonHeight / 2,
@@ -41,6 +41,9 @@ public class TitleScreen extends Screen {
 
     @Override
     public void render(Graphics2D g) {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
+        g.setColor(new Color(167, 200, 210));
+        g.fillRect(0, 0, screenSize.width, screenSize.height);
     }
 }

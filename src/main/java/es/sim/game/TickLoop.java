@@ -15,9 +15,10 @@ public class TickLoop {
         long lastTickTime = System.nanoTime();
 
         while (!stop) {
-            if (lastTickTime >= delayNanos) {
+            long now = System.nanoTime();
+            if (now - lastTickTime >= delayNanos) {
                 Main.board.tick();
-                lastTickTime = 0;
+                lastTickTime = now;
             }
         }
     }
@@ -31,7 +32,7 @@ public class TickLoop {
     }
 
     public static void start(int tps) {
-        TickLoop loop = new TickLoop(20);
+        TickLoop loop = new TickLoop(tps);
         loop.start();
     }
 }
