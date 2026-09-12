@@ -42,5 +42,8 @@ bin/
 ### Mac OS ###
 .DS_Store
 
-### The Run Directory  ###
+### Run Directory  ###
 run/
+
+### Exe File ###
+ecosystem-simulator-1.0.exe
