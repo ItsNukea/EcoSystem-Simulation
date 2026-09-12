@@ -5,24 +5,17 @@ import es.sim.*;
 import java.io.*;
 import java.nio.file.*;
 
-import static es.sim.Main.LOGGER;
-
 /// This class has some helper methods related to IO
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class FileManager {
     ///Generates the files needed to put the save data for the program in
     public static void generateFiles() {
-        try {
-            File runDir = getRunDirectoryFile();
-            if (!runDir.exists()) {
-                runDir.mkdir();
-                runDir.toPath().resolve("logs").toFile().createNewFile();
-                runDir.toPath().resolve("config").toFile().createNewFile();
-                runDir.toPath().resolve("saves").toFile().createNewFile();
-            }
-        } catch(IOException e) {
-            LOGGER.error("Failed to create file", e);
-            throw new UncheckedIOException(e);
+        File runDir = getRunDirectoryFile();
+        if (!runDir.exists()) {
+            runDir.mkdir();
+            runDir.toPath().resolve("logs").toFile().mkdir();
+            runDir.toPath().resolve("config").toFile().mkdir();
+            runDir.toPath().resolve("saves").toFile().mkdir();
         }
     }
 
