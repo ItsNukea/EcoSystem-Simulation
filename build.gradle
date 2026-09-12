@@ -23,7 +23,7 @@ dependencies {
 }
 
 shadowJar {
-    archiveBaseName.set("ecosystem-simulator")
+    archiveBaseName.set("ecosystem-simulator-fat")
     archiveClassifier.set("")
 }
 
@@ -31,17 +31,26 @@ tasks.register('jpackage', Exec) {
     dependsOn 'shadowJar'
 
     File libDir = layout.buildDirectory.dir("libs").get().asFile
-//TODO: create appicon.ico
     commandLine 'jpackage',
             '--input', libDir,
             '--name', 'Ecosystem Simulator',
             '--icon', "src/main/resources/textures/ess/appicon.ico",
-            '--main-jar', "ecosystem-simulator-${version}.jar",
+            '--main-jar', "ecosystem-simulator-fat-${version}.jar",
             '--main-class', 'es.sim.Main',
             '--type', 'exe',
             '--app-version', version,
-            '--vendor', 'Your Name',
+            '--vendor', 'Keanu en Louis',
             '--win-shortcut-prompt',
-            '--win-upgrade-uuid', uuid
+            '--win-upgrade-uuid', uuid,
             '--win-menu'
+
+    doLast {
+        def original = file("Ecosystem Simulator-${version}.exe")
+        def renamed = file("ecosystem-simulator-${version}.exe")
+
+        if (renamed.exists()) {
+            renamed.delete()
+        }
+        original.renameTo(renamed)
+    }
 }
