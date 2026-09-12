@@ -26,21 +26,24 @@ public class FileManager {
         }
     }
 
-    ///Clears all logs in the logs folder, except for {@code latest.log}
+    ///Clears all logs in the logs folder, except for {@code latest.log} when the program shuts down
     public static void clearLogs() {
-        File logsDirectory = getRunDirectory().resolve("logs").toFile();
-        for(File log : logsDirectory.listFiles()) {
-            if(!log.getName().equals("latest.log")) {
-                log.delete();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            File logsDirectory = getRunDirectory().resolve("logs").toFile();
+            for(File log : logsDirectory.listFiles()) {
+                if(!log.getName().equals("latest.log")) {
+                    //FIXME: for some reason the log corresponding to the current runtime cannot get deleted
+                    log.delete();
+                }
             }
-        }
+        }));
     }
 
     ///Returns the Run Directory as the program. Useful to determine where the save files should be stored
     public static Path getRunDirectory() {
         Path runDir;
         if(Main.isDevelopmentEnvironment()) {
-            runDir = Paths.get("");
+            runDir = Paths.get("run");
         } else {
             Path userHome = Paths.get(System.getProperty("user.home"));
             runDir = userHome.resolve("AppData", "Roaming", "EcoSystemSimulation");
