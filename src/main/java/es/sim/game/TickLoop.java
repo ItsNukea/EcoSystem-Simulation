@@ -3,10 +3,12 @@ package es.sim.game;
 import es.sim.Main;
 import es.sim.game.board.Board;
 import es.sim.gui.*;
+import es.sim.io.*;
 
 import javax.swing.*;
 
 import java.awt.*;
+import java.io.*;
 
 import static es.sim.Main.LOGGER;
 
@@ -24,7 +26,6 @@ public class TickLoop {
     private void loop() {
         try {
             long lastTickTime = System.nanoTime();
-
             while (!stop) {
                 long now = System.nanoTime();
                 if (now - lastTickTime >= delayNanos) {
@@ -35,6 +36,12 @@ public class TickLoop {
         } catch (Throwable t) {
             LOGGER.error("Exception occured while ticking Board", t);
             Main.getWindow().showScreen(Main.board.parent);
+            try {
+                String timestamp = System.getProperty("session.timestamp");
+                Desktop.getDesktop().edit(FileManager.getRunDirectory().resolve("logs", timestamp + ".log").toFile());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
