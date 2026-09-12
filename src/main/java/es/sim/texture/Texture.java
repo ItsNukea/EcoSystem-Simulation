@@ -1,6 +1,7 @@
 package es.sim.texture;
 
 import es.sim.util.*;
+import es.sim.Window;
 
 import javax.imageio.*;
 import javax.imageio.stream.*;
@@ -8,8 +9,13 @@ import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 
-import static es.sim.Main.LOGGER;
+import static es.sim.Main.*;
 
+/** This class represents a Texture that can be drawed to the {@link Window}.<br>
+  * This class is meant to make it easier to draw textures without having to read their .png files manually first.<br>
+  * Together with {@link TextureManager}, this class also helps memory-usage, as a lot of textures loaded into memory
+  * at once uses a lot of RAM, which we do NOT want in a memory shortage
+**/
 public class Texture {
     public static final Texture MISSING_TEXTURE = new Texture(Identifier.withDefaultNamespace("missing"));
 
@@ -42,7 +48,8 @@ public class Texture {
 
             loaded = true;
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            image = MISSING_TEXTURE.asImage();
+            loaded = true;
         }
         TextureManager.register(this);
         return image;

@@ -4,6 +4,7 @@ import es.sim.game.entities.Entity;
 
 import java.util.Optional;
 
+///A class that represents a single square on the {@link Board}. Each cell can hold nothing, or an entity.
 public class Cell {
     public final int x;
     public final int y;

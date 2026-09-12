@@ -6,6 +6,9 @@ import java.util.regex.*;
 
 import static es.sim.Main.LOGGER;
 
+/**An Identifier is a unique name given to a texture, entity, or tile that differentiates its type from other types.<br>
+ * It is valid if and only if {@link Identifier#validNameOrThrow(String, String)} does not throw an {@link InvalidIdentifierException}
+ */
 public record Identifier(String namespace, String path) {
     public static final String DEFAULT_NAMESPACE = "ess";
 
@@ -40,6 +43,9 @@ public record Identifier(String namespace, String path) {
         return namespace + ":" + path;
     }
 
+    /**Checks whether the supplied {@code Identifier} is valid and throws an {@link  InvalidIdentifierException} if it's not.<br>
+     *An {@code Identifier} should have
+     */
     public void validNameOrThrow(String namespace, String path) {
         Pattern validCharacters = Pattern.compile("[^a-z0-9_/-]");
         Matcher nameSpaceMatcher = validCharacters.matcher(namespace);

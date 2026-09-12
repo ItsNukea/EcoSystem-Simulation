@@ -9,6 +9,7 @@ import java.awt.event.*;
 
 import static es.sim.Main.*;
 
+///The screen that shows on startup of the program
 public class TitleScreen extends Screen {
     public TitleScreen() {
         super(null);

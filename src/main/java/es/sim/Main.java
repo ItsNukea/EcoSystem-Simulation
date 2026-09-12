@@ -10,7 +10,6 @@ import java.text.*;
 import java.util.*;
 
 public class Main {
-    public static final String DEFAULT_NAMESPACE = "ess";
     public static final Logger LOGGER;
     private static Window window;
     public static Board board;
@@ -22,6 +21,7 @@ public class Main {
         LOGGER = LoggerFactory.getLogger("main");
     }
 
+    ///The main entrypoint of the program, responsible for resolving runtime arguments, generating files, and initializing the window
     static void main(String[] args) {
         LOGGER.info("Starting application...");
 

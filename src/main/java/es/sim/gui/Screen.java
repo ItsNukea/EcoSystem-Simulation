@@ -7,9 +7,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * The super class of all screens. Note that screens are not required extend this class for display functionality, and
+ * can extend {@link JPanel} instead, however, this class has a lot of useful helper methods that make drawing
+ * to the GUI and receiving + handling mouse and keyboard-events easier
+ */
 public abstract class Screen extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
     @Nullable
-    private final Screen parent;
+    public final Screen parent;
     protected final boolean shouldCloseOnEsc = true;
 
     protected Screen(@Nullable Screen parent) {

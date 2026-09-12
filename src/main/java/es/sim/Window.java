@@ -9,6 +9,7 @@ import java.awt.event.*;
 import java.awt.image.*;
 import java.io.*;
 
+///This class represents the main window of the program.
 public class Window extends JFrame {
     private boolean isFullScreen = false;
 
@@ -16,6 +17,7 @@ public class Window extends JFrame {
         super("Eco System Simulator");
     }
 
+    ///This method initializes the window, sets it in fullscreen, and adds a window icon
     public void init() {
         //set the correct size first
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();

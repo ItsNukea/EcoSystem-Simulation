@@ -3,6 +3,7 @@ package es.sim.texture;
 import java.awt.image.*;
 import java.util.*;
 
+///Manages textures and makes sure all in-memory loaded textures do not exceed a size of 512MB
 public class TextureManager {
     public static final ArrayList<Texture> textures = new ArrayList<>();
     public static final long MAX_BYTE_BUFFER_SIZE = 512L * 1024 * 1024;    //I'd say about 512 MB
