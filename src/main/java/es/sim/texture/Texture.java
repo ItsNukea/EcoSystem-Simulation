@@ -102,6 +102,6 @@ public class Texture {
     }
 
     private String getResourceName() {
-        return "/textures/" + id.namespace() + "/" + id.path() + ".png";
+        return "/textures/" + id.getNamespace() + "/" + id.getPath() + ".png";
     }
 }

@@ -1,6 +1,7 @@
 package es.sim;
 
 import es.sim.game.board.*;
+import es.sim.game.entities.*;
 import es.sim.gui.*;
 import es.sim.io.*;
 import org.slf4j.*;
@@ -54,6 +55,8 @@ public class Main {
             window.showScreen(new TitleScreen());
 
             board = new Board(Board.DEFAULT_ROWS, Board.DEFAULT_COLUMNS, window.getScreen());
+
+            board.registerEntity(new Deer(), 10, 10);
         });
     }
 

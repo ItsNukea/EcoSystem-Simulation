@@ -2,6 +2,7 @@ package es.sim.util;
 
 import es.sim.exceptions.*;
 
+import java.util.*;
 import java.util.regex.*;
 
 import static es.sim.Main.LOGGER;
@@ -9,11 +10,15 @@ import static es.sim.Main.LOGGER;
 /**An Identifier is a unique name given to a texture, entity, or tile that differentiates its type from other types.<br>
  * It is valid if and only if {@link Identifier#validNameOrThrow(String, String)} does not throw an {@link InvalidIdentifierException}
  */
-public record Identifier(String namespace, String path) {
+public class Identifier {
     public static final String DEFAULT_NAMESPACE = "ess";
+    private final String namespace;
+    private final String path;
 
-    public Identifier {
+    public Identifier(String namespace, String path) {
         validNameOrThrow(namespace, path);
+        this.namespace = namespace;
+        this.path = path;
     }
 
     public Identifier(String path) {
@@ -43,6 +48,14 @@ public record Identifier(String namespace, String path) {
         return namespace + ":" + path;
     }
 
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
     /**Checks whether the supplied {@code Identifier} is valid and throws an {@link  InvalidIdentifierException} if it's not.<br>
      *An {@code Identifier} should have
      */
@@ -56,5 +69,17 @@ public record Identifier(String namespace, String path) {
             LOGGER.error("Invalid Identifier supplied", e);
             throw e;
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof Identifier id)) return false;
+
+        return Objects.equals(this.namespace, id.namespace) && Objects.equals(this.path, id.path) && this.hashCode() == id.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
     }
 }

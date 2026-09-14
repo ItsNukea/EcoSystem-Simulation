@@ -49,8 +49,6 @@ public class Board extends Screen {
                 grid[x][y] = new Cell();
             }
         }
-
-        registerEntity(new Deer(), 0, 0);
     }
 
     /// Gets a cell at a specified coordinate {@code (x, y)}
@@ -85,6 +83,7 @@ public class Board extends Screen {
         for(Entity entity : entities) {
             entity.tick();
         }
+        repaint();
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}
@@ -104,6 +103,19 @@ public class Board extends Screen {
 
     public float getZoom() {
         return zoom;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public int getColumns() {
+        return columns;
+    }
+
+    /// Returns the bounds of the grid as a rectangle with a width and height, with coordinate (0, 0)
+    public Rectangle getBoundsRect() {
+        return new Rectangle(0, 0, columns - 1, rows - 1);
     }
 
     /// Recomputes {@link #cellSize} and the centering origin so the grid fits the window
@@ -126,7 +138,7 @@ public class Board extends Screen {
 
     /// Returns the integer pixel bounds of cell (x, y), with edges that always line up
     /// exactly with neighboring cells regardless of rounding
-    private Rectangle getCellBounds(int x, int y) {
+    public Rectangle getCellBounds(int x, int y) {
         int x0 = Math.round(originX + x * cellSize);
         int x1 = Math.round(originX + (x + 1) * cellSize);
         int y0 = Math.round(originY + y * cellSize);
