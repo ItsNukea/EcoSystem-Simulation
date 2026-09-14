@@ -32,7 +32,7 @@ public class TitleScreen extends Screen {
         );
         startButton.addActionListener(_ -> {
             LOGGER.info("Starting Simulation...");
-            TickLoop.start(30);
+            TickLoop.start(2);
             Main.getWindow().showScreen(board);
         });
 
