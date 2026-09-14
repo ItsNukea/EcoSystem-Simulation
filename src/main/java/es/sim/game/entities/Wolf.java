@@ -15,7 +15,7 @@ public class Wolf extends Entity{
     }
 
     @Override
-    public void render(Graphics2D graphics) {
+    public void render(Graphics2D graphics, Rectangle cellBounds) {
 
     }
 }

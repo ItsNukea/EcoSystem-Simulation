@@ -6,14 +6,9 @@ import java.util.Optional;
 
 ///A class that represents a single square on the {@link Board}. Each cell can hold nothing, or an entity.
 public class Cell {
-    public final int x;
-    public final int y;
     public Optional<Entity> holder = Optional.empty();
 
-    public Cell(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
+    public Cell() {}
 
     public void setContents(Entity entity) {
         if(entity == null) {

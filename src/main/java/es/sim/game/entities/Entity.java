@@ -16,10 +16,25 @@ public abstract class Entity {
     }
 
     public abstract void tick();
-    public abstract void render(Graphics2D graphics);
+    public abstract void render(Graphics2D graphics, Rectangle cellBounds);
 
     public Identifier getEntityID() {
         return ENTITY_ID;
+    }
+
+    public Point getPos() {
+        return pos;
+    }
+
+    public void setPos(Point pos) {
+        this.pos = pos;
+    }
+    public void setPos(int x, int y) {
+        setPos(new Point(x, y));
+    }
+
+    protected void move(int dx, int dy) {
+        pos.translate(dx, dy);
     }
 }
 

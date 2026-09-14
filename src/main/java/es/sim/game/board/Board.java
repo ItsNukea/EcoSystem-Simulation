@@ -46,9 +46,11 @@ public class Board extends Screen {
 
         for(int x = 0; x < columns; x++) {
             for(int y = 0; y < rows; y++) {
-                grid[x][y] = new Cell(x, y);
+                grid[x][y] = new Cell();
             }
         }
+
+        registerEntity(new Deer(), 0, 0);
     }
 
     /// Gets a cell at a specified coordinate {@code (x, y)}
@@ -63,13 +65,19 @@ public class Board extends Screen {
     }
 
     /// Registers an entity so that it can be ticked and rendered on the board
-    public void registerEntity(Entity e) {
+    public void registerEntity(Entity e, int x, int y) {
+        e.setPos(x, y);
         entities.add(e);
+        grid[x][y].setContents(e);
     }
 
     /// Unregisters an entity to stop ticking and rendering it on the board. This will mostly be used when an entity dies
     public void unregisterEntity(Entity e) {
         entities.remove(e);
+    }
+
+    public ArrayList<Entity> getEntities() {
+        return entities;
     }
 
     /// Ticks every registered entity and makes them advance 1 step into the future
@@ -130,8 +138,6 @@ public class Board extends Screen {
     public void render(Graphics2D g) {
         recalcGrid();
 
-        LOGGER.debug("Grid origin: ({}, {})", originX, originY);
-
         //Draw a grid pattern
         boolean doGray = false;
         Color gray = new Color(92, 92, 92);
@@ -149,9 +155,17 @@ public class Board extends Screen {
         }
 
         for(Entity e : entities) {
-            e.render(g);
+            Rectangle cellBounds = getCellBounds(e.getPos().x, e.getPos().y);
+            Rectangle screenRect = Main.getWindow().getBounds();
+
+            //Do some entity culling
+            if(cellBounds.intersects(screenRect)) {
+                e.render(g, cellBounds);
+            }
         }
     }
+
+
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -164,8 +178,6 @@ public class Board extends Screen {
             int dx = e.getX() - lastMousePos.x;
             int dy = e.getY() - lastMousePos.y;
 
-            LOGGER.debug("Dragging mouse. dx = {}, dy = {}", dx, dy);
-
             panX = (int) Math.clamp((float) (panX + dx), -MAX_PAN_X, MAX_PAN_X);
             panY = (int) Math.clamp((float) (panY + dy), -MAX_PAN_Y, MAX_PAN_Y);
 
@@ -177,7 +189,6 @@ public class Board extends Screen {
     @Override
     public void mouseReleased(MouseEvent e) {
         lastMousePos = null;
-        LOGGER.debug("Releasing mouse");
     }
 
     @Override

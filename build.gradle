@@ -20,6 +20,8 @@ dependencies {
     implementation "ch.qos.logback:logback-classic:1.6.3"       //Logging library
     implementation "tools.jackson.core:jackson-core:3.2.2"      //JSON (de)serialization library
     implementation "org.jetbrains:annotations:26.1.0"           //for handy @Annotations like @Nullable
+    implementation "com.github.xaguzman:pathfinding:0.2.6"      //Pathfinding algorithms. Documentation at https://github.com/xaguzman/pathfinding
+    implementation "com.github.czyzby:noise4j:0.1.0"            //Noise map generation. Documentation at https://github.com/czyzby/noise4j
 }
 
 shadowJar {
