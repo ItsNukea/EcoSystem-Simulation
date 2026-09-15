@@ -104,13 +104,13 @@ public class Deer extends Entity {
             int moveY = next.y - current.y;
             moves.add(Direction.fromCoordSet(moveX, moveY));
         }
-        int debugVar = 0;
     }
 
+    /// This method lets the entity see all tiles that are around him in the form of a {@link Surroundings} instance.<br>
+    /// {@link Surroundings} are used to know what the {@link EntityActivity} is that this entity should do this tick.
     private void analyzeSurroundings() {
-        //Here goes EntityActivity logic. It is decided here what an entity will do a certain tick.
         surroundings = Surroundings.ofEntity(this);
-        if(surroundings.entityCountOfType("wolf") != 0) {
+        if(surroundings.entityCountOfType("wolf") >= 1) {
             //ACTIVITY = EntityActivity.FLEEING;
             //currentTarget = null;
         } else {

@@ -1,21 +1,24 @@
 package es.sim.game;
 
+import java.awt.*;
+
+/// Represents a direction
 public enum Direction {
     UP(0, -1),
     DOWN(0, 1),
     LEFT(-1, 0),
     RIGHT(1, 0);
 
-    private int moveX, moveY;
+    private final int xComponent, yComponent;
 
-    Direction(int moveX, int moveY) {
-        this.moveX = moveX;
-        this.moveY = moveY;
+    Direction(int xComponent, int yComponent) {
+        this.xComponent = xComponent;
+        this.yComponent = yComponent;
     }
 
     public static Direction fromCoordSet(int moveX, int moveY) {
         for (Direction dir : values()) {
-            if (dir.moveX == moveX && dir.moveY == moveY) {
+            if (dir.xComponent == moveX && dir.yComponent == moveY) {
                 return dir;
             }
         }
@@ -23,10 +26,10 @@ public enum Direction {
     }
 
     public int xComponent() {
-        return moveX;
+        return xComponent;
     }
 
     public int yComponent() {
-        return moveY;
+        return yComponent;
     }
 }
