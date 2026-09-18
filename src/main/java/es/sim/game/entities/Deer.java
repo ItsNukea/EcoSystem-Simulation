@@ -110,11 +110,48 @@ public class Deer extends Entity {
     private void analyzeSurroundings() {
         //Here goes EntityActivity logic. It is decided here what an entity will do a certain tick.
         surroundings = Surroundings.ofEntity(this);
+        age++;
+        if (breedCooldown > 0) breedCooldown--;
+
         if(surroundings.entityCountOfType("wolf") != 0) {
             //ACTIVITY = EntityActivity.FLEEING;
             //currentTarget = null;
+            if (ACTIVITY == EntityActivity.BREEDING) {
+                if (mate == null || mate.isDead()) { clearMate(); }
+                return;                       // already committed, keep walking to the mate
+            }
+
+            if (canBreed()) {
+                for (Entity e : surroundings.entitiesOfType("deer")) {
+                    Deer other = (Deer) e;
+                    if (other.canBreed() && other.acceptMate(this)) {
+                        this.mate = other;
+                        this.ACTIVITY = EntityActivity.BREEDING;
+                        this.currentTarget = new Point(other.getPos());
+                        moves.clear();
+                        recalculatePath();
+                        return;
+                    }
+                }
+            }
         } else {
             ACTIVITY = EntityActivity.WANDERING;
         }
+    }
+
+    private static final int BREEDING_AGE = 60;
+    private static final int BREED_COOLDOWN = 300;
+
+    private Deer mate = null;
+
+    public boolean canBreed() {
+        return age >= BREEDING_AGE && breedCooldown == 0 && mate == null;
+    }
+
+    public boolean acceptMate(Deer suitor) {
+        if (!canBreed()) return false;
+        this.mate = suitor;
+        this.ACTIVITY = EntityActivity.BREEDING;
+        return true;
     }
 }

@@ -61,5 +61,8 @@ public abstract class Entity {
     public int getViewDistance() {
         return VIEW_DISTANCE;
     }
+
+    protected int age = 0;
+    protected int breedCooldown = 0;
 }
 
