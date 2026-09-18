@@ -22,7 +22,11 @@ public abstract class Entity {
         this.board = Main.board;
     }
 
+    /// Ticks an entity, making it move one step further in time.
     public abstract void tick();
+
+    /// Renders the entity on the screen.
+    /// @param cellBounds The {@link Rectangle} that shows the bounds of the cell this entity is in.
     public abstract void render(Graphics2D graphics, Rectangle cellBounds);
 
     public Identifier getEntityID() {
@@ -55,11 +59,15 @@ public abstract class Entity {
             );
         }
 
+        board.getCell(pos.x, pos.y).setContents(null);
         pos.move(copy.x, copy.y);
+        board.getCell(copy.x, copy.y).setContents(this);
     }
 
     public int getViewDistance() {
         return VIEW_DISTANCE;
     }
+
+    protected void analyzeSurroundings() {}
 }
 

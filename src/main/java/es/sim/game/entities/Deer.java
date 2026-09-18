@@ -13,26 +13,25 @@ import java.util.*;
 
 public class Deer extends Entity {
     private Point currentTarget = null;
-    private ArrayList<Direction> moves = new ArrayList<>();
+    private ArrayDeque<Direction> moves = new ArrayDeque<>();
     private EntityActivity ACTIVITY = EntityActivity.WANDERING;
     private Surroundings surroundings;
 
     public Deer() {
         super(Identifier.of("entity:deer"));
-        VIEW_DISTANCE = 8;
+        VIEW_DISTANCE = 1;
     }
 
     @Override
     public void tick() {
         analyzeSurroundings();
 
-        if(moves.isEmpty()) {
+        while(moves.isEmpty()) {
             findRandomTarget();
             recalculatePath();
         }
 
-        move(moves.getFirst());
-        moves.removeFirst();
+        move(moves.pollFirst());
     }
 
     @Override
@@ -95,7 +94,7 @@ public class Deer extends Entity {
 
         ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
 
-        moves = new ArrayList<>();
+        moves = new ArrayDeque<>();
         for(int i = 1; i < path.size(); i++) {
             GridCell next = path.get(i);
             GridCell current = path.get(i - 1);
@@ -108,7 +107,8 @@ public class Deer extends Entity {
 
     /// This method lets the entity see all tiles that are around him in the form of a {@link Surroundings} instance.<br>
     /// {@link Surroundings} are used to know what the {@link EntityActivity} is that this entity should do this tick.
-    private void analyzeSurroundings() {
+    @Override
+    protected void analyzeSurroundings() {
         surroundings = Surroundings.ofEntity(this);
         if(surroundings.entityCountOfType("wolf") >= 1) {
             //ACTIVITY = EntityActivity.FLEEING;

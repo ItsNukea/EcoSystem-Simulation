@@ -150,20 +150,34 @@ public class Board extends Screen {
     public void render(Graphics2D g) {
         recalcGrid();
 
-        //Draw a grid pattern
-        boolean doGray = false;
-        Color gray = new Color(92, 92, 92);
+        // Draw white background
         Color white = new Color(255, 255, 255);
-
+        g.setColor(white);
         for(int x = 0; x < columns; x++) {
-            boolean rowStart = doGray;
             for(int y = 0; y < rows; y++) {
                 Rectangle bounds = getCellBounds(x, y);
-                g.setColor(doGray ? gray : white);
                 g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-                doGray = !doGray;
             }
-            doGray = !rowStart;
+        }
+
+        // Grid line color
+        Color gray = new Color(92, 92, 92);
+        g.setColor(gray);
+
+        // Draw vertical lines
+        for(int x = 0; x <= columns; x++) {
+            Rectangle topBounds = getCellBounds(Math.min(x, columns - 1), 0);
+            Rectangle bottomBounds = getCellBounds(Math.min(x, columns - 1), rows - 1);
+            int lineX = (x == columns) ? topBounds.x + topBounds.width : topBounds.x;
+            g.drawLine(lineX, topBounds.y, lineX, bottomBounds.y + bottomBounds.height);
+        }
+
+        // Draw horizontal lines
+        for(int y = 0; y <= rows; y++) {
+            Rectangle leftBounds = getCellBounds(0, Math.min(y, rows - 1));
+            Rectangle rightBounds = getCellBounds(columns - 1, Math.min(y, rows - 1));
+            int lineY = (y == rows) ? leftBounds.y + leftBounds.height : leftBounds.y;
+            g.drawLine(leftBounds.x, lineY, rightBounds.x + rightBounds.width, lineY);
         }
 
         for(Entity e : entities) {
