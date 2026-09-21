@@ -3,6 +3,7 @@ package es.sim.game.board;
 import es.sim.*;
 import es.sim.game.entities.*;
 import es.sim.gui.*;
+import es.sim.util.DebugVariables;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -80,10 +81,17 @@ public class Board extends Screen {
 
     /// Ticks every registered entity and makes them advance 1 step into the future
     public void tick() {
+        DebugVariables.TIMES_RECALCULATED_THIS_FRAME = 0;
+        long startTime = System.nanoTime();
         for(Entity entity : new ArrayList<>(entities)) {
             entity.tick();
         }
+        long endTime = System.nanoTime();
+        long totalTickTime = endTime - startTime;
+        double averageTime = (double) totalTickTime / DebugVariables.TIMES_RECALCULATED_THIS_FRAME;
         repaint();
+        LOGGER.debug("Times Recalculated the path this tick: {}", DebugVariables.TIMES_RECALCULATED_THIS_FRAME);
+        LOGGER.debug("Took {} nanos or {} seconds per tick on average, and {} nanos or {} seconds in total", averageTime, Double.toString(averageTime / 1000000000d), totalTickTime, Double.toString(totalTickTime / 1000000000d));
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}
