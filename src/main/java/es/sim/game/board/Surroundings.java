@@ -65,8 +65,8 @@ public class Surroundings {
     }
 
     /// Returns all entities within the Surroundings whose Identifier path matches the given String
-    public ArrayList<Entity> getEntitiesOfType(String entityIdentifierPath) {
-        ArrayList<Entity> result = new ArrayList<>();
+    public <T extends Entity> ArrayList<T> getEntitiesOfType(Class<T> entityClass) {
+        ArrayList<T> result = new ArrayList<>();
 
         for(Cell[] arr : surroundings) {
             for(Cell cell : arr) {
@@ -76,8 +76,8 @@ public class Surroundings {
                 if(holder.isEmpty()) continue;
 
                 Entity entity = holder.get();
-                if(entity.getEntityID().getPath().equals(entityIdentifierPath)) {
-                    result.add(entity);
+                if(entityClass.isInstance(entity)) {
+                    result.add(entityClass.cast(entity));
                 }
             }
         }
