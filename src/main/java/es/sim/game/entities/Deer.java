@@ -11,6 +11,8 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.awt.*;
 import java.util.*;
 
+import static es.sim.Main.LOGGER;
+
 public class Deer extends Entity {
     private static final int BREEDING_COOLDOWN_TICKS = 20;
 
@@ -18,13 +20,14 @@ public class Deer extends Entity {
     private ArrayDeque<Direction> moves = new ArrayDeque<>();
     private EntityActivity ACTIVITY = EntityActivity.WANDERING;
     private Surroundings surroundings;
+    private boolean justReachedTarget = false;
 
     private int breedingCooldown = BREEDING_COOLDOWN_TICKS;
     private Deer breedingPartner = null;
 
     public Deer() {
         super(Identifier.of("entity:deer"));
-        VIEW_DISTANCE = 8;
+        VIEW_DISTANCE = 6;
     }
 
     @Override
@@ -51,6 +54,12 @@ public class Deer extends Entity {
         }
 
         move(moves.pollFirst());
+
+        if (pos.equals(currentTarget)) {
+            currentTarget = null;
+            moves.clear();
+            justReachedTarget = true;
+        }
     }
 
     @Override
@@ -83,8 +92,11 @@ public class Deer extends Entity {
     private void findRandomTarget() {
         Point temp;
         while (true) {
-            int dx = (int) Math.floor((Math.random() - 0.5d) * 2 * VIEW_DISTANCE);
-            int dy = (int) Math.floor((Math.random() - 0.5d) * 2 * VIEW_DISTANCE);
+            Random random = new Random();
+            int dx = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
+            int dy = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
+
+            //Generate a number from 0 to 2*VIEW DISTANCE + 1
 
             temp = new Point(getPos().x + dx, getPos().y + dy);
             Rectangle bounds = board.getBoundsRect();
@@ -98,30 +110,41 @@ public class Deer extends Entity {
     }
 
     private void recalculatePath() {
-        GridCell[][] cells = surroundings.toGridCellArray();
-        NavigationGrid<GridCell> navGrid = new NavigationGrid<>(cells, false);
-        GridFinderOptions gfOptions = new GridFinderOptions();
-        gfOptions.allowDiagonal = false;
-        gfOptions.isYDown = true;
+        do {
+            long startTime = System.nanoTime();
+            GridCell[][] cells = surroundings.toGridCellArray();
+            NavigationGrid<GridCell> navGrid = new NavigationGrid<>(cells, false);
+            GridFinderOptions gfOptions = new GridFinderOptions();
+            gfOptions.allowDiagonal = false;
+            gfOptions.isYDown = true;
 
-        AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
-        int length = cells.length;
-        GridCell start = cells[length / 2][length / 2];
-        int dx = currentTarget.x - pos.x;
-        int dy = currentTarget.y - pos.y;
-        GridCell end = cells[length / 2 + dx][length / 2 + dy];
+            AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
+            int length = cells.length;
+            GridCell start = cells[length / 2][length / 2];
+            int dx = currentTarget.x - pos.x;
+            int dy = currentTarget.y - pos.y;
+            GridCell end = cells[length / 2 + dx][length / 2 + dy];
 
-        ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
+            ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
+            if (path == null) {
+                LOGGER.error("Failed to pathfind: {}", Surroundings.ofEntity(this));
+                //Try again
+                continue;
+            }
 
-        moves = new ArrayDeque<>();
-        for(int i = 1; i < path.size(); i++) {
-            GridCell next = path.get(i);
-            GridCell current = path.get(i - 1);
+            moves = new ArrayDeque<>();
+            for (int i = 1; i < path.size(); i++) {
+                GridCell next = path.get(i);
+                GridCell current = path.get(i - 1);
 
-            int moveX = next.x - current.x;
-            int moveY = next.y - current.y;
-            moves.add(Direction.fromCoordSet(moveX, moveY));
-        }
+                int moveX = next.x - current.x;
+                int moveY = next.y - current.y;
+                moves.add(Direction.fromCoordSet(moveX, moveY));
+            }
+            long endTime = System.nanoTime();
+            long totalTime = endTime - startTime;
+            LOGGER.debug("Calculating path took {} nanoseconds or {} seconds", totalTime, totalTime / 1000000000d);
+        } while(false);
     }
 
     /// This method lets the entity see all tiles that are around him in the form of a {@link Surroundings} instance.<br>
@@ -131,7 +154,7 @@ public class Deer extends Entity {
         surroundings = Surroundings.ofEntity(this);
 
         if (surroundings.entityCountOfType("wolf") != 0) {
-            ACTIVITY = EntityActivity.WANDERING; //fleeing not implemented yet
+            ACTIVITY = EntityActivity.WANDERING; //Fleeing is not yet implemented
             breedingPartner = null;
         } else if (isReadyToBreed()) {
             Deer partner = findBreedingPartner();
