@@ -5,8 +5,14 @@ import es.sim.exceptions.*;
 import es.sim.game.*;
 import es.sim.game.board.*;
 import es.sim.util.*;
+import org.xguzm.pathfinding.grid.*;
+import org.xguzm.pathfinding.grid.finders.*;
 
 import java.awt.*;
+import java.util.*;
+import java.util.List;
+
+import static es.sim.Main.LOGGER;
 
 /// This class represents the super class of all living things on the {@link Board}, every entity should
 /// extend this class to be able to be rendered and ticked
@@ -19,6 +25,10 @@ public abstract class Entity {
 
     protected int age = 0;
     protected int breedCooldown = 0;
+    protected Point currentTarget = null;
+    protected Surroundings surroundings = null;
+    protected ArrayDeque<Direction> moves = new ArrayDeque<>();
+    
     
     protected Entity(Identifier entityID) {
         this.ENTITY_ID = entityID;
@@ -72,5 +82,70 @@ public abstract class Entity {
     }
 
     protected void analyzeSurroundings() {}
+    
+    /// Finds a random target that lies within the bounds of {@link Main#board}
+    protected void findRandomTarget() {
+        Point temp;
+        while (true) {
+            Random random = new Random();
+            int dx = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
+            int dy = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
+            
+            //Generate a number from 0 to 2*VIEW DISTANCE + 1
+            
+            temp = new Point(getPos().x + dx, getPos().y + dy);
+            Rectangle bounds = board.getBoundsRect();
+            
+            //Break out if these conditions are met
+            if (bounds.contains(temp) && !(dx == 0 && dy == 0)) {
+                break;
+            }
+        }
+        
+        currentTarget = temp;
+    }
+    
+    /// A* from the center of the surroundings grid to {@link #currentTarget} (same as Deer)
+    protected void recalculatePath() {
+        surroundings = Surroundings.ofEntity(this);
+        DebugVariables.TIMES_RECALCULATED_THIS_FRAME++;
+        boolean repeat;
+        do {
+            repeat = false;
+            GridCell[][] cells = surroundings.toGridCellArray();
+            NavigationGrid<GridCell> navGrid = new NavigationGrid<>(cells, false);
+            //Imagine having options for a gf
+            GridFinderOptions gfOptions = new GridFinderOptions();
+            gfOptions.allowDiagonal = false;
+            gfOptions.isYDown = true;
+            
+            AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
+            //Now get the Cell origin as a start position and the target Point as an end position:
+            int length = cells.length;
+            //We know the square MUST have uneven side lengths because there is a center square
+            GridCell start = cells[length / 2][length / 2];
+            int dx = currentTarget.x - pos.x;
+            int dy = currentTarget.y - pos.y;
+            GridCell end = cells[length / 2 + dx][length / 2 + dy];
+            
+            ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
+            if (path == null) {
+                //It's impossible to pathfind to the target
+                LOGGER.error("Entity currently on [{}, {}] failed to pathfind", this.pos.x, this.pos.y);
+                findRandomTarget();
+                repeat = true;
+                continue;
+            }
+            
+            moves = new ArrayDeque<>();
+            for (int i = 1; i < path.size(); i++) {
+                GridCell next = path.get(i);
+                GridCell current = path.get(i - 1);
+                
+                int moveX = next.x - current.x;
+                int moveY = next.y - current.y;
+                moves.add(Direction.fromCoordSet(moveX, moveY));
+            }
+        } while(repeat);
+    }
 }
-
