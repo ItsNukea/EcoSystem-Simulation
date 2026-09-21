@@ -24,6 +24,10 @@ public enum Direction {
         }
         throw new IllegalArgumentException("Invalid move: (" + moveX + ", " + moveY + ")");
     }
+    
+    public static Direction inversed(Direction direction) {
+        return Direction.fromCoordSet(-direction.xComponent(), -direction.yComponent());
+    }
 
     public int xComponent() {
         return xComponent;
