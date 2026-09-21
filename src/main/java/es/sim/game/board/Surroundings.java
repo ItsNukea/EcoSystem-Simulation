@@ -24,15 +24,18 @@ public class Surroundings {
     public static Surroundings ofEntity(Entity e) {
         Board board = Main.board;
 
-        int viewDiameter = e.getViewDistance() * 2;
+        int viewDiameter = e.getViewDistance() * 2 + 1;
 
-        Cell[][] surroundings = new Cell[viewDiameter + 1][viewDiameter + 1];
+        Cell[][] surroundings = new Cell[viewDiameter][viewDiameter];
 
-        for(int x = 0; x < viewDiameter + 1; x++) {
-            for(int y = 0; y < viewDiameter + 1; y++) {
+        for(int x = 0; x < viewDiameter; x++) {
+            for(int y = 0; y < viewDiameter; y++) {
                 //Check if the board position exists
-                if (board.getBoundsRect().contains(e.getPos().x + x, e.getPos().y + y)) {
-                    Cell cell = board.getCell(e.getPos().x + x, e.getPos().y + y);
+                int absoluteX = e.getPos().x + x - e.getViewDistance();
+                int absoluteY = e.getPos().y + y - e.getViewDistance();
+
+                if (board.getBoundsRect().contains(absoluteX, absoluteY)) {
+                    Cell cell = board.getCell(absoluteX, absoluteY);
                     surroundings[x][y] = cell;
                 } else {
                     surroundings[x][y] = null;
@@ -89,19 +92,16 @@ public class Surroundings {
     ///Transforms this Surroundings instance into a 2D-GridCell array, used for navigating a {@link NavigationGrid}
     public GridCell[][] toGridCellArray() {
         GridCell[][] grid = new GridCell[owner.getViewDistance() * 2 + 1][owner.getViewDistance() * 2 + 1];
-        //x  x  x
-        //x  x  x
-        //x  x  x
 
         for(int x = 0; x <= owner.getViewDistance() * 2; x++) {
             for(int y = 0; y <= owner.getViewDistance() * 2; y++) {
                 Cell cell = surroundings[x][y];
                 GridCell gridCell = new GridCell(x, y);
                 boolean thisEntity =
-                        x == owner.getViewDistance() + 1
-                        && y == owner.getViewDistance() + 1;
+                        x == owner.getViewDistance()
+                        && y == owner.getViewDistance();
 
-                if(cell.holder.isPresent() && thisEntity) {
+                if(cell != null && cell.holder.isPresent() && !thisEntity) {
                     gridCell.setWalkable(false);
                 }
 
