@@ -111,4 +111,16 @@ public class Surroundings {
 
         return grid;
     }
+
+    public List<Entity> entitiesOfType(String entityIdentifierPath) {
+        List<Entity> found = new ArrayList<>();
+        for (Cell[] arr : surroundings) {
+            for (Cell cell : arr) {
+                if (cell == null || cell.holder.isEmpty()) continue;
+                Entity e = cell.holder.get();
+                if (e != owner && e.getEntityID().getPath().equals(entityIdentifierPath)) found.add(e);
+            }
+        }
+        return found;
+    }
 }

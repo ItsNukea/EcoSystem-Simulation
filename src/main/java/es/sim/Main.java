@@ -57,9 +57,12 @@ public class Main {
 
             board = new Board(Board.DEFAULT_ROWS, Board.DEFAULT_COLUMNS, window.getScreen());
 
+            board.registerEntity(new Wolf(), 30, 30);
+            LOGGER.info("Wolf registered, entity count: {}", board.getEntities().size());
+
             Random random = new Random();
             Point spawnCenter = new Point(10, 10);
-            int deerToSpawn = 6;
+            int deerToSpawn = 4;
             int spawned = 0;
 
             while (spawned < deerToSpawn) {

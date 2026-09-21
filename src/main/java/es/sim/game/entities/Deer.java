@@ -101,6 +101,7 @@ public class Deer extends Entity {
             temp = new Point(getPos().x + dx, getPos().y + dy);
             Rectangle bounds = board.getBoundsRect();
 
+            //Break out if these conditions are met
             if (bounds.contains(temp) && !(dx == 0 && dy == 0)) {
                 break;
             }
@@ -114,16 +115,19 @@ public class Deer extends Entity {
             long startTime = System.nanoTime();
             GridCell[][] cells = surroundings.toGridCellArray();
             NavigationGrid<GridCell> navGrid = new NavigationGrid<>(cells, false);
+            //Imagine having options for a gf
             GridFinderOptions gfOptions = new GridFinderOptions();
             gfOptions.allowDiagonal = false;
             gfOptions.isYDown = true;
 
-            AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
-            int length = cells.length;
-            GridCell start = cells[length / 2][length / 2];
-            int dx = currentTarget.x - pos.x;
-            int dy = currentTarget.y - pos.y;
-            GridCell end = cells[length / 2 + dx][length / 2 + dy];
+        AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
+        //Now get the Cell origin as a start position and the target Point as an end position:
+        int length = cells.length;
+        //We know the square MUST have uneven side lengths because there is a center square
+        GridCell start = cells[length / 2][length / 2];
+        int dx = currentTarget.x - pos.x;
+        int dy = currentTarget.y - pos.y;
+        GridCell end = cells[length / 2 + dx][length / 2 + dy];
 
             ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
             if (path == null) {
@@ -151,6 +155,7 @@ public class Deer extends Entity {
     /// {@link Surroundings} are used to know what the {@link EntityActivity} is that this entity should do this tick.
     @Override
     protected void analyzeSurroundings() {
+        //Here goes EntityActivity logic. It is decided here what an entity will do a certain tick.
         surroundings = Surroundings.ofEntity(this);
 
         if (surroundings.entityCountOfType("wolf") != 0) {

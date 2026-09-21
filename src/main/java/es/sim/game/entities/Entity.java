@@ -16,6 +16,9 @@ public abstract class Entity {
     protected Point pos;
     private final Identifier ENTITY_ID;
     protected final Board board;
+
+    protected int age = 0;
+    protected int breedCooldown = 0;
     
     protected Entity(Identifier entityID) {
         this.ENTITY_ID = entityID;
