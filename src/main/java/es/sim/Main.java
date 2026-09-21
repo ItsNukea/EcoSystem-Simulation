@@ -7,6 +7,7 @@ import es.sim.io.*;
 import org.slf4j.*;
 
 import javax.swing.*;
+import java.awt.*;
 import java.text.*;
 import java.util.*;
 
@@ -56,7 +57,20 @@ public class Main {
 
             board = new Board(Board.DEFAULT_ROWS, Board.DEFAULT_COLUMNS, window.getScreen());
 
-            board.registerEntity(new Deer(), 10, 10);
+            Random random = new Random();
+            Point spawnCenter = new Point(10, 10);
+            int deerToSpawn = 6;
+            int spawned = 0;
+
+            while (spawned < deerToSpawn) {
+                int x = spawnCenter.x + random.nextInt(5) - 2; //spawnCenter.x - 2 .. spawnCenter.x + 2
+                int y = spawnCenter.y + random.nextInt(5) - 2;
+
+                if (board.getCell(x, y).holder.isEmpty()) {
+                    board.registerEntity(new Deer(), x, y);
+                    spawned++;
+                }
+            }
         });
     }
 
