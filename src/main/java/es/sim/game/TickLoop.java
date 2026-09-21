@@ -36,11 +36,17 @@ public class TickLoop {
         } catch (Throwable t) {
             LOGGER.error("Exception occured while ticking Board", t);
             Main.getWindow().showScreen(Main.board.parent);
+
+            String timestamp = System.getProperty("session.timestamp");
+            File logFile = FileManager.getRunDirectory().resolve("logs", timestamp + ".log").toFile();
+            LOGGER.info("Full crash details written to: {}", logFile.getAbsolutePath());
+
             try {
-                String timestamp = System.getProperty("session.timestamp");
-                Desktop.getDesktop().edit(FileManager.getRunDirectory().resolve("logs", timestamp + ".log").toFile());
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                    Desktop.getDesktop().open(logFile);
+                }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                LOGGER.warn("Could not automatically open the log file. You can open it manually at: {}", logFile.getAbsolutePath());
             }
         }
     }

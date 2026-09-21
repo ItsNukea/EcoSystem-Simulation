@@ -12,10 +12,15 @@ import java.awt.*;
 import java.util.*;
 
 public class Deer extends Entity {
+    private static final int BREEDING_COOLDOWN_TICKS = 20;
+
     private Point currentTarget = null;
     private ArrayList<Direction> moves = new ArrayList<>();
     private EntityActivity ACTIVITY = EntityActivity.WANDERING;
     private Surroundings surroundings;
+
+    private int breedingCooldown = BREEDING_COOLDOWN_TICKS;
+    private Deer breedingPartner = null;
 
     public Deer() {
         super(Identifier.of("entity:deer"));
@@ -26,13 +31,27 @@ public class Deer extends Entity {
     public void tick() {
         analyzeSurroundings();
 
-        if(moves.isEmpty()) {
+        if (breedingCooldown > 0) {
+            breedingCooldown--;
+        }
+
+        if (ACTIVITY == EntityActivity.BREEDING && breedingPartner != null) {
+            if (isAdjacentTo(breedingPartner.getPos())) {
+                breed(breedingPartner);
+                return;
+            }
+
+            currentTarget = breedingPartner.getPos();
+            recalculatePath();
+        } else if (moves.isEmpty()) {
             findRandomTarget();
             recalculatePath();
         }
 
-        move(moves.getFirst());
-        moves.removeFirst();
+        if (!moves.isEmpty()) {
+            move(moves.getFirst());
+            moves.removeFirst();
+        }
     }
 
     @Override
@@ -57,6 +76,10 @@ public class Deer extends Entity {
         }
     }
 
+    public boolean isReadyToBreed() {
+        return breedingCooldown <= 0;
+    }
+
     /// Finds a random target that lies within the bounds of {@link Main#board}
     private void findRandomTarget() {
         Point temp;
@@ -67,7 +90,6 @@ public class Deer extends Entity {
             temp = new Point(getPos().x + dx, getPos().y + dy);
             Rectangle bounds = board.getBoundsRect();
 
-            //Break out if these conditions are met
             if (bounds.contains(temp) && !(dx == 0 && dy == 0)) {
                 break;
             }
@@ -79,15 +101,12 @@ public class Deer extends Entity {
     private void recalculatePath() {
         GridCell[][] cells = surroundings.toGridCellArray();
         NavigationGrid<GridCell> navGrid = new NavigationGrid<>(cells, false);
-        //Imagine having options for a gf
         GridFinderOptions gfOptions = new GridFinderOptions();
         gfOptions.allowDiagonal = false;
         gfOptions.isYDown = true;
 
         AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
-        //Now get the Cell origin as a start position and the target Point as an end position:
         int length = cells.length;
-        //We know the square MUST have uneven side lengths because there is a center square
         GridCell start = cells[length / 2][length / 2];
         int dx = currentTarget.x - pos.x;
         int dy = currentTarget.y - pos.y;
@@ -104,17 +123,86 @@ public class Deer extends Entity {
             int moveY = next.y - current.y;
             moves.add(Direction.fromCoordSet(moveX, moveY));
         }
-        int debugVar = 0;
     }
 
     private void analyzeSurroundings() {
-        //Here goes EntityActivity logic. It is decided here what an entity will do a certain tick.
         surroundings = Surroundings.ofEntity(this);
-        if(surroundings.entityCountOfType("wolf") != 0) {
-            //ACTIVITY = EntityActivity.FLEEING;
-            //currentTarget = null;
+
+        if (surroundings.entityCountOfType("wolf") != 0) {
+            ACTIVITY = EntityActivity.WANDERING; //fleeing not implemented yet
+            breedingPartner = null;
+        } else if (isReadyToBreed()) {
+            Deer partner = findBreedingPartner();
+            if (partner != null) {
+                breedingPartner = partner;
+                ACTIVITY = EntityActivity.BREEDING;
+            } else {
+                breedingPartner = null;
+                ACTIVITY = EntityActivity.WANDERING;
+            }
         } else {
+            breedingPartner = null;
             ACTIVITY = EntityActivity.WANDERING;
         }
+    }
+
+    private Deer findBreedingPartner() {
+        Deer closest = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        for (Entity entity : surroundings.getEntitiesOfType("deer")) {
+            if (entity == this) continue;
+
+            Deer other = (Deer) entity;
+            if (!other.isReadyToBreed()) continue;
+
+            double distance = pos.distance(other.getPos());
+
+            //Stay within VIEW_DISTANCE so recalculatePath()'s grid (sized for VIEW_DISTANCE)
+            //never gets asked to path to a cell outside its own array
+            if (distance <= VIEW_DISTANCE && distance < closestDistance) {
+                closestDistance = distance;
+                closest = other;
+            }
+        }
+
+        return closest;
+    }
+
+    private boolean isAdjacentTo(Point other) {
+        int dx = Math.abs(pos.x - other.x);
+        int dy = Math.abs(pos.y - other.y);
+        return dx <= 1 && dy <= 1 && !(dx == 0 && dy == 0);
+    }
+
+    private void breed(Deer partner) {
+        if (!partner.isReadyToBreed()) return; //partner already bred with someone else this tick
+
+        Point spawnPos = findEmptyNeighborCell();
+        if (spawnPos == null) return; //no free tile for a baby right now, try again later
+
+        Deer baby = new Deer();
+        board.registerEntity(baby, spawnPos.x, spawnPos.y);
+
+        breedingCooldown = BREEDING_COOLDOWN_TICKS;
+        partner.breedingCooldown = BREEDING_COOLDOWN_TICKS;
+
+        breedingPartner = null;
+        partner.breedingPartner = null;
+
+        ACTIVITY = EntityActivity.WANDERING;
+        partner.ACTIVITY = EntityActivity.WANDERING;
+    }
+
+    private Point findEmptyNeighborCell() {
+        for (Direction d : Direction.values()) {
+            Point candidate = new Point(pos.x + d.xComponent(), pos.y + d.yComponent());
+
+            if (!board.getBoundsRect().contains(candidate)) continue;
+            if (board.getCell(candidate.x, candidate.y).holder.isEmpty()) {
+                return candidate;
+            }
+        }
+        return null;
     }
 }
