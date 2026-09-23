@@ -64,8 +64,8 @@ public class Main {
             int deerToSpawn = 4;
 
             for(int spawned = 0; spawned < deerToSpawn; spawned++) {
-                int x = random.nextInt(0, board.getRows());
-                int y = random.nextInt(0, board.getColumns());
+                int x = random.nextInt(0, board.getColumns());
+                int y = random.nextInt(0, board.getRows());
 
                 if(board.getCell(x, y).holder.isEmpty()) {
                     board.registerEntity(new Deer(), x, y);
