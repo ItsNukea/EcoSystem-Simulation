@@ -202,8 +202,6 @@ public class Board extends Screen {
         }
     }
 
-
-
     @Override
     public void mousePressed(MouseEvent e) {
         lastMousePos = e.getPoint();
@@ -230,17 +228,15 @@ public class Board extends Screen {
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        if(e.isControlDown()) {
-            int rotation = e.getWheelRotation();
+        int rotation = e.getWheelRotation();
 
-            for(int n = 0; n < Math.abs(rotation); n++) {
-                if(rotation < 0) {
-                    zoomIn();
-                } else {
-                    zoomOut();
-                }
-                repaint();
+        for (int n = 0; n < Math.abs(rotation); n++) {
+            if (rotation < 0) {
+                zoomIn();
+            } else {
+                zoomOut();
             }
+            repaint();
         }
     }
 }

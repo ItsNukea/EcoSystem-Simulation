@@ -1,10 +1,12 @@
 package es.sim.game.board;
 
 import es.sim.*;
+import es.sim.game.*;
 import es.sim.game.entities.*;
 import es.sim.util.*;
 import org.xguzm.pathfinding.grid.*;
 
+import java.awt.*;
 import java.util.*;
 
 /// This class has utility methods to get information about the surroundings of an entity. Used for entity pathfinding
@@ -97,12 +99,24 @@ public class Surroundings {
             for(int y = 0; y <= owner.getViewDistance() * 2; y++) {
                 Cell cell = surroundings[x][y];
                 GridCell gridCell = new GridCell(x, y);
+
                 boolean thisEntity =
                         x == owner.getViewDistance()
                         && y == owner.getViewDistance();
 
                 if (cell == null || (cell.holder.isPresent() && !thisEntity)) {
                     gridCell.setWalkable(false);
+                }
+
+                if (owner instanceof Wolf wolf && wolf.ACTIVITY == EntityActivity.HUNTING) {
+                    Point target = wolf.currentTarget;
+
+                    int absoluteX = owner.getPos().x + x - owner.getViewDistance();
+                    int absoluteY = owner.getPos().y + y - owner.getViewDistance();
+
+                    if (absoluteX == target.x && absoluteY == target.y) {
+                        gridCell.setWalkable(true);
+                    }
                 }
 
                 grid[x][y] = gridCell;

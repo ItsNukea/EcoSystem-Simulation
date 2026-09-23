@@ -27,7 +27,7 @@ public abstract class Entity {
     protected Point currentTarget = null;
     protected Surroundings surroundings = null;
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
-    
+
     
     protected Entity(Identifier entityID) {
         this.ENTITY_ID = entityID;

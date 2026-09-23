@@ -8,14 +8,16 @@ import es.sim.util.*;
 import java.awt.*;
 import java.util.*;
 
+import static es.sim.Main.LOGGER;
+
 public class Wolf extends Entity {
     /// How many cells the wolf moves per tick while chasing prey. It needs to be higher than the deer's speed,
     /// otherwise it could never catch a deer that flees
     private static final int HUNT_SPEED = 2;
 
     private final Texture sprite = new Texture(getEntityID());
-    private Point currentTarget = null;
-    private EntityActivity ACTIVITY = EntityActivity.WANDERING;
+    public Point currentTarget = null;
+    public EntityActivity ACTIVITY = EntityActivity.WANDERING;
     private Entity prey = null;
     private final int MAX_STOMACH_FULLNESS = 75;
     private int stomachFullness = MAX_STOMACH_FULLNESS;
@@ -70,6 +72,7 @@ public class Wolf extends Entity {
             prey = findNearestPrey();
         }
         ACTIVITY = (prey != null) ? EntityActivity.HUNTING : EntityActivity.WANDERING;
+        if(ACTIVITY == EntityActivity.HUNTING) LOGGER.info("Wolf is now Hunting!");
     }
 
     /// Finds the closest deer inside the wolf's (square) view area, or {@code null} if there is none.
