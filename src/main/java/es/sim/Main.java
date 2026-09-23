@@ -57,22 +57,21 @@ public class Main {
 
             board = new Board(Board.DEFAULT_ROWS, Board.DEFAULT_COLUMNS, window.getScreen());
 
-            board.registerEntity(new Wolf(), 30, 30);
+            board.registerEntity(new Wolf(), 0, 0);
             LOGGER.info("Wolf registered, entity count: {}", board.getEntities().size());
 
             Random random = new Random();
-            Point spawnCenter = new Point(10, 10);
             int deerToSpawn = 4;
-            int spawned = 0;
 
-            while (spawned < deerToSpawn) {
-                int x = spawnCenter.x + random.nextInt(5) - 2; //spawnCenter.x - 2 .. spawnCenter.x + 2
-                int y = spawnCenter.y + random.nextInt(5) - 2;
+            for(int spawned = 0; spawned < deerToSpawn; spawned++) {
+                int x = random.nextInt(0, board.getRows());
+                int y = random.nextInt(0, board.getColumns());
 
-                if (board.getCell(x, y).holder.isEmpty()) {
+                if(board.getCell(x, y).holder.isEmpty()) {
                     board.registerEntity(new Deer(), x, y);
-                    spawned++;
+                    continue;
                 }
+                spawned--;
             }
         });
     }

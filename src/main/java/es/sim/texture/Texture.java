@@ -1,7 +1,7 @@
 package es.sim.texture;
 
+import es.sim.*;
 import es.sim.util.*;
-import es.sim.Window;
 
 import javax.imageio.*;
 import javax.imageio.stream.*;
@@ -9,7 +9,7 @@ import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 
-import static es.sim.Main.*;
+import static es.sim.Main.LOGGER;
 
 /** This class represents a Texture that can be drawed to the {@link Window}.<br>
   * This class is meant to make it easier to draw textures without having to read their .png files manually first.<br>
@@ -17,28 +17,40 @@ import static es.sim.Main.*;
   * at once uses a lot of RAM, which we do NOT want in a memory shortage
 **/
 public class Texture {
-    public static final Texture MISSING_TEXTURE = new Texture(Identifier.withDefaultNamespace("missing"));
+    public static final Texture MISSING_TEXTURE =
+            new Texture(Identifier.withDefaultNamespace("missing"));
 
     private final Identifier id;
-    private boolean loaded = false;
-    private BufferedImage image = null;
 
     public Texture(Identifier id) {
         this.id = id;
     }
 
     public BufferedImage asImage() {
-        if(loaded) {
+        BufferedImage image = TextureManager.getImage(id);
+
+        if (image != null) {
             return image;
-        } else {
-            return loadImageAndGet();
         }
+
+        return loadImageAndGet();
     }
 
     private BufferedImage loadImageAndGet() {
+        // Another Texture may have loaded it between the previous check
+        // and this call, so check again.
+        BufferedImage existing = TextureManager.getImage(id);
+
+        if (existing != null) {
+            return existing;
+        }
+
+        BufferedImage image;
+
         try {
             InputStream in = Texture.class.getResourceAsStream(getResourceName());
-            if(in == null) {
+
+            if (in == null) {
                 in = getMissingTextureInputStream();
                 assert in != null;
             }
@@ -46,26 +58,24 @@ public class Texture {
             image = ImageIO.read(in);
             in.close();
 
-            loaded = true;
         } catch (IOException e) {
             image = MISSING_TEXTURE.asImage();
-            loaded = true;
         }
-        TextureManager.register(this);
+
+        TextureManager.register(this, image);
+
         return image;
     }
 
-    public void freeUpMemory() {
-        image = null;
-        loaded = false;
-    }
-
     public long getImageByteSize() {
+        BufferedImage image = TextureManager.getImage(id);
         long byteSize;
-        if (loaded) {
+
+        if (image != null) {
             DataBuffer buffer = image.getRaster().getDataBuffer();
-            long bytesPerElement = DataBuffer.getDataTypeSize(buffer.getDataType()) / 8L;
-            byteSize = (long) buffer.getSize() * bytesPerElement;
+            long bytesPerElement =
+                    DataBuffer.getDataTypeSize(buffer.getDataType()) / 8L;
+            byteSize = buffer.getSize() * bytesPerElement;
         } else try {
             ImageInputStream in = ImageIO.createImageInputStream(new File(getResourceName()));
             if (in == null) {
@@ -94,14 +104,22 @@ public class Texture {
             LOGGER.error("Failed to get image size from a texture", e);
             throw new UncheckedIOException("Failed to read image size for: " + id.asString(), e);
         }
+
         return byteSize;
     }
 
+    public Identifier getIdentifier() {
+        return id;
+    }
+
     private InputStream getMissingTextureInputStream() {
-        return Texture.class.getResourceAsStream("/textures/ess/missing.png");
+        return Texture.class.getResourceAsStream(
+                "/textures/ess/missing.png"
+        );
     }
 
     private String getResourceName() {
-        return "/textures/" + id.getNamespace() + "/" + id.getPath() + ".png";
+        return "/textures/" + id.getNamespace()
+                + "/" + id.getPath() + ".png";
     }
 }

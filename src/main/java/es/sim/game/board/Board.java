@@ -3,11 +3,13 @@ package es.sim.game.board;
 import es.sim.*;
 import es.sim.game.entities.*;
 import es.sim.gui.*;
-import es.sim.util.DebugVariables;
+import es.sim.util.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
+import java.util.concurrent.*;
 
 import static es.sim.Main.*;
 
@@ -15,8 +17,8 @@ import static es.sim.Main.*;
 /// registered entities.<br>
 /// Its task is ticking every entity with some helper methods
 public class Board extends Screen {
-    public static final int DEFAULT_ROWS = 50;
-    public static final int DEFAULT_COLUMNS = 50;
+    public static final int DEFAULT_ROWS = 8;
+    public static final int DEFAULT_COLUMNS = 8;
 
     private static final float MIN_ZOOM = 0.125f;
     private static final float MAX_ZOOM = 8.0f;
@@ -26,7 +28,7 @@ public class Board extends Screen {
     private static float MAX_PAN_Y = 0;
 
     private final Cell[][] grid;
-    private final ArrayList<Entity> entities = new ArrayList<>();
+    private final CopyOnWriteArrayList<Entity> entities = new CopyOnWriteArrayList<>();
     private final int rows;
     private final int columns;
 
@@ -75,7 +77,7 @@ public class Board extends Screen {
         entities.remove(e);
     }
 
-    public ArrayList<Entity> getEntities() {
+    public CopyOnWriteArrayList<Entity> getEntities() {
         return entities;
     }
 
@@ -83,15 +85,15 @@ public class Board extends Screen {
     public void tick() {
         DebugVariables.TIMES_RECALCULATED_THIS_FRAME = 0;
         long startTime = System.nanoTime();
-        for(Entity entity : new ArrayList<>(entities)) {
+        for(Entity entity : entities) {
             entity.tick();
         }
         long endTime = System.nanoTime();
         long totalTickTime = endTime - startTime;
         double averageTime = (double) totalTickTime / DebugVariables.TIMES_RECALCULATED_THIS_FRAME;
-        repaint();
-        LOGGER.debug("Times Recalculated the path this tick: {}", DebugVariables.TIMES_RECALCULATED_THIS_FRAME);
-        LOGGER.debug("Took {} nanos or {} seconds per tick on average, and {} nanos or {} seconds in total", averageTime, Double.toString(averageTime / 1000000000d), totalTickTime, Double.toString(totalTickTime / 1000000000d));
+
+        //LOGGER.debug("Times Recalculated the path this tick: {}", DebugVariables.TIMES_RECALCULATED_THIS_FRAME)
+        //LOGGER.debug("Took {} nanos or {} seconds per tick on average, and {} nanos or {} seconds in total", averageTime, Double.toString(averageTime / 1000000000d), totalTickTime, Double.toString(totalTickTime / 1000000000d))
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}
@@ -188,7 +190,8 @@ public class Board extends Screen {
             g.drawLine(leftBounds.x, lineY, rightBounds.x + rightBounds.width, lineY);
         }
 
-        for(Entity e : entities) {
+        List<Entity> copies = Collections.unmodifiableList(entities);
+        for(Entity e : copies) {
             Rectangle cellBounds = getCellBounds(e.getPos().x, e.getPos().y);
             Rectangle screenRect = Main.getWindow().getBounds();
 

@@ -10,9 +10,8 @@ import org.xguzm.pathfinding.grid.finders.*;
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 
-import static es.sim.Main.LOGGER;
+import static es.sim.Main.*;
 
 /// This class represents the super class of all living things on the {@link Board}, every entity should
 /// extend this class to be able to be rendered and ticked
@@ -24,7 +23,7 @@ public abstract class Entity {
     protected final Board board;
 
     protected int age = 0;
-    protected int breedCooldown = 0;
+    protected int breedingCooldown = 0;
     protected Point currentTarget = null;
     protected Surroundings surroundings = null;
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
@@ -68,7 +67,7 @@ public abstract class Entity {
         //To prevent negative coordinates entering the array indices at Board.grid[][]
         if(copy.x < 0 || copy.y < 0 || copy.x >= Main.board.getColumns() || copy.y >= Main.board.getRows()) {
             throw new EntityPositionOutOfBoundsException(
-                    String.format("An entity wanted to move out of the bounds of the map: %s was out of bounds (0, 0) to (%d, %d)", copy, Main.board.getColumns(), Main.board.getRows())
+                    String.format("An entity wanted to move out of the bounds of the map: %s was out of bounds (0, 0) to (%d, %d)", copy, Main.board.getColumns() - 1, Main.board.getRows() - 1)
             );
         }
 

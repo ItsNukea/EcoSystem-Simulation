@@ -2,7 +2,7 @@
 <project version="4">
   <component name="JavaProjectCodeInsightSettings">
     <included-static-names>
-      <name>Main.LOGGER</name>
+      <name>es.sim.Main.LOGGER</name>
     </included-static-names>
   </component>
 </project>

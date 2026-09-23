@@ -11,19 +11,17 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.awt.*;
 import java.util.*;
 
-import static es.sim.Main.LOGGER;
-
 public class Deer extends Entity {
     private static final int BREEDING_COOLDOWN_TICKS = 50;
     
     private EntityActivity ACTIVITY = EntityActivity.WANDERING;
 
-    private int breedingCooldown = BREEDING_COOLDOWN_TICKS;
     private Deer breedingPartner = null;
 
     public Deer() {
         super(Identifier.of("entity:deer"));
         VIEW_DISTANCE = 6;
+        breedingCooldown = BREEDING_COOLDOWN_TICKS;
     }
 
     @Override
@@ -67,7 +65,7 @@ public class Deer extends Entity {
                 null
         );
 
-        if (currentTarget != null) {
+        if (currentTarget != null && false) {
             Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
             graphics.setColor(new Color(30, 117, 5, 255));
             graphics.fillRect(

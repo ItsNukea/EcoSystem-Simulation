@@ -101,7 +101,7 @@ public class Surroundings {
                         x == owner.getViewDistance()
                         && y == owner.getViewDistance();
 
-                if(cell != null && cell.holder.isPresent() && !thisEntity) {
+                if (cell == null || (cell.holder.isPresent() && !thisEntity)) {
                     gridCell.setWalkable(false);
                 }
 

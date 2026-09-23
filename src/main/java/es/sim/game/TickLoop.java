@@ -17,22 +17,35 @@ import static es.sim.Main.LOGGER;
 public class TickLoop {
     private final long delayNanos;
     private final Thread loopThread = new Thread(this::loop, "Ticker");
+    private final Runnable tickAction;
     private boolean stop = false;
 
-    private TickLoop(int tps) {
+    private TickLoop(int tps, Runnable tickAction) {
+        this.tickAction = tickAction;
         delayNanos = 1000000000L / tps;
     }
 
     private void loop() {
         try {
             long lastTickTime = System.nanoTime();
+
             while (!stop) {
                 long now = System.nanoTime();
-                if (now - lastTickTime >= delayNanos) {
-                    Main.board.tick();
-                    lastTickTime = now;
+                long remaining = delayNanos - (now - lastTickTime);
+
+                if (remaining > 0) {
+                    long sleepMillis = remaining / 1_000_000L;
+                    int sleepNanos = (int) (remaining % 1_000_000L);
+
+                    Thread.sleep(sleepMillis, sleepNanos);
+                    continue;
                 }
+
+                tickAction.run();
+                lastTickTime += delayNanos;
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } catch (Throwable t) {
             LOGGER.error("Exception occured while ticking Board", t);
             Main.getWindow().showScreen(Main.board.parent);
@@ -51,16 +64,20 @@ public class TickLoop {
         }
     }
 
-    private void start() {
+    public void start() {
         loopThread.start();
     }
 
-    private void stop() {
+    public void stop() {
         stop = true;
     }
 
     public static void start(int tps) {
-        TickLoop loop = new TickLoop(tps);
-        loop.start();
+        TickLoop updateLoop = new TickLoop(tps, () -> {
+            Main.board.tick();
+        });
+        Timer renderLoop = new Timer(0, _ -> Main.board.repaint());
+        updateLoop.start();
+        renderLoop.start();
     }
 }

@@ -4,12 +4,9 @@ import es.sim.game.*;
 import es.sim.game.board.*;
 import es.sim.texture.*;
 import es.sim.util.*;
-import org.xguzm.pathfinding.grid.*;
-import org.xguzm.pathfinding.grid.finders.*;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Wolf extends Entity {
     /// How many cells the wolf moves per tick while chasing prey. It needs to be higher than the deer's speed,
@@ -18,10 +15,10 @@ public class Wolf extends Entity {
 
     private final Texture sprite = new Texture(getEntityID());
     private Point currentTarget = null;
-    private ArrayList<Direction> moves = new ArrayList<>();
     private EntityActivity ACTIVITY = EntityActivity.WANDERING;
-    private Surroundings surroundings;
     private Entity prey = null;
+    private final int MAX_STOMACH_FULLNESS = 75;
+    private int stomachFullness = MAX_STOMACH_FULLNESS;
 
     public Wolf() {
         super(Identifier.of("entity:wolf"));
@@ -34,8 +31,13 @@ public class Wolf extends Entity {
 
         if (ACTIVITY == EntityActivity.HUNTING) {
             hunt();
-        } else {
+        } else if(ACTIVITY == EntityActivity.WANDERING) {
             wander();
+        }
+
+        stomachFullness--;
+        if(stomachFullness == 0) {
+            board.unregisterEntity(this);
         }
     }
 
@@ -64,7 +66,9 @@ public class Wolf extends Entity {
     @Override
     protected void analyzeSurroundings() {
         surroundings = Surroundings.ofEntity(this);
-        prey = findNearestPrey();
+        if(isHungry()) {
+            prey = findNearestPrey();
+        }
         ACTIVITY = (prey != null) ? EntityActivity.HUNTING : EntityActivity.WANDERING;
     }
 
@@ -108,6 +112,7 @@ public class Wolf extends Entity {
                 board.unregisterEntity(prey);
                 moves.clear();
                 currentTarget = null;
+                stomachFullness += 40;
                 return;
             }
             followPath();
@@ -116,9 +121,7 @@ public class Wolf extends Entity {
 
     private void followPath() {
         if (moves.isEmpty()) return;
-
-        move(moves.getFirst());
-        moves.removeFirst();
+        move(moves.pollFirst());
     }
 
     /// Manhattan distance, which is the number of moves needed since diagonal moves aren't allowed
@@ -126,5 +129,7 @@ public class Wolf extends Entity {
         return Math.abs(other.x - pos.x) + Math.abs(other.y - pos.y);
     }
 
-
+    private boolean isHungry() {
+        return stomachFullness < 40;
+    }
 }
