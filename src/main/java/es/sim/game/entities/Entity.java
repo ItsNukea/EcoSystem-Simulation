@@ -1,5 +1,6 @@
 package es.sim.game.entities;
 
+import ch.qos.logback.core.util.*;
 import es.sim.*;
 import es.sim.exceptions.*;
 import es.sim.game.*;
@@ -24,7 +25,7 @@ public abstract class Entity {
 
     protected int age = 0;
     protected int breedingCooldown = 0;
-    protected Point currentTarget = null;
+    public Point currentTarget = null;
     protected Surroundings surroundings = null;
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
 
@@ -60,7 +61,7 @@ public abstract class Entity {
         move(d.xComponent(), d.yComponent());
     }
 
-    protected void move(int dx, int dy) throws EntityPositionOutOfBoundsException {
+    protected void move(int dx, int dy) {
         Point copy = new Point(pos);
         copy.translate(dx, dy);
 
@@ -130,7 +131,7 @@ public abstract class Entity {
             ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
             if (path == null) {
                 //It's impossible to pathfind to the target
-                LOGGER.error("Entity currently on [{}, {}] failed to pathfind", this.pos.x, this.pos.y);
+                LOGGER.error("{} currently on [{}, {}] failed to pathfind", ENTITY_ID, this.pos.x, this.pos.y);
                 findRandomTarget();
                 repeat = true;
                 continue;

@@ -84,7 +84,7 @@ public class Texture {
 
             Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
             if (!readers.hasNext()) {
-                throw new IOException("No ImageReader found for: " + id.asString());
+                throw new IOException("No ImageReader found for: " + id.toString());
             }
 
             ImageReader reader = readers.next();
@@ -102,7 +102,7 @@ public class Texture {
             in.close();
         } catch (IOException e) {
             LOGGER.error("Failed to get image size from a texture", e);
-            throw new UncheckedIOException("Failed to read image size for: " + id.asString(), e);
+            throw new UncheckedIOException("Failed to read image size for: " + id.toString(), e);
         }
 
         return byteSize;

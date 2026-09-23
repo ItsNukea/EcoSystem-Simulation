@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaProjectCodeInsightSettings">
+    <excluded-names>
+      <name>ch.qos.logback.core.util.FileUtil</name>
+    </excluded-names>
     <included-static-names>
       <name>es.sim.Main.LOGGER</name>
     </included-static-names>

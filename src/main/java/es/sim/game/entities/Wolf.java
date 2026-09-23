@@ -16,10 +16,10 @@ public class Wolf extends Entity {
     private static final int HUNT_SPEED = 2;
 
     private final Texture sprite = new Texture(getEntityID());
-    public Point currentTarget = null;
     public EntityActivity ACTIVITY = EntityActivity.WANDERING;
     private Entity prey = null;
     private final int MAX_STOMACH_FULLNESS = 75;
+    private final int HUNGER_TRESHOLD = 40;
     private int stomachFullness = MAX_STOMACH_FULLNESS;
 
     public Wolf() {
@@ -55,7 +55,7 @@ public class Wolf extends Entity {
         );
 
         //Debug: mark the current target, but not while hunting, because the target is then the deer's own cell
-        if (ACTIVITY != EntityActivity.HUNTING && currentTarget != null) {
+        if (currentTarget != null) {
             Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
             graphics.setColor(new Color(117, 5, 5, 255));
             graphics.fillRect(
@@ -115,7 +115,7 @@ public class Wolf extends Entity {
                 board.unregisterEntity(prey);
                 moves.clear();
                 currentTarget = null;
-                stomachFullness += 40;
+                stomachFullness = Math.min(stomachFullness + 40, MAX_STOMACH_FULLNESS);
                 return;
             }
             followPath();
@@ -133,6 +133,6 @@ public class Wolf extends Entity {
     }
 
     private boolean isHungry() {
-        return stomachFullness < 40;
+        return stomachFullness <= HUNGER_TRESHOLD;
     }
 }

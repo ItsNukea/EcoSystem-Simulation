@@ -65,7 +65,7 @@ public class Deer extends Entity {
                 null
         );
 
-        if (currentTarget != null && false) {
+        if (currentTarget != null) {
             Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
             graphics.setColor(new Color(30, 117, 5, 255));
             graphics.fillRect(

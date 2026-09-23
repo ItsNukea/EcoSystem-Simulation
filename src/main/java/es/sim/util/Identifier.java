@@ -44,10 +44,6 @@ public class Identifier {
         return new Identifier(path);
     }
 
-    public String asString() {
-        return namespace + ":" + path;
-    }
-
     public String getNamespace() {
         return namespace;
     }
@@ -79,7 +75,12 @@ public class Identifier {
     }
 
     @Override
+    public String toString() {
+        return namespace + ":" + path;
+    }
+
+    @Override
     public int hashCode() {
-        return asString().hashCode();
+        return toString().hashCode();
     }
 }
