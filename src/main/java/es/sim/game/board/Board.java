@@ -123,7 +123,7 @@ public class Board extends Screen {
 
     /// Returns the bounds of the grid as a rectangle with a width and height, with coordinate (0, 0)
     public Rectangle getBoundsRect() {
-        return new Rectangle(0, 0, columns - 1, rows - 1);
+        return new Rectangle(0, 0, columns, rows);
     }
 
     /// Recomputes {@link #cellSize} and the centering origin so the grid fits the window
