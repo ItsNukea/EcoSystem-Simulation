@@ -1,6 +1,7 @@
 package es.sim.io;
 
 import es.sim.*;
+import es.sim.util.*;
 
 import java.io.*;
 import java.nio.file.*;
@@ -35,7 +36,7 @@ public class FileManager {
     ///Returns the Run Directory as the program. Useful to determine where the save files should be stored
     public static Path getRunDirectory() {
         Path runDir;
-        if(Main.isDevelopmentEnvironment()) {
+        if(DebugVariables.IS_DEVELOPMENT_ENVIRONMENT) {
             runDir = Paths.get("run");
         } else {
             Path userHome = Paths.get(System.getProperty("user.home"));

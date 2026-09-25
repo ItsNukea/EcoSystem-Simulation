@@ -16,12 +16,13 @@ public class Wolf extends Entity {
     public EntityActivity ACTIVITY = EntityActivity.WANDERING;
     private Entity prey = null;
     private final int MAX_STOMACH_FULLNESS = 75;
-    private final int HUNGER_TRESHOLD = 40;
+    private final int HUNGER_TRESHOLD;
     private int stomachFullness = MAX_STOMACH_FULLNESS;
 
     public Wolf() {
         super(Identifier.of("entity:wolf"));
         VIEW_DISTANCE = 10;
+        HUNGER_TRESHOLD = 40;
     }
 
     @Override
@@ -42,6 +43,18 @@ public class Wolf extends Entity {
 
     @Override
     public void render(Graphics2D graphics, Rectangle cellBounds) {
+        //Debug: mark the current target, but not while hunting, because the target is then the deer's own cell
+        if (currentTarget != null && DebugVariables.SHOW_ENTITY_PATHFINDING_TARGET) {
+            Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
+            graphics.setColor(new Color(117, 111, 5));
+            graphics.fill(targetCellBounds);
+        }
+
+        if(ACTIVITY == EntityActivity.HUNTING) {
+            graphics.setColor(new Color(138, 6, 6));
+            graphics.fill(cellBounds);
+        }
+
         graphics.drawImage(
                 sprite.asImage(),
                 cellBounds.x,
@@ -50,16 +63,6 @@ public class Wolf extends Entity {
                 cellBounds.height,
                 null
         );
-
-        //Debug: mark the current target, but not while hunting, because the target is then the deer's own cell
-        if (currentTarget != null) {
-            Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
-            graphics.setColor(new Color(117, 5, 5, 255));
-            graphics.fillRect(
-                    targetCellBounds.x, targetCellBounds.y,
-                    targetCellBounds.width, targetCellBounds.height
-            );
-        }
     }
 
     @Override

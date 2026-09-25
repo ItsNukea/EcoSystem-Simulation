@@ -113,7 +113,6 @@ public abstract class Entity {
     /// A* from the center of the surroundings grid to {@link #currentTarget} (same as Deer)
     protected void recalculatePath() {
         surroundings = Surroundings.ofEntity(this);
-        DebugVariables.TIMES_RECALCULATED_THIS_FRAME++;
         boolean repeat;
         do {
             repeat = false;
@@ -141,6 +140,8 @@ public abstract class Entity {
                 repeat = true;
                 continue;
             }
+
+            path.addFirst(start);
             
             moves = new ArrayDeque<>();
             for (int i = 1; i < path.size(); i++) {

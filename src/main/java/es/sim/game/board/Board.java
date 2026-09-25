@@ -1,10 +1,12 @@
 package es.sim.game.board;
 
 import es.sim.*;
+import es.sim.game.*;
 import es.sim.game.entities.*;
 import es.sim.gui.*;
 import es.sim.util.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -52,6 +54,35 @@ public class Board extends Screen {
                 grid[x][y] = new Cell();
             }
         }
+
+        this.setLayout(null);
+
+        JButton stepForwardButton = new JButton("Step Forward");
+        stepForwardButton.setBounds(134, 10, 120, 30);
+        stepForwardButton.addActionListener(_ -> this.tick());
+        stepForwardButton.setEnabled(false);
+
+
+        JButton pauseResumeButton = new JButton("Pause");
+        pauseResumeButton.setBounds(10, 10, 120, 30);
+        pauseResumeButton.addActionListener(_ -> {
+            if(loop.isPaused()) {
+                loop.resume();
+                pauseResumeButton.setText("Pause");
+                stepForwardButton.setEnabled(false);
+            } else {
+                loop.pause();
+                pauseResumeButton.setText("Resume");
+                stepForwardButton.setEnabled(true);
+            }
+        });
+
+        stepForwardButton.setFocusable(false);
+        pauseResumeButton.setFocusable(false);
+
+        add(pauseResumeButton);
+        add(stepForwardButton);
+        revalidate();
     }
 
     /// Gets a cell at a specified coordinate {@code (x, y)}
@@ -83,17 +114,9 @@ public class Board extends Screen {
 
     /// Ticks every registered entity and makes them advance 1 step into the future
     public void tick() {
-        DebugVariables.TIMES_RECALCULATED_THIS_FRAME = 0;
-        long startTime = System.nanoTime();
         for(Entity entity : entities) {
             entity.tick();
         }
-        long endTime = System.nanoTime();
-        long totalTickTime = endTime - startTime;
-        double averageTime = (double) totalTickTime / DebugVariables.TIMES_RECALCULATED_THIS_FRAME;
-
-        //LOGGER.debug("Times Recalculated the path this tick: {}", DebugVariables.TIMES_RECALCULATED_THIS_FRAME)
-        //LOGGER.debug("Took {} nanos or {} seconds per tick on average, and {} nanos or {} seconds in total", averageTime, Double.toString(averageTime / 1000000000d), totalTickTime, Double.toString(totalTickTime / 1000000000d))
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}
@@ -160,7 +183,7 @@ public class Board extends Screen {
     public void render(Graphics2D g) {
         recalcGrid();
 
-        // Draw white background
+        //Draw white background
         Color white = new Color(255, 255, 255);
         g.setColor(white);
         for(int x = 0; x < columns; x++) {
@@ -170,11 +193,11 @@ public class Board extends Screen {
             }
         }
 
-        // Grid line color
+        //Grid line color
         Color gray = new Color(92, 92, 92);
         g.setColor(gray);
 
-        // Draw vertical lines
+        //Draw vertical lines
         for(int x = 0; x <= columns; x++) {
             Rectangle topBounds = getCellBounds(Math.min(x, columns - 1), 0);
             Rectangle bottomBounds = getCellBounds(Math.min(x, columns - 1), rows - 1);
@@ -182,7 +205,7 @@ public class Board extends Screen {
             g.drawLine(lineX, topBounds.y, lineX, bottomBounds.y + bottomBounds.height);
         }
 
-        // Draw horizontal lines
+        //Draw horizontal lines
         for(int y = 0; y <= rows; y++) {
             Rectangle leftBounds = getCellBounds(0, Math.min(y, rows - 1));
             Rectangle rightBounds = getCellBounds(columns - 1, Math.min(y, rows - 1));
@@ -195,7 +218,7 @@ public class Board extends Screen {
             Rectangle cellBounds = getCellBounds(e.getPos().x, e.getPos().y);
             Rectangle screenRect = Main.getWindow().getBounds();
 
-            //Do some entity culling
+            //Do some entity culling because why not
             if(cellBounds.intersects(screenRect)) {
                 e.render(g, cellBounds);
             }

@@ -1,13 +1,15 @@
 package es.sim;
 
+import es.sim.game.*;
 import es.sim.game.board.*;
 import es.sim.game.entities.*;
 import es.sim.gui.*;
 import es.sim.io.*;
+import es.sim.util.*;
 import org.slf4j.*;
 
 import javax.swing.*;
-import java.awt.*;
+import javax.swing.Timer;
 import java.text.*;
 import java.util.*;
 
@@ -15,7 +17,8 @@ public class Main {
     public static final Logger LOGGER;
     private static Window window;
     public static Board board;
-    private static boolean isDevEnvironment = false;
+    public static TickLoop loop;
+    public static Timer renderLoop = new Timer(0, _ -> Main.board.repaint());
 
     static {
         String sessionTimestamp = new SimpleDateFormat("dd.MM.yyyy-HH.mm.ss").format(new Date());
@@ -23,20 +26,28 @@ public class Main {
         LOGGER = LoggerFactory.getLogger("main");
     }
 
-    ///The main entrypoint of the program, responsible for resolving runtime arguments, generating files, and initializing the window
+    /// The main entrypoint of the program, responsible for resolving runtime arguments, generating files, and initializing the window
+    /// @param args
+    ///     - {@code --devEnv}: Used to signify that the program is running in an IDE.<br>**<span style="color:red">THIS FLAG SHOULD BE ENABLED IF AND ONLY IF THE PROGRAM RUNS IN AN IDE!</span>**
+    ///     - {@code --showPathFindingTarget}: Shows to which square every entity is path finding to.
+    ///     - {@code --clearLogFiles}: Clears all log files except {@code latest.log} in the log directory
     static void main(String[] args) {
         LOGGER.info("Starting application...");
 
         //First, do critical flags
         for(String arg : args) {
             if (arg.equals("--devEnv")) {
-                isDevEnvironment = true;
-                break;
+                DebugVariables.IS_DEVELOPMENT_ENVIRONMENT = true;
+                continue;
+            }
+
+            if(arg.equals("--showPathFindingTarget")) {
+                DebugVariables.SHOW_ENTITY_PATHFINDING_TARGET = true;
             }
         }
 
         for(String arg : args) {
-            if(arg.equals("-clearLogFiles")) {
+            if(arg.equals("--clearLogFiles")) {
                 FileManager.clearLogs();
             }
         }
@@ -82,14 +93,13 @@ public class Main {
                 }
                 spawned--;
             }
+
+            loop = new TickLoop(2, board::tick);
+            renderLoop.start();
         });
     }
 
     public static Window getWindow() {
         return window;
-    }
-
-    public static boolean isDevelopmentEnvironment() {
-        return isDevEnvironment;
     }
 }

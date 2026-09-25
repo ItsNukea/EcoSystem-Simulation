@@ -61,6 +61,20 @@ public class Deer extends Entity {
 
     @Override
     public void render(Graphics2D graphics, Rectangle cellBounds) {
+        if (currentTarget != null && DebugVariables.SHOW_ENTITY_PATHFINDING_TARGET) {
+            Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
+            graphics.setColor(new Color(30, 117, 5, 255));
+            graphics.fillRect(
+                    targetCellBounds.x, targetCellBounds.y,
+                    targetCellBounds.width, targetCellBounds.height
+            );
+        }
+
+        if(ACTIVITY == EntityActivity.BREEDING) {
+            graphics.setColor(new Color(0, 180, 184));
+            graphics.fill(cellBounds);
+        }
+
         Texture sprite = new Texture(getEntityID());
         graphics.drawImage(
                 sprite.asImage(),
@@ -70,15 +84,6 @@ public class Deer extends Entity {
                 cellBounds.height,
                 null
         );
-
-        if (currentTarget != null) {
-            Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
-            graphics.setColor(new Color(30, 117, 5, 255));
-            graphics.fillRect(
-                    targetCellBounds.x, targetCellBounds.y,
-                    targetCellBounds.width, targetCellBounds.height
-            );
-        }
     }
 
     public boolean isReadyToBreed() {

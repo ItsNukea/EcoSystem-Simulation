@@ -1,5 +1,6 @@
 package es.sim.util;
 
 public class DebugVariables {
-    public static int TIMES_RECALCULATED_THIS_FRAME = 0;
+    public static boolean IS_DEVELOPMENT_ENVIRONMENT = false;
+    public static boolean SHOW_ENTITY_PATHFINDING_TARGET = false;
 }
