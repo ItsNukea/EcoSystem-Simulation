@@ -75,6 +75,11 @@ public class Board extends Screen {
     /// Unregisters an entity to stop ticking and rendering it on the board. This will mostly be used when an entity dies
     public void unregisterEntity(Entity e) {
         entities.remove(e);
+
+        Cell cell = getCell(e.getPos().x, e.getPos().y);
+        if (cell.holder.isPresent() && cell.holder.get() == e) {
+            cell.setContents(null);
+        }
     }
 
     public CopyOnWriteArrayList<Entity> getEntities() {

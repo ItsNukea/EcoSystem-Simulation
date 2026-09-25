@@ -28,7 +28,7 @@ public abstract class Entity {
     public Point currentTarget = null;
     protected Surroundings surroundings = null;
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
-
+    protected int waitTicks = 0;
     
     protected Entity(Identifier entityID) {
         this.ENTITY_ID = entityID;
@@ -57,11 +57,11 @@ public abstract class Entity {
         setPos(new Point(x, y));
     }
 
-    protected void move(Direction d) {
-        move(d.xComponent(), d.yComponent());
+    protected boolean move(Direction d) {
+        return move(d.xComponent(), d.yComponent());
     }
 
-    protected void move(int dx, int dy) {
+    protected boolean move(int dx, int dy) {
         Point copy = new Point(pos);
         copy.translate(dx, dy);
 
@@ -75,12 +75,13 @@ public abstract class Entity {
         Cell destination = board.getCell(copy.x, copy.y);
         if (destination.holder.isPresent()) {
             //Target square is already occupied, so don't move there
-            return;
+            return false;
         }
 
         board.getCell(pos.x, pos.y).setContents(null);
         pos.move(copy.x, copy.y);
         destination.setContents(this);
+        return true;
     }
 
     public int getViewDistance() {
