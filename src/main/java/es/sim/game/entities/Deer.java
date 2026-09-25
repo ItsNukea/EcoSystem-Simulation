@@ -24,6 +24,12 @@ public class Deer extends Entity {
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
     }
 
+    /// A point exactly between two positions, rounded down. Since addition is commutative, both deer in a
+    /// breeding pair compute this to the same square independently, without needing to coordinate
+    private static Point meetingPoint(Point a, Point b) {
+        return new Point(Math.floorDiv(a.x + b.x, 2), Math.floorDiv(a.y + b.y, 2));
+    }
+
     @Override
     public void tick() {
         analyzeSurroundings();
@@ -36,7 +42,7 @@ public class Deer extends Entity {
                 return;
             }
 
-            currentTarget = breedingPartner.getPos();
+            currentTarget = meetingPoint(pos, breedingPartner.getPos());
             recalculatePath();
         }
 

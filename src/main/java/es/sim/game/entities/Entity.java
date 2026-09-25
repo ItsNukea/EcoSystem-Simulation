@@ -72,9 +72,15 @@ public abstract class Entity {
             );
         }
 
+        Cell destination = board.getCell(copy.x, copy.y);
+        if (destination.holder.isPresent()) {
+            //Target square is already occupied, so don't move there
+            return;
+        }
+
         board.getCell(pos.x, pos.y).setContents(null);
         pos.move(copy.x, copy.y);
-        board.getCell(copy.x, copy.y).setContents(this);
+        destination.setContents(this);
     }
 
     public int getViewDistance() {
@@ -90,18 +96,17 @@ public abstract class Entity {
             Random random = new Random();
             int dx = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
             int dy = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
-            
-            //Generate a number from 0 to 2*VIEW DISTANCE + 1
-            
+
             temp = new Point(getPos().x + dx, getPos().y + dy);
             Rectangle bounds = board.getBoundsRect();
-            
+
             //Break out if these conditions are met
-            if (bounds.contains(temp) && !(dx == 0 && dy == 0)) {
+            if (bounds.contains(temp) && !(dx == 0 && dy == 0)
+                    && board.getCell(temp.x, temp.y).holder.isEmpty()) {
                 break;
             }
         }
-        
+
         currentTarget = temp;
     }
     
