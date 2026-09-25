@@ -195,15 +195,21 @@ public class Board extends Screen {
             g.drawLine(leftBounds.x, lineY, rightBounds.x + rightBounds.width, lineY);
         }
 
-        List<Entity> copies = Collections.unmodifiableList(entities);
-        for(Entity e : copies) {
-            Rectangle cellBounds = getCellBounds(e.getPos().x, e.getPos().y);
-            Rectangle screenRect = Main.getWindow().getBounds();
-
-            //Do some entity culling
-            if(cellBounds.intersects(screenRect)) {
-                e.render(g, cellBounds);
+        //Do some entity culling
+        Rectangle screenRect = Main.getWindow().getBounds();
+        ArrayList<Entity> visible = new ArrayList<>();
+        for(Entity e : entities) {
+            if(getCellBounds(e.getPos().x, e.getPos().y).intersects(screenRect)) {
+                visible.add(e);
             }
+        }
+
+//Target squares first, then sprites, so no sprite is ever hidden behind another entity's target square
+        for(Entity e : visible) {
+            e.renderTarget(g);
+        }
+        for(Entity e : visible) {
+            e.render(g, getCellBounds(e.getPos().x, e.getPos().y));
         }
     }
 

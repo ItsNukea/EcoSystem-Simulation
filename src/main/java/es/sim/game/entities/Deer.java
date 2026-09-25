@@ -55,10 +55,11 @@ public class Deer extends Entity {
         if (moves.isEmpty() && currentTarget != null) {
             recalculatePath();
         }
-        while (moves.isEmpty()) {
+        if (moves.isEmpty()) {
             findRandomTarget();
             recalculatePath();
         }
+        if (moves.isEmpty()) return; //boxed in this tick, try again next tick
 
         if (!move(moves.pollFirst())) {
             moves.clear();
@@ -83,15 +84,11 @@ public class Deer extends Entity {
                 cellBounds.height,
                 null
         );
+    }
 
-        if (currentTarget != null) {
-            Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
-            graphics.setColor(new Color(30, 117, 5, 255));
-            graphics.fillRect(
-                    targetCellBounds.x, targetCellBounds.y,
-                    targetCellBounds.width, targetCellBounds.height
-            );
-        }
+    @Override
+    protected Color getTargetColor() {
+        return new Color(30, 117, 5, 255);
     }
 
     public boolean isReadyToBreed() {
