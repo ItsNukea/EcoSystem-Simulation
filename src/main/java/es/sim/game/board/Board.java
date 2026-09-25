@@ -106,6 +106,11 @@ public class Board extends Screen {
     /// Unregisters an entity to stop ticking and rendering it on the board. This will mostly be used when an entity dies
     public void unregisterEntity(Entity e) {
         entities.remove(e);
+
+        Cell cell = getCell(e.getPos().x, e.getPos().y);
+        if (cell.holder.isPresent() && cell.holder.get() == e) {
+            cell.setContents(null);
+        }
     }
 
     public CopyOnWriteArrayList<Entity> getEntities() {
@@ -213,15 +218,21 @@ public class Board extends Screen {
             g.drawLine(leftBounds.x, lineY, rightBounds.x + rightBounds.width, lineY);
         }
 
-        List<Entity> copies = Collections.unmodifiableList(entities);
-        for(Entity e : copies) {
-            Rectangle cellBounds = getCellBounds(e.getPos().x, e.getPos().y);
-            Rectangle screenRect = Main.getWindow().getBounds();
-
-            //Do some entity culling because why not
-            if(cellBounds.intersects(screenRect)) {
-                e.render(g, cellBounds);
+        //Do some entity culling because why not
+        Rectangle screenRect = Main.getWindow().getBounds();
+        ArrayList<Entity> visible = new ArrayList<>();
+        for(Entity e : entities) {
+            if(getCellBounds(e.getPos().x, e.getPos().y).intersects(screenRect)) {
+                visible.add(e);
             }
+        }
+
+//Target squares first, then sprites, so no sprite is ever hidden behind another entity's target square
+        for(Entity e : visible) {
+            e.renderTarget(g);
+        }
+        for(Entity e : visible) {
+            e.render(g, getCellBounds(e.getPos().x, e.getPos().y));
         }
     }
 

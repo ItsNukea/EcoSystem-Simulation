@@ -11,6 +11,7 @@ import org.xguzm.pathfinding.grid.finders.*;
 
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static es.sim.Main.*;
 
@@ -28,7 +29,7 @@ public abstract class Entity {
     public Point currentTarget = null;
     protected Surroundings surroundings = null;
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
-
+    protected int waitTicks = 0;
     
     protected Entity(Identifier entityID) {
         this.ENTITY_ID = entityID;
@@ -41,6 +42,24 @@ public abstract class Entity {
     /// Renders the entity on the screen.
     /// @param cellBounds The {@link Rectangle} that shows the bounds of the cell this entity is in.
     public abstract void render(Graphics2D graphics, Rectangle cellBounds);
+
+    /// The color of the debug square drawn on this entity's target, or {@code null} for no square
+    protected Color getTargetColor() {
+        return null;
+    }
+
+    /// Draws the debug square on this entity's target. The {@link Board} draws these for every entity before
+    /// any sprite, so a sprite is never hidden by another entity's target square
+    public void renderTarget(Graphics2D graphics) {
+        if (currentTarget == null || getTargetColor() == null) return;
+
+        Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
+        graphics.setColor(getTargetColor());
+        graphics.fillRect(
+                targetCellBounds.x, targetCellBounds.y,
+                targetCellBounds.width, targetCellBounds.height
+        );
+    }
 
     public Identifier getEntityID() {
         return ENTITY_ID;
@@ -57,11 +76,11 @@ public abstract class Entity {
         setPos(new Point(x, y));
     }
 
-    protected void move(Direction d) {
-        move(d.xComponent(), d.yComponent());
+    protected boolean move(Direction d) {
+        return move(d.xComponent(), d.yComponent());
     }
 
-    protected void move(int dx, int dy) {
+    protected boolean move(int dx, int dy) {
         Point copy = new Point(pos);
         copy.translate(dx, dy);
 
@@ -75,12 +94,13 @@ public abstract class Entity {
         Cell destination = board.getCell(copy.x, copy.y);
         if (destination.holder.isPresent()) {
             //Target square is already occupied, so don't move there
-            return;
+            return false;
         }
 
         board.getCell(pos.x, pos.y).setContents(null);
         pos.move(copy.x, copy.y);
         destination.setContents(this);
+        return true;
     }
 
     public int getViewDistance() {
@@ -91,67 +111,60 @@ public abstract class Entity {
     
     /// Finds a random target that lies within the bounds of {@link Main#board}
     protected void findRandomTarget() {
-        Point temp;
-        while (true) {
-            Random random = new Random();
+        Random random = new Random();
+        Rectangle bounds = board.getBoundsRect();
+        for (int attempt = 0; attempt < 200; attempt++) {
             int dx = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
             int dy = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
+            Point temp = new Point(getPos().x + dx, getPos().y + dy);
 
-            temp = new Point(getPos().x + dx, getPos().y + dy);
-            Rectangle bounds = board.getBoundsRect();
-
-            //Break out if these conditions are met
-            if (bounds.contains(temp) && !(dx == 0 && dy == 0)
-                    && board.getCell(temp.x, temp.y).holder.isEmpty()) {
-                break;
+            if (bounds.contains(temp) && !(dx == 0 && dy == 0) && board.getCell(temp.x, temp.y).holder.isEmpty()) {
+                currentTarget = temp;
+                return;
             }
         }
-
-        currentTarget = temp;
     }
-    
-    /// A* from the center of the surroundings grid to {@link #currentTarget} (same as Deer)
+
     protected void recalculatePath() {
         surroundings = Surroundings.ofEntity(this);
-        boolean repeat;
-        do {
-            repeat = false;
-            GridCell[][] cells = surroundings.toGridCellArray();
-            NavigationGrid<GridCell> navGrid = new NavigationGrid<>(cells, false);
-            //Imagine having options for a gf
-            GridFinderOptions gfOptions = new GridFinderOptions();
-            gfOptions.allowDiagonal = false;
-            gfOptions.isYDown = true;
-            
-            AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
-            //Now get the Cell origin as a start position and the target Point as an end position:
-            int length = cells.length;
-            //We know the square MUST have uneven side lengths because there is a center square
-            GridCell start = cells[length / 2][length / 2];
+        moves = new ArrayDeque<>();
+
+        GridCell[][] cells = surroundings.toGridCellArray();
+        int center = cells.length / 2;
+        NavigationGrid<GridCell> navGrid = new NavigationGrid<>(cells, false);
+        //Imagine having options for a gf
+        GridFinderOptions gfOptions = new GridFinderOptions();
+        gfOptions.allowDiagonal = false;
+        gfOptions.isYDown = true;
+
+        AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
+
+        for (int attempt = 0; attempt < 20; attempt++) {
             int dx = currentTarget.x - pos.x;
             int dy = currentTarget.y - pos.y;
-            GridCell end = cells[length / 2 + dx][length / 2 + dy];
-            
+            GridCell start = cells[center][center];
+            GridCell end = cells[center + dx][center + dy];
+
             ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
-            if (path == null) {
-                //It's impossible to pathfind to the target
-                LOGGER.error("{} currently on [{}, {}] failed to pathfind", ENTITY_ID, this.pos.x, this.pos.y);
+
+            if(path == null) {
+                LOGGER.warn("{} currently on [{}, {}] could not pathfind, picking another target", ENTITY_ID, pos.x, pos.y);
                 findRandomTarget();
-                repeat = true;
                 continue;
             }
 
             path.addFirst(start);
-            
-            moves = new ArrayDeque<>();
+
+            //findPath() does NOT include the start node: the first node is already the first step
             for (int i = 1; i < path.size(); i++) {
                 GridCell next = path.get(i);
                 GridCell current = path.get(i - 1);
-                
+
                 int moveX = next.x - current.x;
                 int moveY = next.y - current.y;
                 moves.add(Direction.fromCoordSet(moveX, moveY));
             }
-        } while(repeat);
+            return;
+        }
     }
 }

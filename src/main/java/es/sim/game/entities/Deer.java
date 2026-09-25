@@ -36,6 +36,11 @@ public class Deer extends Entity {
 
         breedingCooldown = Math.max(0, breedingCooldown - 1);
 
+        if (waitTicks > 0) {
+            waitTicks--;
+            return;
+        }
+
         if (ACTIVITY == EntityActivity.BREEDING && breedingPartner != null) {
             if (isAdjacentTo(breedingPartner.getPos())) {
                 breed(breedingPartner);
@@ -46,12 +51,21 @@ public class Deer extends Entity {
             recalculatePath();
         }
 
-        while(moves.isEmpty()) {
+        //Path ran out or was thrown away: keep heading for the same target if we still have one
+        if (moves.isEmpty() && currentTarget != null) {
+            recalculatePath();
+        }
+        if (moves.isEmpty()) {
             findRandomTarget();
             recalculatePath();
         }
+        if (moves.isEmpty()) return; //boxed in this tick, try again next tick
 
-        move(moves.pollFirst());
+        if (!move(moves.pollFirst())) {
+            moves.clear();
+            waitTicks = new Random().nextInt(1, 4); //wait 1-3 ticks so two deer facing each other stop mirroring
+            return;
+        }
 
         if (pos.equals(currentTarget)) {
             currentTarget = null;
@@ -84,6 +98,11 @@ public class Deer extends Entity {
                 cellBounds.height,
                 null
         );
+    }
+
+    @Override
+    protected Color getTargetColor() {
+        return new Color(30, 117, 5, 255);
     }
 
     public boolean isReadyToBreed() {
