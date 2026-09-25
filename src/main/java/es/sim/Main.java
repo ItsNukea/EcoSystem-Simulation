@@ -27,8 +27,6 @@ public class Main {
     static void main(String[] args) {
         LOGGER.info("Starting application...");
 
-        //TODO: do something with String[] args
-
         //First, do critical flags
         for(String arg : args) {
             if (arg.equals("--devEnv")) {
@@ -57,11 +55,22 @@ public class Main {
 
             board = new Board(Board.DEFAULT_ROWS, Board.DEFAULT_COLUMNS, window.getScreen());
 
-            board.registerEntity(new Wolf(), 0, 0);
-            LOGGER.info("Wolf registered, entity count: {}", board.getEntities().size());
-
             Random random = new Random();
-            int deerToSpawn = 4;
+
+            int wolfsToSpawn = 1;
+
+            for(int spawned = 0; spawned < wolfsToSpawn; spawned++) {
+                int x = random.nextInt(0, board.getColumns());
+                int y = random.nextInt(0, board.getRows());
+
+                if(board.getCell(x, y).holder.isEmpty()) {
+                    board.registerEntity(new Wolf(), x, y);
+                    continue;
+                }
+                spawned--;
+            }
+
+            int deerToSpawn = 5;
 
             for(int spawned = 0; spawned < deerToSpawn; spawned++) {
                 int x = random.nextInt(0, board.getColumns());
