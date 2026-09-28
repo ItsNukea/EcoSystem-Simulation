@@ -53,7 +53,7 @@ public class Identifier {
     }
 
     /**Checks whether the supplied {@code Identifier} is valid and throws an {@link  InvalidIdentifierException} if it's not.<br>
-     *An {@code Identifier} should have
+     *An {@code Identifier} should have a namespace and path only containing the characters {@code a-z}, {@code 0-9}, {@code _}, {@code /}, {@code -}
      */
     public void validNameOrThrow(String namespace, String path) {
         Pattern validCharacters = Pattern.compile("[^a-z0-9_/-]");
@@ -61,7 +61,7 @@ public class Identifier {
         Matcher pathMatcher = validCharacters.matcher(path);
 
         if (nameSpaceMatcher.find() || pathMatcher.find()) {
-            InvalidIdentifierException e = new InvalidIdentifierException("Identifier " + namespace + ":" + path + "contains illegal characters! Allowed: a-z, 0-9, /, _, -");
+            InvalidIdentifierException e = new InvalidIdentifierException("Identifier " + this + " contains illegal characters! Allowed: a-z, 0-9, /, _, -");
             LOGGER.error("Invalid Identifier supplied", e);
             throw e;
         }
@@ -71,7 +71,7 @@ public class Identifier {
     public boolean equals(Object obj) {
         if(!(obj instanceof Identifier id)) return false;
 
-        return Objects.equals(this.namespace, id.namespace) && Objects.equals(this.path, id.path) && this.hashCode() == id.hashCode();
+        return Objects.equals(this.namespace, id.namespace) && Objects.equals(this.path, id.path);
     }
 
     @Override

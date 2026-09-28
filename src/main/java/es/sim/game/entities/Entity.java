@@ -11,7 +11,6 @@ import org.xguzm.pathfinding.grid.finders.*;
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 import static es.sim.Main.*;
 
@@ -30,6 +29,7 @@ public abstract class Entity {
     protected Surroundings surroundings = null;
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
     protected int waitTicks = 0;
+    public EntityActivity ACTIVITY;
     
     protected Entity(Identifier entityID) {
         this.ENTITY_ID = entityID;

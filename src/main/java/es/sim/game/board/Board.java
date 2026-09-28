@@ -1,16 +1,13 @@
 package es.sim.game.board;
 
 import es.sim.*;
-import es.sim.game.*;
 import es.sim.game.entities.*;
 import es.sim.gui.*;
-import es.sim.util.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.*;
 
 import static es.sim.Main.*;
@@ -42,6 +39,10 @@ public class Board extends Screen {
 
     private int panX = 0, panY = 0;
     private Point lastMousePos = null;
+
+    public Board(Screen parent) {
+        this(DEFAULT_ROWS, DEFAULT_COLUMNS, parent);
+    }
 
     public Board(int rows, int columns, Screen parent) {
         super(parent);

@@ -64,7 +64,7 @@ public class Main {
             LOGGER.info("Window initalized");
             window.showScreen(new TitleScreen());
 
-            board = new Board(Board.DEFAULT_ROWS, Board.DEFAULT_COLUMNS, window.getScreen());
+            board = new Board(window.getScreen());
 
             Random random = new Random();
 
@@ -92,6 +92,17 @@ public class Main {
                     continue;
                 }
                 spawned--;
+            }
+
+            int bushesToSpawn = 20;
+
+            for(int spawned = 0; spawned < bushesToSpawn; spawned++) {
+                BerryBush bush = BerryBush.getNewWithRandomProperties(board.getBoundsRect());
+                if (board.getCell(bush.getPos().x, bush.getPos().y).holder.isEmpty()) {
+                    board.registerEntity(bush, bush.getPos().x, bush.getPos().y);
+                } else {
+                    spawned--;
+                }
             }
 
             loop = new TickLoop(2, board::tick);

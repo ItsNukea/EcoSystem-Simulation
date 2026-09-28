@@ -13,8 +13,6 @@ import java.util.*;
 
 public class Deer extends Entity {
     private static final int BREEDING_COOLDOWN_TICKS = 50;
-    
-    private EntityActivity ACTIVITY = EntityActivity.WANDERING;
 
     private Deer breedingPartner = null;
 
@@ -22,6 +20,7 @@ public class Deer extends Entity {
         super(Identifier.of("entity:deer"));
         VIEW_DISTANCE = 6;
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
+        ACTIVITY = EntityActivity.WANDERING;
     }
 
     /// A point exactly between two positions, rounded down. Since addition is commutative, both deer in a

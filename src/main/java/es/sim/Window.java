@@ -1,6 +1,8 @@
 package es.sim;
 
 import es.sim.gui.*;
+import es.sim.texture.*;
+import es.sim.util.*;
 
 import javax.imageio.*;
 import javax.swing.*;
@@ -23,19 +25,16 @@ public class Window extends JFrame {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice device = ge.getDefaultScreenDevice();
         Rectangle bounds = device.getDefaultConfiguration().getBounds();
+        Texture iconImage = new Texture(Identifier.withDefaultNamespace("appicon"));
 
         this.setSize(new Dimension(bounds.width, bounds.height));
+        this.setUndecorated(true);
         this.setFullScreen();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        try(InputStream in = Main.class.getResourceAsStream("/textures/ess/appicon.png")) {
-            assert in != null;
-            BufferedImage image = ImageIO.read(in);
-            this.setIconImage(image);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.setIconImage(iconImage.asImage());
 
-        this.addKeyListener(new KeyAdapter() {
+
+        KeyAdapter ka = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 getScreen().keyPressed(e);
@@ -50,7 +49,8 @@ public class Window extends JFrame {
             public void keyReleased(KeyEvent e) {
                 getScreen().keyReleased(e);
             }
-        });
+        };
+        this.addKeyListener(ka);
 
         MouseAdapter ma =  new MouseAdapter() {
             @Override

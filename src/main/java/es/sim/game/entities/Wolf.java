@@ -13,7 +13,6 @@ public class Wolf extends Entity {
     private static final int HUNT_SPEED = 2;
 
     private final Texture sprite = new Texture(getEntityID());
-    public EntityActivity ACTIVITY = EntityActivity.WANDERING;
     private Entity prey = null;
     private final int MAX_STOMACH_FULLNESS = 75;
     private final int HUNGER_TRESHOLD;
@@ -23,6 +22,7 @@ public class Wolf extends Entity {
         super(Identifier.of("entity:wolf"));
         VIEW_DISTANCE = 10;
         HUNGER_TRESHOLD = 40;
+        ACTIVITY = EntityActivity.WANDERING;
     }
 
     @Override
