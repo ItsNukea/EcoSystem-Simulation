@@ -20,16 +20,20 @@ public class Wolf extends Entity {
     /// How much stomach fullness a wolf spends on spawning a new wolf
     private static final int REPRODUCTION_COST = 40;
 
+    /// A wolf is ready to breed once its stomach is at least this full ("almost max")
+    private static final int BREEDING_FULLNESS_THRESHOLD = 65;
+
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
+    private Wolf breedingPartner = null;
     private final int MAX_STOMACH_FULLNESS = 75;
     private final int HUNGER_THRESHOLD;
     private int stomachFullness = MAX_STOMACH_FULLNESS/2;
 
     public Wolf() {
         super(Identifier.of("entity:wolf"));
-        VIEW_DISTANCE = 10;
-        HUNGER_THRESHOLD = 25;
+        VIEW_DISTANCE = 9;
+        HUNGER_THRESHOLD = 30;
         ACTIVITY = EntityActivity.WANDERING;
     }
 
@@ -44,12 +48,10 @@ public class Wolf extends Entity {
 
         if (ACTIVITY == EntityActivity.HUNTING) {
             hunt();
-        } else if(ACTIVITY == EntityActivity.WANDERING) {
+        } else if (ACTIVITY == EntityActivity.BREEDING) {
+            seekPartner();
+        } else {
             wander();
-        }
-
-        if (stomachFullness >= MAX_STOMACH_FULLNESS) {
-            reproduce();
         }
 
         stomachFullness--;
@@ -72,6 +74,11 @@ public class Wolf extends Entity {
             graphics.fill(cellBounds);
         }
 
+        if(ACTIVITY == EntityActivity.BREEDING) {
+            graphics.setColor(new Color(0, 180, 184));
+            graphics.fill(cellBounds);
+        }
+
         graphics.drawImage(
                 sprite.asImage(),
                 cellBounds.x,
@@ -85,10 +92,21 @@ public class Wolf extends Entity {
     @Override
     protected void analyzeSurroundings() {
         surroundings = Surroundings.ofEntity(this);
-        if(isHungry()) {
+        breedingPartner = null;
+
+        if (isHungry()) {
             prey = findNearestPrey();
+        } else if (isReadyToBreed()) {
+            breedingPartner = findBreedingPartner();
         }
-        ACTIVITY = (prey != null) ? EntityActivity.HUNTING : EntityActivity.WANDERING;
+
+        if (prey != null) {
+            ACTIVITY = EntityActivity.HUNTING;
+        } else if (breedingPartner != null) {
+            ACTIVITY = EntityActivity.BREEDING;
+        } else {
+            ACTIVITY = EntityActivity.WANDERING;
+        }
     }
 
     /// Finds the closest deer inside the wolf's (square) view area, or {@code null} if there is none.
@@ -156,21 +174,69 @@ public class Wolf extends Entity {
     /// A wolf with a completely full stomach spawns a new wolf on a free neighboring cell and pays for it in
     /// stomach fullness. The baby starts with the fullness the parent is left with, otherwise it would be full
     /// itself and immediately spawn another wolf
-    private void reproduce() {
+    private boolean isReadyToBreed() {
+        return stomachFullness >= BREEDING_FULLNESS_THRESHOLD;
+    }
+
+    private Wolf findBreedingPartner() {
+        Wolf closest = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        for (Entity other : board.getEntities()) {
+            if (!(other instanceof Wolf candidate) || candidate == this) continue;
+            if (!candidate.isReadyToBreed()) continue;
+
+            double distance = pos.distance(candidate.getPos());
+
+            //Stay within VIEW_DISTANCE so recalculatePath()'s grid never gets asked to path outside its own array
+            if (distance <= VIEW_DISTANCE && distance < closestDistance) {
+                closestDistance = distance;
+                closest = candidate;
+            }
+        }
+
+        return closest;
+    }
+
+    /// A point exactly between two positions, rounded down. Both wolves in a pair compute the same square
+    /// independently, without needing to coordinate
+    private static Point meetingPoint(Point a, Point b) {
+        return new Point(Math.floorDiv(a.x + b.x, 2), Math.floorDiv(a.y + b.y, 2));
+    }
+
+    private boolean isAdjacentTo(Point other) {
+        int dx = Math.abs(pos.x - other.x);
+        int dy = Math.abs(pos.y - other.y);
+        return dx <= 1 && dy <= 1 && !(dx == 0 && dy == 0);
+    }
+
+    private void seekPartner() {
+        if (isAdjacentTo(breedingPartner.getPos())) {
+            breed(breedingPartner);
+            return;
+        }
+
+        currentTarget = meetingPoint(pos, breedingPartner.getPos());
+        recalculatePath();
+        followPath();
+    }
+
+    private void breed(Wolf partner) {
+        if (!partner.isReadyToBreed()) return; //partner already bred this tick
+
         Point spawnPos = findEmptyNeighborCell();
-        if (spawnPos == null) return; //no free tile right now, try again next tick
+        if (spawnPos == null) return; //no free tile for a baby right now, try again next tick
+
+        board.registerEntity(new Wolf(), spawnPos.x, spawnPos.y);
 
         stomachFullness -= REPRODUCTION_COST;
-
-        Wolf baby = new Wolf();
-        baby.stomachFullness = stomachFullness;
-        board.registerEntity(baby, spawnPos.x, spawnPos.y);
+        partner.stomachFullness -= REPRODUCTION_COST;
     }
 
     private double getDeathProbability() {
         double baselineMortality = 0.0025353d;
         double agingRate = 0.3d;
-        double onsetAge = 165d;
+        double onsetAge = 265d;
         return 1 - Math.exp(
                 -baselineMortality * Math.exp(agingRate * (age - onsetAge))
         );

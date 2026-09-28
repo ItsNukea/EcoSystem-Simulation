@@ -12,7 +12,7 @@ import java.awt.*;
 import java.util.*;
 
 public class Deer extends Entity {
-    private static final int BREEDING_COOLDOWN_TICKS = 25;
+    private static final int BREEDING_COOLDOWN_TICKS = 60;
 
     private Deer breedingPartner = null;
 
@@ -138,7 +138,7 @@ public class Deer extends Entity {
         double closestDistance = Double.MAX_VALUE;
 
         for (Deer entity : surroundings.getEntitiesOfType(Deer.class)) {
-            if (entity == this) continue;
+            if (entity.equals(this)) continue;
 	        
 	        if (!entity.isReadyToBreed()) continue;
 

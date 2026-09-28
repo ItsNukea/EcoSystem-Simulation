@@ -16,8 +16,8 @@ import static es.sim.Main.*;
 /// registered entities.<br>
 /// Its task is ticking every entity with some helper methods
 public class Board extends Screen {
-    public static final int DEFAULT_ROWS = 20;
-    public static final int DEFAULT_COLUMNS = 20;
+    public static final int DEFAULT_ROWS = 50;
+    public static final int DEFAULT_COLUMNS = 50;
 
     private static final float MIN_ZOOM = 0.125f;
     private static final float MAX_ZOOM = 8.0f;
@@ -131,6 +131,8 @@ public class Board extends Screen {
     /// Ticks every registered entity and makes them advance 1 step into the future
     public void tick() {
         for(Entity entity : entities) {
+            //Removed earlier this tick (e.g. eaten by a wolf), so it must not act anymore
+            if (!entities.contains(entity)) continue;
             entity.tick();
         }
     }

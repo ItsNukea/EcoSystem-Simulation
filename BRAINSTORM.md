@@ -1,6 +1,6 @@
 # Brainstorm
 
-- Hunger+thirst mechanics
+- Hunger mechanics
 - Pathfinding/wandering
   - Weighted pathfinding: Some ground types are preferred over others
 - Bushes with growing stages

@@ -51,7 +51,7 @@ public abstract class Entity {
     /// Draws the debug square on this entity's target. The {@link Board} draws these for every entity before
     /// any sprite, so a sprite is never hidden by another entity's target square
     public void renderTarget(Graphics2D graphics) {
-        if (currentTarget == null || getTargetColor() == null) return;
+        if (currentTarget == null || getTargetColor() == null || !DebugVariables.SHOW_ENTITY_PATHFINDING_TARGET) return;
 
         Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
         graphics.setColor(getTargetColor());
@@ -87,7 +87,11 @@ public abstract class Entity {
         //To prevent negative coordinates entering the array indices at Board.grid[][]
         if(copy.x < 0 || copy.y < 0 || copy.x >= Main.board.getColumns() || copy.y >= Main.board.getRows()) {
             throw new EntityPositionOutOfBoundsException(
-                    String.format("An entity wanted to move out of the bounds of the map: %s was out of bounds (0, 0) to (%d, %d)", copy, Main.board.getColumns() - 1, Main.board.getRows() - 1)
+                    String.format("An entity wanted to move out of the bounds of the map: %s was out of bounds (0, 0) to (%d, %d)",
+                            copy,
+                            board.getColumns() - 1,
+                            board.getRows() - 1
+                    )
             );
         }
 
@@ -142,6 +146,13 @@ public abstract class Entity {
         for (int attempt = 0; attempt < 20; attempt++) {
             int dx = currentTarget.x - pos.x;
             int dy = currentTarget.y - pos.y;
+
+            //The target can end up outside the surroundings grid, e.g. when a detour around another entity takes us away from it
+            if (Math.abs(dx) > center || Math.abs(dy) > center) {
+                findRandomTarget();
+                continue;
+            }
+
             GridCell start = cells[center][center];
             GridCell end = cells[center + dx][center + dy];
 

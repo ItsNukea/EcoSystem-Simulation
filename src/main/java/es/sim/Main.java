@@ -68,7 +68,7 @@ public class Main {
 
             Random random = new Random();
 
-            int wolfsToSpawn = 1;
+            int wolfsToSpawn = 6;
 
             for(int spawned = 0; spawned < wolfsToSpawn; spawned++) {
                 int x = random.nextInt(0, board.getColumns());
@@ -81,7 +81,7 @@ public class Main {
                 spawned--;
             }
 
-            int deerToSpawn = 5;
+            int deerToSpawn = 25;
 
             for(int spawned = 0; spawned < deerToSpawn; spawned++) {
                 int x = random.nextInt(0, board.getColumns());
@@ -94,7 +94,7 @@ public class Main {
                 spawned--;
             }
 
-            int bushesToSpawn = 20;
+            int bushesToSpawn = 50;
 
             for(int spawned = 0; spawned < bushesToSpawn; spawned++) {
                 BerryBush bush = BerryBush.getNewWithRandomProperties(board.getBoundsRect());
