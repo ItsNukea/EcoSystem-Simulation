@@ -6,7 +6,7 @@ import es.sim.texture.*;
 import es.sim.util.*;
 
 import java.awt.*;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 public class Wolf extends Entity {
     /// How many cells the wolf moves per tick while chasing prey. It needs to be higher than the deer's speed,
@@ -14,22 +14,22 @@ public class Wolf extends Entity {
     private static final int HUNT_SPEED = 2;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
-    private static final int MIN_MEAL_FULLNESS = 30;
+    private static final int MIN_MEAL_FULLNESS = 35;
     private static final int MAX_MEAL_FULLNESS = 60;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 35;
+    private static final int REPRODUCTION_COST = 40;
 
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
     private final int MAX_STOMACH_FULLNESS = 75;
-    private final int HUNGER_TRESHOLD;
+    private final int HUNGER_THRESHOLD;
     private int stomachFullness = MAX_STOMACH_FULLNESS/2;
 
     public Wolf() {
         super(Identifier.of("entity:wolf"));
         VIEW_DISTANCE = 10;
-        HUNGER_TRESHOLD = 30;
+        HUNGER_THRESHOLD = 25;
         ACTIVITY = EntityActivity.WANDERING;
     }
 
@@ -51,8 +51,6 @@ public class Wolf extends Entity {
         if (stomachFullness >= MAX_STOMACH_FULLNESS) {
             reproduce();
         }
-
-        stomachFullness--;
 
         stomachFullness--;
         if(stomachFullness == 0) {
@@ -134,7 +132,8 @@ public class Wolf extends Entity {
                 prey = null;
                 moves.clear();
                 currentTarget = null;
-                stomachFullness = Math.min(stomachFullness + ThreadLocalRandom.current().nextInt(MIN_MEAL_FULLNESS, MAX_MEAL_FULLNESS + 1), MAX_STOMACH_FULLNESS);                return;
+                Random random = new Random();
+                stomachFullness = Math.min(stomachFullness + random.nextInt(MIN_MEAL_FULLNESS, MAX_MEAL_FULLNESS + 1), MAX_STOMACH_FULLNESS);                return;
             }
             followPath();
         }
@@ -151,7 +150,7 @@ public class Wolf extends Entity {
     }
 
     private boolean isHungry() {
-        return stomachFullness <= HUNGER_TRESHOLD;
+        return stomachFullness <= HUNGER_THRESHOLD;
     }
 
     /// A wolf with a completely full stomach spawns a new wolf on a free neighboring cell and pays for it in
