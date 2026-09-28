@@ -179,16 +179,4 @@ public class Deer extends Entity {
         ACTIVITY = EntityActivity.WANDERING;
         partner.ACTIVITY = EntityActivity.WANDERING;
     }
-
-    private Point findEmptyNeighborCell() {
-        for (Direction d : Direction.values()) {
-            Point candidate = new Point(pos.x + d.xComponent(), pos.y + d.yComponent());
-
-            if (!board.getBoundsRect().contains(candidate)) continue;
-            if (board.getCell(candidate.x, candidate.y).holder.isEmpty()) {
-                return candidate;
-            }
-        }
-        return null;
-    }
 }
