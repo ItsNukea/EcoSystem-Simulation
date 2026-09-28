@@ -12,7 +12,7 @@ import java.awt.*;
 import java.util.*;
 
 public class Deer extends Entity {
-    private static final int BREEDING_COOLDOWN_TICKS = 50;
+    private static final int BREEDING_COOLDOWN_TICKS = 25;
 
     private Deer breedingPartner = null;
 
