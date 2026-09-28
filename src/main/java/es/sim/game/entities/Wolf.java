@@ -167,18 +167,6 @@ public class Wolf extends Entity {
         board.registerEntity(baby, spawnPos.x, spawnPos.y);
     }
 
-    private Point findEmptyNeighborCell() {
-        for (Direction d : Direction.values()) {
-            Point candidate = new Point(pos.x + d.xComponent(), pos.y + d.yComponent());
-
-            if (!board.getBoundsRect().contains(candidate)) continue;
-            if (board.getCell(candidate.x, candidate.y).holder.isEmpty()) {
-                return candidate;
-            }
-        }
-        return null;
-    }
-
     private double getDeathProbability() {
         double baselineMortality = 0.0025353d;
         double agingRate = 0.3d;
