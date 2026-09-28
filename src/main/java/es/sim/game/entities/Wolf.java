@@ -14,11 +14,11 @@ public class Wolf extends Entity {
     private static final int HUNT_SPEED = 2;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
-    private static final int MIN_MEAL_FULLNESS = 40;
+    private static final int MIN_MEAL_FULLNESS = 35;
     private static final int MAX_MEAL_FULLNESS = 60;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 35;
+    private static final int REPRODUCTION_COST = 40;
 
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
@@ -29,7 +29,7 @@ public class Wolf extends Entity {
     public Wolf() {
         super(Identifier.of("entity:wolf"));
         VIEW_DISTANCE = 10;
-        HUNGER_THRESHOLD = 30;
+        HUNGER_THRESHOLD = 25;
         ACTIVITY = EntityActivity.WANDERING;
     }
 
