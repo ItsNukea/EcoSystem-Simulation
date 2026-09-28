@@ -35,6 +35,11 @@ public class Wolf extends Entity {
 
     @Override
     public void tick() {
+        if(Math.random() <= getDeathProbability()) {
+            board.unregisterEntity(this);
+            return;
+        }
+
         analyzeSurroundings();
 
         if (ACTIVITY == EntityActivity.HUNTING) {
@@ -173,5 +178,14 @@ public class Wolf extends Entity {
             }
         }
         return null;
+    }
+
+    private double getDeathProbability() {
+        double baselineMortality = 0.0025353d;
+        double agingRate = 0.3d;
+        double onsetAge = 165d;
+        return 1 - Math.exp(
+                -baselineMortality * Math.exp(agingRate * (age - onsetAge))
+        );
     }
 }
