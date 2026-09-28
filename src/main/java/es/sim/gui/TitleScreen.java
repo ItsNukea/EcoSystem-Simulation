@@ -1,11 +1,9 @@
 package es.sim.gui;
 
 import es.sim.*;
-import es.sim.game.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 import static es.sim.Main.*;
 
@@ -32,7 +30,7 @@ public class TitleScreen extends Screen {
         );
         startButton.addActionListener(_ -> {
             LOGGER.info("Starting Simulation...");
-            loop.start();
+            tickLoop.start();
             Main.getWindow().showScreen(board);
         });
 

@@ -23,6 +23,7 @@ public class TickLoop {
     private volatile boolean stop = false;
     private volatile boolean pauseRequested = false;
     private volatile boolean paused = false;
+    private boolean sprinting = false;
 
     public TickLoop(int tps, Runnable tickAction) {
         this.tickAction = tickAction;
@@ -50,7 +51,7 @@ public class TickLoop {
                 long now = System.nanoTime();
                 long remaining = delayNanos - (now - lastTickTime);
 
-                if (remaining > 0) {
+                if (remaining > 0 && !sprinting) {
                     long sleepMillis = Util.toMillis(remaining);
                     int sleepNanos = (int) (remaining % 1_000_000L);
 
@@ -131,14 +132,11 @@ public class TickLoop {
         return paused || pauseRequested;
     }
 
-    public static void start(int tps) {
-        TickLoop updateLoop = new TickLoop(tps, () -> {
-            Main.board.tick();
-        });
+    public boolean isSprinting() {
+        return this.sprinting;
+    }
 
-        Timer renderLoop = new Timer(0, _ -> Main.board.repaint());
-
-        updateLoop.start();
-        renderLoop.start();
+    public void sprint(boolean sprint) {
+        this.sprinting = sprint;
     }
 }

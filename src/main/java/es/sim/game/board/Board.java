@@ -63,26 +63,36 @@ public class Board extends Screen {
         stepForwardButton.addActionListener(_ -> this.tick());
         stepForwardButton.setEnabled(false);
 
+        JButton sprintTickButton = new JButton("Sprint");
+        sprintTickButton.setBounds(258, 10, 120, 30);
+        sprintTickButton.addActionListener(_ -> {
+            tickLoop.sprint(!tickLoop.isSprinting());
+            sprintTickButton.setText(tickLoop.isSprinting() ? "Stop Sprinting" : "Sprint");
+        });
 
         JButton pauseResumeButton = new JButton("Pause");
         pauseResumeButton.setBounds(10, 10, 120, 30);
         pauseResumeButton.addActionListener(_ -> {
-            if(loop.isPaused()) {
-                loop.resume();
+            if(tickLoop.isPaused()) {
+                tickLoop.resume();
                 pauseResumeButton.setText("Pause");
                 stepForwardButton.setEnabled(false);
+                sprintTickButton.setEnabled(true);
             } else {
-                loop.pause();
+                tickLoop.pause();
                 pauseResumeButton.setText("Resume");
                 stepForwardButton.setEnabled(true);
+                sprintTickButton.setEnabled(false);
             }
         });
 
         stepForwardButton.setFocusable(false);
         pauseResumeButton.setFocusable(false);
+        sprintTickButton.setFocusable(false);
 
         add(pauseResumeButton);
         add(stepForwardButton);
+        add(sprintTickButton);
         revalidate();
     }
 

@@ -17,7 +17,7 @@ public class Main {
     public static final Logger LOGGER;
     private static Window window;
     public static Board board;
-    public static TickLoop loop;
+    public static TickLoop tickLoop;
     public static Timer renderLoop = new Timer(0, _ -> Main.board.repaint());
 
     static {
@@ -105,7 +105,7 @@ public class Main {
                 }
             }
 
-            loop = new TickLoop(2, board::tick);
+            tickLoop = new TickLoop(2, board::tick);
             renderLoop.start();
         });
     }
