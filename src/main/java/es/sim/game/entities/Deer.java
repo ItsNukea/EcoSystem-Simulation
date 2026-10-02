@@ -13,6 +13,14 @@ import java.util.*;
 
 public class Deer extends Entity {
     private static final int BREEDING_COOLDOWN_TICKS = 60;
+    private static final int MAX_STOMACH_FULLNESS = 100;
+    private static final int HUNGER_THRESHOLD = 70;
+
+    private static final int MIN_MEAL_FULLNESS = 15;
+    private static final int MAX_MEAL_FULLNESS = 40;
+
+    private int stomachFullness = MAX_STOMACH_FULLNESS / 2;
+
 
     private Deer breedingPartner = null;
 
@@ -118,6 +126,14 @@ public class Deer extends Entity {
         if (surroundings.entityCountOfType("wolf") != 0) {
             ACTIVITY = EntityActivity.WANDERING; //Fleeing is not yet implemented
             breedingPartner = null;
+        } else if (isHungry()) {
+            BerryBush bush = findNearestBerryBushWithBerries();
+
+            if (bush != null) {
+                ACTIVITY = EntityActivity.GATHERING;
+            } else {
+                ACTIVITY = EntityActivity.WANDERING;
+            }
         } else if (isReadyToBreed()) {
             Deer partner = findBreedingPartner();
             if (partner != null) {
@@ -155,6 +171,21 @@ public class Deer extends Entity {
         return closest;
     }
 
+    private BerryBush findNearestBerryBushWithBerries() {
+        BerryBush closest = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        for(BerryBush bush : surroundings.getEntitiesOfType(BerryBush.class)) {
+            double distance = pos.distance(bush.getPos());
+
+            if (distance <= VIEW_DISTANCE && distance < closestDistance) {
+                closestDistance = distance;
+                closest = bush;
+            }
+        }
+        return closest;
+    }
+
     private boolean isAdjacentTo(Point other) {
         int dx = Math.abs(pos.x - other.x);
         int dy = Math.abs(pos.y - other.y);
@@ -178,5 +209,9 @@ public class Deer extends Entity {
 
         ACTIVITY = EntityActivity.WANDERING;
         partner.ACTIVITY = EntityActivity.WANDERING;
+    }
+
+    private boolean isHungry() {
+        return stomachFullness <= HUNGER_THRESHOLD;
     }
 }

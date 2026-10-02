@@ -1,10 +1,12 @@
 package es.sim.texture;
 
 import es.sim.*;
+import es.sim.Window;
 import es.sim.util.*;
 
 import javax.imageio.*;
 import javax.imageio.stream.*;
+import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
@@ -110,6 +112,49 @@ public class Texture {
 
     public Identifier getIdentifier() {
         return id;
+    }
+
+    public Dimension getDimension() {
+        BufferedImage image = TextureManager.getImage(id);
+        if(image != null) {
+            return new Dimension(image.getWidth(), image.getHeight());
+        } else {
+            try {
+                InputStream in = Texture.class.getResourceAsStream(getResourceName());
+                if(in == null) {
+                    in = getMissingTextureInputStream();
+                }
+                DataInputStream din = new DataInputStream(in);
+
+                byte[] signature = new byte[8];
+                din.readFully(signature);
+
+                din.readInt();
+                int chunkType = din.readInt();
+
+                if (chunkType != 0x49484452) { // "IHDR"
+                    throw new IOException("Invalid PNG");
+                }
+
+                int width = din.readInt();
+                int height = din.readInt();
+
+                in.close();
+                din.close();
+
+                return new Dimension(width, height);
+            } catch(IOException e) {
+                throw new UncheckedIOException("Could not retrieve image dimension", e);
+            }
+        }
+    }
+
+    public int getWidth() {
+        return getDimension().width;
+    }
+
+    public int getHeight() {
+        return getDimension().height;
     }
 
     private InputStream getMissingTextureInputStream() {

@@ -23,7 +23,7 @@ public class TickLoop {
     private volatile boolean stop = false;
     private volatile boolean pauseRequested = false;
     private volatile boolean paused = false;
-    private boolean sprinting = false;
+    private volatile boolean sprinting = false;
 
     public TickLoop(int tps, Runnable tickAction) {
         this.tickAction = tickAction;
@@ -71,7 +71,11 @@ public class TickLoop {
                 // Execute the entire tick uninterrupted.
                 tickAction.run();
 
-                lastTickTime += delayNanos;
+                if (sprinting) {
+                    lastTickTime = System.nanoTime();
+                } else {
+                    lastTickTime += delayNanos;
+                }
 
                 // If pause() was called during this tick, pause only now,
                 // after the tick has completely finished.

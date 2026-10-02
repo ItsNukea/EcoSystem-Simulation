@@ -30,7 +30,7 @@ public class BerryBush extends Entity {
         created.MAX_SEED_COOLDOWN = 20 + random.nextInt(80);
         created.remainingSeedCooldown = created.MAX_SEED_COOLDOWN;
         //Multiply the grow speed with a random value in a logarithmically distributed range between 0.5 and 2
-        //
+        //This means that multiplying by a number has the same chance as dividing by that same number
         created.growSpeed *= Util.linearToLogarithmicDistribution(random.nextDouble(), 0.5, 2, 1.5);
 
         return created;
@@ -50,13 +50,26 @@ public class BerryBush extends Entity {
     @Override
     public void render(Graphics2D graphics, Rectangle cellBounds) {
         Texture sprite = new Texture(getResourceLocation());
+        int spriteWidth = sprite.getWidth();
+        int spriteHeight = sprite.getHeight();
+
+        double scale = Math.min(
+                (double) cellBounds.width / spriteWidth,
+                (double) cellBounds.height / spriteHeight
+        );
+
+        int drawWidth = (int) (spriteWidth * scale);
+        int drawHeight = (int) (spriteHeight * scale);
+
+        int drawX = cellBounds.x + (cellBounds.width - drawWidth) / 2;
+        int drawY = cellBounds.y + (cellBounds.height - drawHeight) / 2;
 
         graphics.drawImage(
                 sprite.asImage(),
-                cellBounds.x,
-                cellBounds.y,
-                cellBounds.width,
-                cellBounds.height,
+                drawX,
+                drawY,
+                drawWidth,
+                drawHeight,
                 null
         );
     }
@@ -74,5 +87,15 @@ public class BerryBush extends Entity {
     private Identifier getResourceLocation() {
         String baseID = getEntityID().getPath();
         return new Identifier("entity", baseID + "_" + growingStage);
+    }
+
+    public boolean hasBerries() {
+        return growingStage == MAX_GROWING_STAGE;
+    }
+
+    public void eatBerries() {
+        if (!hasBerries()) return;
+
+        growingStage--;
     }
 }

@@ -8,6 +8,7 @@ import org.xguzm.pathfinding.grid.*;
 
 import java.awt.*;
 import java.util.*;
+import java.util.function.*;
 
 /// This class has utility methods to get information about the surroundings of an entity. Used for entity pathfinding
 public class Surroundings {
@@ -64,6 +65,31 @@ public class Surroundings {
         }
 
         return count;
+    }
+
+    public final <T extends Entity> T getClosestEntityofType(Class<T> entityClass, Supplier<Boolean>... checks) {
+        T closest = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        outer:
+        for (T entity : getEntitiesOfType(entityClass)) {
+            if (entity.equals(this.owner)) continue;
+
+            for(Supplier<Boolean> check : checks) {
+                if(!check.get()) continue outer;
+            }
+
+            double distance = owner.getPos().distance(entity.getPos());
+
+            //Stay within VIEW_DISTANCE so recalculatePath()'s grid (sized for VIEW_DISTANCE)
+            //never gets asked to path to a cell outside its own array
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closest = entity;
+            }
+        }
+
+        return closest;
     }
 
     /// Returns all entities within the Surroundings whose Identifier path matches the given String
