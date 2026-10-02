@@ -41,20 +41,19 @@ public class Texture {
     private BufferedImage loadImageAndGet() {
         // Another Texture may have loaded it between the previous check
         // and this call, so check again.
-        BufferedImage existing = TextureManager.getImage(id);
+        BufferedImage image = TextureManager.getImage(id);
 
-        if (existing != null) {
-            return existing;
+        if (image != null) {
+            return image;
         }
 
-        BufferedImage image;
-
+        //The image doesn't exist, read it from the file
         try {
             InputStream in = Texture.class.getResourceAsStream(getResourceName());
 
             if (in == null) {
-                in = getMissingTextureInputStream();
-                assert in != null;
+                image = MISSING_TEXTURE.asImage();
+                return image;
             }
 
             image = ImageIO.read(in);
@@ -158,13 +157,10 @@ public class Texture {
     }
 
     private InputStream getMissingTextureInputStream() {
-        return Texture.class.getResourceAsStream(
-                "/textures/ess/missing.png"
-        );
+        return Texture.class.getResourceAsStream("/textures/ess/missing.png");
     }
 
     private String getResourceName() {
-        return "/textures/" + id.getNamespace()
-                + "/" + id.getPath() + ".png";
+        return "/textures/" + id.getNamespace() + "/" + id.getPath() + ".png";
     }
 }
