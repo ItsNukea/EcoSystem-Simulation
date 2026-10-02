@@ -30,6 +30,21 @@ public abstract class Entity {
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
     protected int waitTicks = 0;
     public EntityActivity ACTIVITY;
+    /// Ticks needed to cross one tile. 1 = fastest, moves every tick. TPS was raised 5x without changing any
+    /// animal's real-world walking speed, so this default of 5 keeps today's speed identical. Will become
+    /// a genetic trait later
+    protected int ticksPerMove = 5;
+    private int moveCooldown = 0;
+
+    /// Call once per tick before stepping. Returns whether this entity may move this tick
+    protected boolean readyToMove() {
+        if (moveCooldown > 0) {
+            moveCooldown--;
+            return false;
+        }
+        moveCooldown = ticksPerMove - 1;
+        return true;
+    }
     
     protected Entity(Identifier entityID) {
         this.ENTITY_ID = entityID;

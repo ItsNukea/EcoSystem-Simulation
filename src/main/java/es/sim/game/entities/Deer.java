@@ -12,7 +12,7 @@ import java.awt.*;
 import java.util.*;
 
 public class Deer extends Entity {
-    private static final int BREEDING_COOLDOWN_TICKS = 60;
+    private static final int BREEDING_COOLDOWN_TICKS = 300; //5x: same real-world cooldown at the new, 5x higher tps
 
     private Deer breedingPartner = null;
 
@@ -60,9 +60,11 @@ public class Deer extends Entity {
         }
         if (moves.isEmpty()) return; //boxed in this tick, try again next tick
 
+        if (!readyToMove()) return; //not this one's turn to step
+
         if (!move(moves.pollFirst())) {
             moves.clear();
-            waitTicks = new Random().nextInt(1, 4); //wait 1-3 ticks so two deer facing each other stop mirroring
+            waitTicks = new Random().nextInt(1, 4);
             return;
         }
 

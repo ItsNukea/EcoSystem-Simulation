@@ -105,7 +105,7 @@ public class Main {
                 }
             }
 
-            tickLoop = new TickLoop(2, board::tick);
+            tickLoop = new TickLoop(10, board::tick); //5x higher resolution; ticksPerMove defaults keep real-world speeds the same
             renderLoop.start();
         });
     }
