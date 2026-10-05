@@ -30,7 +30,9 @@ public class TitleScreen extends Screen {
         );
         startButton.addActionListener(_ -> {
             LOGGER.info("Starting Simulation...");
+            resetBoard();
             tickLoop.start();
+            renderLoop.start();
             Main.getWindow().showScreen(board);
         });
 
@@ -47,7 +49,7 @@ public class TitleScreen extends Screen {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         g.setFont(new Font("Sans Serif", Font.PLAIN, 80));
-        drawCenteredString(g, "Hello Testfjdsljeoif jsdmkjfo", screenSize.width / 2, screenSize.height / 2);
+        drawCenteredString(g, "Eco System Simulation", screenSize.width / 2, screenSize.height / 2);
     }
 
     @Override

@@ -86,6 +86,7 @@ public class TickLoop {
                 }
             }
         } catch (InterruptedException e) {
+            LOGGER.error("Interrupting current Thread: {}", Thread.currentThread().getName());
             Thread.currentThread().interrupt();
         } catch (Throwable t) {
             LOGGER.error("Exception occured while ticking Board", t);

@@ -16,9 +16,9 @@ import java.util.*;
 public class Main {
     public static final Logger LOGGER;
     private static Window window;
-    public static Board board;
+    public static Board board = null;
     public static TickLoop tickLoop;
-    public static Timer renderLoop = new Timer(0, _ -> Main.board.repaint());
+    public static Timer renderLoop = new Timer(0, _ -> getWindow().repaint());
 
     static {
         String sessionTimestamp = new SimpleDateFormat("dd.MM.yyyy-HH.mm.ss").format(new Date());
@@ -64,15 +64,20 @@ public class Main {
             LOGGER.info("Window initalized");
             window.showScreen(new TitleScreen());
 
-            board = new Board(window.getScreen());
+            renderLoop.start();
+        });
+    }
 
-            Random random = new Random();
+    public static void resetBoard() {
+        board = new Board(window.getScreen());
+
+        Random random = new Random();
 
             int wolfsToSpawn = 16;
 
-            for(int spawned = 0; spawned < wolfsToSpawn; spawned++) {
-                int x = random.nextInt(0, board.getColumns());
-                int y = random.nextInt(0, board.getRows());
+        for(int spawned = 0; spawned < wolfsToSpawn; spawned++) {
+            int x = random.nextInt(0, board.getColumns());
+            int y = random.nextInt(0, board.getRows());
 
                 if(board.getCell(x, y).holder.isEmpty()) {
                     Wolf wolf = new Wolf();
@@ -85,9 +90,9 @@ public class Main {
 
             int deerToSpawn = 100;
 
-            for(int spawned = 0; spawned < deerToSpawn; spawned++) {
-                int x = random.nextInt(0, board.getColumns());
-                int y = random.nextInt(0, board.getRows());
+        for(int spawned = 0; spawned < deerToSpawn; spawned++) {
+            int x = random.nextInt(0, board.getColumns());
+            int y = random.nextInt(0, board.getRows());
 
                 if(board.getCell(x, y).holder.isEmpty()) {
                     Deer deer = new Deer();
@@ -100,18 +105,16 @@ public class Main {
 
             int bushesToSpawn = 250;
 
-            for(int spawned = 0; spawned < bushesToSpawn; spawned++) {
-                BerryBush bush = BerryBush.getNewWithRandomProperties(board.getBoundsRect());
-                if (board.getCell(bush.getPos().x, bush.getPos().y).holder.isEmpty()) {
-                    board.registerEntity(bush, bush.getPos().x, bush.getPos().y);
-                } else {
-                    spawned--;
-                }
+        for(int spawned = 0; spawned < bushesToSpawn; spawned++) {
+            BerryBush bush = BerryBush.getNewWithRandomProperties(board.getBoundsRect());
+            if (board.getCell(bush.getPos().x, bush.getPos().y).holder.isEmpty()) {
+                board.registerEntity(bush, bush.getPos().x, bush.getPos().y);
+            } else {
+                spawned--;
             }
+        }
 
-            tickLoop = new TickLoop(10, board::tick); //5x higher resolution; ticksPerMove defaults keep real-world speeds the same
-            renderLoop.start();
-        });
+        tickLoop = new TickLoop(10, board::tick); //5x higher resolution; ticksPerMove defaults keep real-world speeds the same
     }
 
     public static Window getWindow() {
