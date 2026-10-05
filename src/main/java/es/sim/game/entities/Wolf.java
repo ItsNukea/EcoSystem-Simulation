@@ -14,26 +14,27 @@ public class Wolf extends Entity {
     private static final int HUNT_SPEED = 2;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
-    private static final int MIN_MEAL_FULLNESS = 35;
-    private static final int MAX_MEAL_FULLNESS = 60;
+    //5x: same real-world values at the new, 5x higher tps
+    private static final int MIN_MEAL_FULLNESS = 175;
+    private static final int MAX_MEAL_FULLNESS = 300;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 40;
+    private static final int REPRODUCTION_COST = 200; //5x: same real-world value at the new, 5x higher tps
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
-    private static final int BREEDING_FULLNESS_THRESHOLD = 65;
+    private static final int BREEDING_FULLNESS_THRESHOLD = 325; //5x: same real-world value at the new, 5x higher tps
 
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
     private Wolf breedingPartner = null;
-    private final int MAX_STOMACH_FULLNESS = 75;
+    private final int MAX_STOMACH_FULLNESS = 375; //5x: same real-world value at the new, 5x higher tps
     private final int HUNGER_THRESHOLD;
     private int stomachFullness = MAX_STOMACH_FULLNESS/2;
 
     public Wolf() {
         super(Identifier.of("entity:wolf"));
         VIEW_DISTANCE = 9;
-        HUNGER_THRESHOLD = 30;
+        HUNGER_THRESHOLD = 150; //5x: same real-world value at the new, 5x higher tps
         ACTIVITY = EntityActivity.WANDERING;
     }
 
@@ -144,21 +145,27 @@ public class Wolf extends Entity {
         currentTarget = new Point(prey.getPos());
         recalculatePath();
 
-        for (int i = 0; i < HUNT_SPEED; i++) {
-            if (distanceTo(prey.getPos()) <= 1) {
-                board.unregisterEntity(prey);
-                prey = null;
-                moves.clear();
-                currentTarget = null;
-                Random random = new Random();
-                stomachFullness = Math.min(stomachFullness + random.nextInt(MIN_MEAL_FULLNESS, MAX_MEAL_FULLNESS + 1), MAX_STOMACH_FULLNESS);                return;
-            }
-            followPath();
+        int normalSpeed = ticksPerMove;
+        ticksPerMove = Math.max(1, ticksPerMove / HUNT_SPEED); //hunting is faster than the wolf's normal pace
+
+        if (distanceTo(prey.getPos()) <= 1) {
+            ticksPerMove = normalSpeed;
+            board.unregisterEntity(prey);
+            prey = null;
+            moves.clear();
+            currentTarget = null;
+            Random random = new Random();
+            stomachFullness = Math.min(stomachFullness + random.nextInt(MIN_MEAL_FULLNESS, MAX_MEAL_FULLNESS + 1), MAX_STOMACH_FULLNESS);
+            return;
         }
+
+        followPath();
+        ticksPerMove = normalSpeed;
     }
 
     private void followPath() {
         if (moves.isEmpty()) return;
+        if (!readyToMove()) return;
         move(moves.pollFirst());
     }
 
