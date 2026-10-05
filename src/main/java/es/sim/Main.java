@@ -68,33 +68,37 @@ public class Main {
 
             Random random = new Random();
 
-            int wolfsToSpawn = 6;
+            int wolfsToSpawn = 16;
 
             for(int spawned = 0; spawned < wolfsToSpawn; spawned++) {
                 int x = random.nextInt(0, board.getColumns());
                 int y = random.nextInt(0, board.getRows());
 
                 if(board.getCell(x, y).holder.isEmpty()) {
-                    board.registerEntity(new Wolf(), x, y);
+                    Wolf wolf = new Wolf();
+                    wolf.randomizeAge();
+                    board.registerEntity(wolf, x, y);
                     continue;
                 }
                 spawned--;
             }
 
-            int deerToSpawn = 25;
+            int deerToSpawn = 100;
 
             for(int spawned = 0; spawned < deerToSpawn; spawned++) {
                 int x = random.nextInt(0, board.getColumns());
                 int y = random.nextInt(0, board.getRows());
 
                 if(board.getCell(x, y).holder.isEmpty()) {
-                    board.registerEntity(new Deer(), x, y);
+                    Deer deer = new Deer();
+                    deer.randomizeAge();
+                    board.registerEntity(deer, x, y);
                     continue;
                 }
                 spawned--;
             }
 
-            int bushesToSpawn = 50;
+            int bushesToSpawn = 250;
 
             for(int spawned = 0; spawned < bushesToSpawn; spawned++) {
                 BerryBush bush = BerryBush.getNewWithRandomProperties(board.getBoundsRect());

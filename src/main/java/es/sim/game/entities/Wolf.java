@@ -15,14 +15,14 @@ public class Wolf extends Entity {
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
     //5x: same real-world values at the new, 5x higher tps
-    private static final int MIN_MEAL_FULLNESS = 175;
+    private static final int MIN_MEAL_FULLNESS = 150;
     private static final int MAX_MEAL_FULLNESS = 300;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 200; //5x: same real-world value at the new, 5x higher tps
+    private static final int REPRODUCTION_COST = 220; //5x: same real-world value at the new, 5x higher tps
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
-    private static final int BREEDING_FULLNESS_THRESHOLD = 325; //5x: same real-world value at the new, 5x higher tps
+    private static final int BREEDING_FULLNESS_THRESHOLD = 375; //5x: same real-world value at the new, 5x higher tps
 
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
@@ -44,6 +44,8 @@ public class Wolf extends Entity {
             board.unregisterEntity(this);
             return;
         }
+
+        ageUp();
 
         analyzeSurroundings();
 
@@ -238,14 +240,5 @@ public class Wolf extends Entity {
 
         stomachFullness -= REPRODUCTION_COST;
         partner.stomachFullness -= REPRODUCTION_COST;
-    }
-
-    private double getDeathProbability() {
-        double baselineMortality = 0.0025353d;
-        double agingRate = 0.3d;
-        double onsetAge = 265d;
-        return 1 - Math.exp(
-                -baselineMortality * Math.exp(agingRate * (age - onsetAge))
-        );
     }
 }

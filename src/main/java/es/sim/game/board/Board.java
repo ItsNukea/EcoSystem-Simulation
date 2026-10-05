@@ -16,8 +16,8 @@ import static es.sim.Main.*;
 /// registered entities.<br>
 /// Its task is ticking every entity with some helper methods
 public class Board extends Screen {
-    public static final int DEFAULT_ROWS = 50;
-    public static final int DEFAULT_COLUMNS = 50;
+    public static final int DEFAULT_ROWS = 100;
+    public static final int DEFAULT_COLUMNS = 100;
 
     private static final float MIN_ZOOM = 0.125f;
     private static final float MAX_ZOOM = 8.0f;

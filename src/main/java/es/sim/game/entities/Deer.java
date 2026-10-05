@@ -12,14 +12,17 @@ import java.awt.*;
 import java.util.*;
 
 public class Deer extends Entity {
-    private static final int BREEDING_COOLDOWN_TICKS = 300; //5x: same real-world cooldown at the new, 5x higher tps
+    private static final int BREEDING_COOLDOWN_TICKS = 200; //5x: same real-world cooldown at the new, 5x higher tps
     private static final int MAX_STOMACH_FULLNESS = 100;
-    private static final int HUNGER_THRESHOLD = 70;
+    private static final int HUNGER_THRESHOLD = 90;
 
-    private static final int MIN_MEAL_FULLNESS = 15;
+    private static final int MIN_MEAL_FULLNESS = 20;
     private static final int MAX_MEAL_FULLNESS = 40;
 
     private int stomachFullness = MAX_STOMACH_FULLNESS / 2;
+
+    /// How many times faster a deer moves while fleeing a wolf, same idea as Wolf's HUNT_SPEED
+    private static final int FLEE_SPEED = 1;
 
 
     private Deer breedingPartner = null;
@@ -30,6 +33,7 @@ public class Deer extends Entity {
         VIEW_DISTANCE = 6;
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
         ACTIVITY = EntityActivity.WANDERING;
+        onsetAge = 400d;
     }
 
     /// A point exactly between two positions, rounded down. Since addition is commutative, both deer in a
@@ -40,6 +44,13 @@ public class Deer extends Entity {
 
     @Override
     public void tick() {
+        if(Math.random() <= getDeathProbability()) {
+            board.unregisterEntity(this);
+            return;
+        }
+
+        ageUp();
+
         analyzeSurroundings();
 
         breedingCooldown = Math.max(0, breedingCooldown - 1);
@@ -49,7 +60,14 @@ public class Deer extends Entity {
             return;
         }
 
+        if (ACTIVITY == EntityActivity.FLEEING) {
+            flee();
+            return;
+        }
+
         if (ACTIVITY == EntityActivity.BREEDING && breedingPartner != null) {
+            Main.LOGGER.info("{} breeding toward {} at distance {}", pos, breedingPartner.getPos(), pos.distance(breedingPartner.getPos()));
+
             if (isAdjacentTo(breedingPartner.getPos())) {
                 breed(breedingPartner);
                 return;
@@ -111,6 +129,11 @@ public class Deer extends Entity {
             graphics.fill(cellBounds);
         }
 
+        if(ACTIVITY == EntityActivity.FLEEING) {
+            graphics.setColor(new Color(237, 145, 33));
+            graphics.fill(cellBounds);
+        }
+
         Texture sprite = new Texture(getEntityID());
         graphics.drawImage(
                 sprite.asImage(),
@@ -139,7 +162,13 @@ public class Deer extends Entity {
         surroundings = Surroundings.ofEntity(this);
 
         if (surroundings.entityCountOfType("wolf") != 0) {
-            ACTIVITY = EntityActivity.WANDERING; //Fleeing is not yet implemented
+            Wolf nearestWolf = findNearestWolf();
+            if (nearestWolf != null) {
+                ACTIVITY = EntityActivity.FLEEING;
+                currentTarget = computeFleeTarget(nearestWolf.getPos());
+            } else {
+                ACTIVITY = EntityActivity.WANDERING;
+            }
             breedingPartner = null;
         } else if (isHungry()) {
             BerryBush bush = findNearestBerryBushWithBerries();
@@ -193,6 +222,60 @@ public class Deer extends Entity {
         return closest;
     }
 
+    private Wolf findNearestWolf() {
+        Wolf nearest = null;
+        double nearestDistance = Double.MAX_VALUE;
+
+        for (Wolf wolf : surroundings.getEntitiesOfType(Wolf.class)) {
+            double distance = pos.distance(wolf.getPos());
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = wolf;
+            }
+        }
+
+        return nearest;
+    }
+
+    /// A point VIEW_DISTANCE away from the deer, in the opposite direction from the wolf, clamped to the board.
+    /// Using the full VIEW_DISTANCE keeps the target right at the edge of the grid recalculatePath() builds
+    private Point computeFleeTarget(Point wolfPos) {
+        int dx = pos.x - wolfPos.x;
+        int dy = pos.y - wolfPos.y;
+
+        if (dx == 0 && dy == 0) {
+            //standing on the same square as the wolf; flee in an arbitrary direction instead of dividing by zero
+            dx = 1;
+        }
+
+        double scale = VIEW_DISTANCE / Math.max(Math.abs(dx), Math.abs(dy));
+        Point target = new Point(
+                pos.x + (int) Math.round(dx * scale),
+                pos.y + (int) Math.round(dy * scale)
+        );
+
+        Rectangle bounds = board.getBoundsRect();
+        target.x = Math.max(bounds.x, Math.min(bounds.x + bounds.width - 1, target.x));
+        target.y = Math.max(bounds.y, Math.min(bounds.y + bounds.height - 1, target.y));
+
+        return target;
+    }
+
+    /// The wolf keeps moving, so the flee path is recalculated every tick, the same way Wolf.hunt() re-chases prey
+    private void flee() {
+        recalculatePath();
+        if (moves.isEmpty()) return; //boxed in this tick, try again next tick
+
+        int normalSpeed = ticksPerMove;
+        ticksPerMove = Math.max(1, ticksPerMove / FLEE_SPEED);
+
+        if (readyToMove() && !move(moves.pollFirst())) {
+            moves.clear();
+        }
+
+        ticksPerMove = normalSpeed;
+    }
+
     private BerryBush findNearestBerryBushWithBerries() {
         BerryBush closest = null;
         double closestDistance = Double.MAX_VALUE;
@@ -218,7 +301,11 @@ public class Deer extends Entity {
         if (!partner.isReadyToBreed()) return; //partner already bred with someone else this tick
 
         Point spawnPos = findEmptyNeighborCell();
-        if (spawnPos == null) return; //no free tile for a baby right now, try again later
+        if (spawnPos == null) spawnPos = partner.findEmptyNeighborCell();
+        if (spawnPos == null) {
+            Main.LOGGER.warn("{} and {} are adjacent and ready, but found no free tile to place a baby", pos, partner.getPos());
+            return;
+        }
 
         Deer baby = new Deer();
         board.registerEntity(baby, spawnPos.x, spawnPos.y);
