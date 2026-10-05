@@ -179,7 +179,10 @@ public abstract class Entity {
                 continue;
             }
 
-            path.addFirst(start);
+            //We want to touch the target, not actually reach it when eating
+            if (!(this instanceof Deer && ACTIVITY == EntityActivity.GATHERING)) {
+                path.addFirst(start);
+            }
 
             //findPath() does NOT include the start node: the first node is already the first step
             for (int i = 1; i < path.size(); i++) {

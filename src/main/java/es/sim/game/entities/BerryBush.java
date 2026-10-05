@@ -7,6 +7,7 @@ import es.sim.util.*;
 
 import java.awt.*;
 import java.util.*;
+import java.util.zip.*;
 
 public class BerryBush extends Entity {
     private final int MAX_GROWING_STAGE = 2;

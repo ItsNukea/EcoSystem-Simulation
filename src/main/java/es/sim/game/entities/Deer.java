@@ -23,6 +23,7 @@ public class Deer extends Entity {
 
 
     private Deer breedingPartner = null;
+    private BerryBush targetedBush = null;
 
     public Deer() {
         super(Identifier.of("entity:deer"));
@@ -56,6 +57,18 @@ public class Deer extends Entity {
 
             currentTarget = meetingPoint(pos, breedingPartner.getPos());
             recalculatePath();
+        }
+
+        if(ACTIVITY == EntityActivity.GATHERING) {
+            if(!targetedBush.hasBerries()) {
+                analyzeSurroundings();
+                recalculatePath();
+            }
+            if(pos.distance(targetedBush.getPos()) == 1) {
+                targetedBush.eatBerries();
+                Random random = new Random();
+                stomachFullness = Math.min(stomachFullness + random.nextInt(MIN_MEAL_FULLNESS, MAX_MEAL_FULLNESS + 1), MAX_STOMACH_FULLNESS);
+            }
         }
 
         //Path ran out or was thrown away: keep heading for the same target if we still have one
@@ -135,9 +148,15 @@ public class Deer extends Entity {
                 ACTIVITY = EntityActivity.GATHERING;
             } else {
                 ACTIVITY = EntityActivity.WANDERING;
+                return;
             }
+
+            currentTarget = bush.pos;
+            targetedBush = bush;
+            breedingPartner = null;
         } else if (isReadyToBreed()) {
             Deer partner = findBreedingPartner();
+            targetedBush = null;
             if (partner != null) {
                 breedingPartner = partner;
                 ACTIVITY = EntityActivity.BREEDING;
@@ -146,6 +165,7 @@ public class Deer extends Entity {
                 ACTIVITY = EntityActivity.WANDERING;
             }
         } else {
+            targetedBush = null;
             breedingPartner = null;
             ACTIVITY = EntityActivity.WANDERING;
         }
