@@ -67,6 +67,7 @@ public class Surroundings {
         return count;
     }
 
+    @SafeVarargs
     public final <T extends Entity> T getClosestEntityofType(Class<T> entityClass, Supplier<Boolean>... checks) {
         T closest = null;
         double closestDistance = Double.MAX_VALUE;
