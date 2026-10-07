@@ -142,7 +142,7 @@ public class Deer extends Entity {
             ACTIVITY = EntityActivity.WANDERING; //Fleeing is not yet implemented
             breedingPartner = null;
         } else if (isHungry()) {
-            BerryBush bush = findNearestBerryBushWithBerries();
+            BerryBush bush = surroundings.getClosestEntityofType(BerryBush.class, BerryBush::hasBerries);
 
             if (bush != null) {
                 ACTIVITY = EntityActivity.GATHERING;
@@ -155,7 +155,7 @@ public class Deer extends Entity {
             targetedBush = bush;
             breedingPartner = null;
         } else if (isReadyToBreed()) {
-            Deer partner = findBreedingPartner();
+            Deer partner = surroundings.getClosestEntityofType(Deer.class, Deer::isReadyToBreed);
             targetedBush = null;
             if (partner != null) {
                 breedingPartner = partner;
@@ -169,43 +169,6 @@ public class Deer extends Entity {
             breedingPartner = null;
             ACTIVITY = EntityActivity.WANDERING;
         }
-    }
-
-    private Deer findBreedingPartner() {
-        Deer closest = null;
-        double closestDistance = Double.MAX_VALUE;
-
-        for (Deer entity : surroundings.getEntitiesOfType(Deer.class)) {
-            if (entity.equals(this)) continue;
-	        
-	        if (!entity.isReadyToBreed()) continue;
-
-            double distance = pos.distance(entity.getPos());
-
-            //Stay within VIEW_DISTANCE so recalculatePath()'s grid (sized for VIEW_DISTANCE)
-            //never gets asked to path to a cell outside its own array
-            if (distance <= VIEW_DISTANCE && distance < closestDistance) {
-                closestDistance = distance;
-                closest = entity;
-            }
-        }
-
-        return closest;
-    }
-
-    private BerryBush findNearestBerryBushWithBerries() {
-        BerryBush closest = null;
-        double closestDistance = Double.MAX_VALUE;
-
-        for(BerryBush bush : surroundings.getEntitiesOfType(BerryBush.class)) {
-            double distance = pos.distance(bush.getPos());
-
-            if (distance <= VIEW_DISTANCE && distance < closestDistance) {
-                closestDistance = distance;
-                closest = bush;
-            }
-        }
-        return closest;
     }
 
     private boolean isAdjacentTo(Point other) {

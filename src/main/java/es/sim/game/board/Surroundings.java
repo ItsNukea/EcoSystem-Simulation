@@ -68,7 +68,7 @@ public class Surroundings {
     }
 
     @SafeVarargs
-    public final <T extends Entity> T getClosestEntityofType(Class<T> entityClass, Supplier<Boolean>... checks) {
+    public final <T extends Entity> T getClosestEntityofType(Class<T> entityClass, Predicate<T>... checks) {
         T closest = null;
         double closestDistance = Double.MAX_VALUE;
 
@@ -76,14 +76,14 @@ public class Surroundings {
         for (T entity : getEntitiesOfType(entityClass)) {
             if (entity.equals(this.owner)) continue;
 
-            for(Supplier<Boolean> check : checks) {
-                if(!check.get()) continue outer;
+            for(Predicate<T> check : checks) {
+                if(!check.test(entity)) continue outer;
             }
 
             double distance = owner.getPos().distance(entity.getPos());
 
-            //Stay within VIEW_DISTANCE so recalculatePath()'s grid (sized for VIEW_DISTANCE)
-            //never gets asked to path to a cell outside its own array
+            //Stay within VIEW_DISTANCE so recalculatePath()'s grid (sized for VIEW_DISTANCE) never
+            //paths to a cell outside its own array
             if (distance < closestDistance) {
                 closestDistance = distance;
                 closest = entity;
@@ -131,12 +131,13 @@ public class Surroundings {
                         x == owner.getViewDistance()
                         && y == owner.getViewDistance();
 
-                if (cell == null || (cell.holder.isPresent() && !thisEntity)) {
+                if (cell == null || (cell.holder.isPresent() && (!thisEntity))) {
                     gridCell.setWalkable(false);
                 }
 
-                if (owner instanceof Wolf wolf && wolf.ACTIVITY == EntityActivity.HUNTING) {
-                    Point target = wolf.currentTarget;
+                if ((owner instanceof Wolf wolf && wolf.ACTIVITY == EntityActivity.HUNTING)
+                  || (owner instanceof Deer deer && deer.ACTIVITY == EntityActivity.GATHERING)) {
+                    Point target = owner.currentTarget;
 
                     int absoluteX = owner.getPos().x + x - owner.getViewDistance();
                     int absoluteY = owner.getPos().y + y - owner.getViewDistance();

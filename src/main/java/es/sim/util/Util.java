@@ -1,5 +1,7 @@
 package es.sim.util;
 
+import java.awt.*;
+
 public class Util {
     public static long toNanos(long millis) {
         return millis * 1000000L;
@@ -42,5 +44,9 @@ public class Util {
         );
 
         return center * Math.pow(max / center, exponent);
+    }
+
+    public static int manhattanDistance(Point p1, Point p2) {
+        return Math.abs(p2.x - p1.x) + Math.abs(p2.y - p1.y);
     }
 }
