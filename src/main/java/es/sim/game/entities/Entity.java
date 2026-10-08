@@ -24,6 +24,12 @@ public abstract class Entity {
     protected final Board board;
 
     protected int age = 0;
+
+    /// Parameters for the age-based death curve. Each species can set its own values in its constructor
+    protected double baselineMortality = 0.0025353d;
+    protected double agingRate = 0.1d;
+    protected double onsetAge = 10000000d;
+
     protected int breedingCooldown = 0;
     public Point currentTarget = null;
     protected Surroundings surroundings = null;
@@ -204,5 +210,24 @@ public abstract class Entity {
             }
         }
         return null;
+    }
+
+    /// Gives this entity a random starting age, somewhere in the first half of its life before the death
+    /// probability curve really starts climbing. Call this after creating an entity to spawn it already-aged;
+    /// newborns created during the simulation should stay at the default age of 0
+    public void randomizeAge() {
+        age = new Random().nextInt((int) (onsetAge / 2));
+    }
+
+    /// Call once per tick to make this entity grow older
+    protected void ageUp() {
+        age++;
+    }
+
+    /// The probability, per tick, that this entity dies of old age. Rises sharply once age passes onsetAge
+    protected double getDeathProbability() {
+        return 1 - Math.exp(
+                -baselineMortality * Math.exp(agingRate * (age - onsetAge))
+        );
     }
 }
