@@ -11,6 +11,8 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.awt.*;
 import java.util.*;
 
+import static es.sim.Main.LOGGER;
+
 public class Deer extends Entity {
     private static final int BREEDING_COOLDOWN_TICKS = 200; //5x: same real-world cooldown at the new, 5x higher tps
     private static final int MAX_STOMACH_FULLNESS = 100;
@@ -66,7 +68,7 @@ public class Deer extends Entity {
         }
 
         if (ACTIVITY == EntityActivity.BREEDING && breedingPartner != null) {
-            Main.LOGGER.info("{} breeding toward {} at distance {}", pos, breedingPartner.getPos(), pos.distance(breedingPartner.getPos()));
+            LOGGER.info("{} breeding toward {} at distance {}", pos, breedingPartner.getPos(), pos.distance(breedingPartner.getPos()));
 
             if (isAdjacentTo(breedingPartner.getPos())) {
                 breed(breedingPartner);
@@ -162,7 +164,7 @@ public class Deer extends Entity {
         surroundings = Surroundings.ofEntity(this);
 
         if (surroundings.entityCountOfType("wolf") != 0) {
-            Wolf nearestWolf = findNearestWolf();
+            Wolf nearestWolf = surroundings.getClosestEntityofType(Wolf.class);
             if (nearestWolf != null) {
                 ACTIVITY = EntityActivity.FLEEING;
                 currentTarget = computeFleeTarget(nearestWolf.getPos());
@@ -200,21 +202,6 @@ public class Deer extends Entity {
         }
     }
 
-    private Wolf findNearestWolf() {
-        Wolf nearest = null;
-        double nearestDistance = Double.MAX_VALUE;
-
-        for (Wolf wolf : surroundings.getEntitiesOfType(Wolf.class)) {
-            double distance = pos.distance(wolf.getPos());
-            if (distance < nearestDistance) {
-                nearestDistance = distance;
-                nearest = wolf;
-            }
-        }
-
-        return nearest;
-    }
-
     /// A point VIEW_DISTANCE away from the deer, in the opposite direction from the wolf, clamped to the board.
     /// Using the full VIEW_DISTANCE keeps the target right at the edge of the grid recalculatePath() builds
     private Point computeFleeTarget(Point wolfPos) {
@@ -226,15 +213,15 @@ public class Deer extends Entity {
             dx = 1;
         }
 
-        double scale = VIEW_DISTANCE / Math.max(Math.abs(dx), Math.abs(dy));
+        double scale = (double) VIEW_DISTANCE / Math.max(Math.abs(dx), Math.abs(dy));
         Point target = new Point(
                 pos.x + (int) Math.round(dx * scale),
                 pos.y + (int) Math.round(dy * scale)
         );
 
         Rectangle bounds = board.getBoundsRect();
-        target.x = Math.max(bounds.x, Math.min(bounds.x + bounds.width - 1, target.x));
-        target.y = Math.max(bounds.y, Math.min(bounds.y + bounds.height - 1, target.y));
+        target.x = Math.clamp(target.x, bounds.x, bounds.x + bounds.width - 1);
+        target.y = Math.clamp(target.y, bounds.y, bounds.y + bounds.height - 1);
 
         return target;
     }
@@ -254,21 +241,6 @@ public class Deer extends Entity {
         ticksPerMove = normalSpeed;
     }
 
-    private BerryBush findNearestBerryBushWithBerries() {
-        BerryBush closest = null;
-        double closestDistance = Double.MAX_VALUE;
-
-        for(BerryBush bush : surroundings.getEntitiesOfType(BerryBush.class)) {
-            double distance = pos.distance(bush.getPos());
-
-            if (distance <= VIEW_DISTANCE && distance < closestDistance) {
-                closestDistance = distance;
-                closest = bush;
-            }
-        }
-        return closest;
-    }
-
     private boolean isAdjacentTo(Point other) {
         int dx = Math.abs(pos.x - other.x);
         int dy = Math.abs(pos.y - other.y);
@@ -281,7 +253,7 @@ public class Deer extends Entity {
         Point spawnPos = findEmptyNeighborCell();
         if (spawnPos == null) spawnPos = partner.findEmptyNeighborCell();
         if (spawnPos == null) {
-            Main.LOGGER.warn("{} and {} are adjacent and ready, but found no free tile to place a baby", pos, partner.getPos());
+            LOGGER.warn("{} and {} are adjacent and ready, but found no free tile to place a baby", pos, partner.getPos());
             return;
         }
 
