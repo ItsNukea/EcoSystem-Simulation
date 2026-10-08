@@ -179,7 +179,9 @@ public abstract class Entity {
                 continue;
             }
 
-            //findPath() does NOT include the start node: the first node is already the first step
+            //findPath() does NOT include the start node
+            path.addFirst(start);
+
             for (int i = 1; i < path.size(); i++) {
                 GridCell next = path.get(i);
                 GridCell current = path.get(i - 1);
