@@ -23,7 +23,6 @@ public class Wolf extends Entity {
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
     private static final int BREEDING_FULLNESS_THRESHOLD = 325;
     private static final int MAX_BREEDING_COOLDOWN = 500;
-    private int breedingCooldown = 250;
 
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
@@ -33,6 +32,7 @@ public class Wolf extends Entity {
 
     public Wolf() {
         super(Identifier.of("entity:wolf"));
+        breedingCooldown = 250;
         stomachFullness = MAX_STOMACH_FULLNESS / 2;
         VIEW_DISTANCE = 8;
         HUNGER_THRESHOLD = 150;
@@ -104,9 +104,9 @@ public class Wolf extends Entity {
         breedingPartner = null;
 
         if (isHungry()) {
-            prey = findNearestPrey();
+            prey = surroundings.getClosestEntityofType(Deer.class);
         } else if (isReadyToBreed()) {
-            breedingPartner = findBreedingPartner();
+            breedingPartner = surroundings.getClosestEntityofType(Wolf.class, Wolf::isReadyToBreed);
         }
 
         if (prey != null) {
@@ -116,28 +116,6 @@ public class Wolf extends Entity {
         } else {
             ACTIVITY = EntityActivity.WANDERING;
         }
-    }
-
-    /// Finds the closest deer inside the wolf's (square) view area, or {@code null} if there is none.
-    /// This scans the board's entity list directly, because {@link Surroundings} can only count entities, not locate them
-    private Entity findNearestPrey() {
-        Entity nearest = null;
-        int nearestDistance = Integer.MAX_VALUE;
-
-        for (Entity other : board.getEntities()) {
-            if (!other.getEntityID().getPath().equals("deer")) continue;
-
-            int dx = Math.abs(other.getPos().x - pos.x);
-            int dy = Math.abs(other.getPos().y - pos.y);
-            if (Math.max(dx, dy) > VIEW_DISTANCE) continue;
-
-            if (dx + dy < nearestDistance) {
-                nearest = other;
-                nearestDistance = dx + dy;
-            }
-        }
-
-        return nearest;
     }
 
     private void wander() {
@@ -191,26 +169,6 @@ public class Wolf extends Entity {
     /// itself and immediately spawn another wolf
     private boolean isReadyToBreed() {
         return stomachFullness >= BREEDING_FULLNESS_THRESHOLD && breedingCooldown == 0;
-    }
-
-    private Wolf findBreedingPartner() {
-        Wolf closest = null;
-        double closestDistance = Double.MAX_VALUE;
-
-        for (Entity other : board.getEntities()) {
-            if (!(other instanceof Wolf candidate) || candidate == this) continue;
-            if (!candidate.isReadyToBreed()) continue;
-
-            double distance = pos.distance(candidate.getPos());
-
-            //Stay within VIEW_DISTANCE so recalculatePath()'s grid never gets asked to path outside its own array
-            if (distance <= VIEW_DISTANCE && distance < closestDistance) {
-                closestDistance = distance;
-                closest = candidate;
-            }
-        }
-
-        return closest;
     }
 
     /// A point exactly between two positions, rounded down. Both wolves in a pair compute the same square

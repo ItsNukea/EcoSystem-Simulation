@@ -72,28 +72,38 @@ public class Surroundings {
         T closest = null;
         double closestDistance = Double.MAX_VALUE;
 
-        outer:
-        for (T entity : getEntitiesOfType(entityClass)) {
-            if (entity.equals(this.owner)) continue;
+        for (Cell[] arr : surroundings) {
+            loop:
+            for (Cell cell : arr) {
+                if (cell == null || cell.holder.isEmpty()) continue;
 
-            for(Predicate<T> check : checks) {
-                if(!check.test(entity)) continue outer;
-            }
+                Entity entity = cell.holder.get();
 
-            double distance = owner.getPos().distance(entity.getPos());
+                if (entity.equals(owner) || !entityClass.isInstance(entity)) {
+                    continue;
+                }
 
-            //Stay within VIEW_DISTANCE so recalculatePath()'s grid (sized for VIEW_DISTANCE) never
-            //paths to a cell outside its own array
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closest = entity;
+                T typedEntity = entityClass.cast(entity);
+
+                for (Predicate<T> check : checks) {
+                    if (!check.test(typedEntity)) {
+                        continue loop;
+                    }
+                }
+
+                double distance = owner.getPos().distance(typedEntity.getPos());
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closest = typedEntity;
+                }
             }
         }
 
         return closest;
     }
 
-    /// Returns all entities within the Surroundings whose Identifier path matches the given String
+    /// Returns all entities visible in its Surroundings whose {@link Class} equals the given {@link Class}
     public <T extends Entity> ArrayList<T> getEntitiesOfType(Class<T> entityClass) {
         ArrayList<T> result = new ArrayList<>();
 
@@ -102,7 +112,7 @@ public class Surroundings {
                 if (cell == null) continue;
 
                 Optional<Entity> holder = cell.holder;
-                if(holder.isEmpty()) continue;
+                if(holder.isEmpty() || holder.get().equals(owner)) continue;
 
                 Entity entity = holder.get();
                 if(entityClass.isInstance(entity)) {
