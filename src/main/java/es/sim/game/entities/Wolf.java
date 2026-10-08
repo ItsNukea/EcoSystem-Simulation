@@ -14,28 +14,31 @@ public class Wolf extends Entity {
     private static final int HUNT_SPEED = 2;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
-    //5x: same real-world values at the new, 5x higher tps
     private static final int MIN_MEAL_FULLNESS = 150;
     private static final int MAX_MEAL_FULLNESS = 300;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 220; //5x: same real-world value at the new, 5x higher tps
+    private static final int REPRODUCTION_COST = 275;
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
-    private static final int BREEDING_FULLNESS_THRESHOLD = 375; //5x: same real-world value at the new, 5x higher tps
+    private static final int BREEDING_FULLNESS_THRESHOLD = 325;
+    private static final int MAX_BREEDING_COOLDOWN = 500;
+    private int breedingCooldown = 250;
 
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
     private Wolf breedingPartner = null;
-    private final int MAX_STOMACH_FULLNESS = 375; //5x: same real-world value at the new, 5x higher tps
+    private final int MAX_STOMACH_FULLNESS = 375;
     private final int HUNGER_THRESHOLD;
-    private int stomachFullness = MAX_STOMACH_FULLNESS/2;
 
     public Wolf() {
         super(Identifier.of("entity:wolf"));
-        VIEW_DISTANCE = 9;
-        HUNGER_THRESHOLD = 150; //5x: same real-world value at the new, 5x higher tps
+        stomachFullness = MAX_STOMACH_FULLNESS / 2;
+        VIEW_DISTANCE = 8;
+        HUNGER_THRESHOLD = 150;
         ACTIVITY = EntityActivity.WANDERING;
+        ONSET_AGE = 4000d;
+        AGING_RATE = 0.02d;
     }
 
     @Override
@@ -46,6 +49,7 @@ public class Wolf extends Entity {
         }
 
         ageUp();
+        breedingCooldown = Math.max(0, breedingCooldown - 1);
 
         analyzeSurroundings();
 
@@ -57,7 +61,6 @@ public class Wolf extends Entity {
             wander();
         }
 
-        stomachFullness--;
         if(stomachFullness == 0) {
             board.unregisterEntity(this);
         }
@@ -65,8 +68,20 @@ public class Wolf extends Entity {
 
     @Override
     public void render(Graphics2D graphics, Rectangle cellBounds) {
+        graphics.drawImage(
+                sprite.asImage(),
+                cellBounds.x,
+                cellBounds.y,
+                cellBounds.width,
+                cellBounds.height,
+                null
+        );
+    }
+
+    @Override
+    public void renderTarget(Graphics2D graphics, Rectangle cellBounds) {
         //Debug: mark the current target, but not while hunting, because the target is then the deer's own cell
-        if (currentTarget != null && DebugVariables.SHOW_ENTITY_PATHFINDING_TARGET) {
+        if (currentTarget != null && DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION) {
             Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
             graphics.setColor(new Color(117, 111, 5));
             graphics.fill(targetCellBounds);
@@ -81,15 +96,6 @@ public class Wolf extends Entity {
             graphics.setColor(new Color(0, 180, 184));
             graphics.fill(cellBounds);
         }
-
-        graphics.drawImage(
-                sprite.asImage(),
-                cellBounds.x,
-                cellBounds.y,
-                cellBounds.width,
-                cellBounds.height,
-                null
-        );
     }
 
     @Override
@@ -184,7 +190,7 @@ public class Wolf extends Entity {
     /// stomach fullness. The baby starts with the fullness the parent is left with, otherwise it would be full
     /// itself and immediately spawn another wolf
     private boolean isReadyToBreed() {
-        return stomachFullness >= BREEDING_FULLNESS_THRESHOLD;
+        return stomachFullness >= BREEDING_FULLNESS_THRESHOLD && breedingCooldown == 0;
     }
 
     private Wolf findBreedingPartner() {
@@ -213,14 +219,8 @@ public class Wolf extends Entity {
         return new Point(Math.floorDiv(a.x + b.x, 2), Math.floorDiv(a.y + b.y, 2));
     }
 
-    private boolean isAdjacentTo(Point other) {
-        int dx = Math.abs(pos.x - other.x);
-        int dy = Math.abs(pos.y - other.y);
-        return dx <= 1 && dy <= 1 && !(dx == 0 && dy == 0);
-    }
-
     private void seekPartner() {
-        if (isAdjacentTo(breedingPartner.getPos())) {
+        if (Util.manhattanDistance(this.getPos(), breedingPartner.getPos()) == 1) {
             breed(breedingPartner);
             return;
         }
@@ -240,5 +240,8 @@ public class Wolf extends Entity {
 
         stomachFullness -= REPRODUCTION_COST;
         partner.stomachFullness -= REPRODUCTION_COST;
+
+        breedingCooldown = MAX_BREEDING_COOLDOWN;
+        partner.breedingCooldown = MAX_BREEDING_COOLDOWN;
     }
 }

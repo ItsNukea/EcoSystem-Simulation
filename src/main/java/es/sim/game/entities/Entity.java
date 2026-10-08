@@ -1,6 +1,5 @@
 package es.sim.game.entities;
 
-import ch.qos.logback.core.util.*;
 import es.sim.*;
 import es.sim.exceptions.*;
 import es.sim.game.*;
@@ -11,8 +10,6 @@ import org.xguzm.pathfinding.grid.finders.*;
 
 import java.awt.*;
 import java.util.*;
-
-import static es.sim.Main.*;
 
 /// This class represents the super class of all living things on the {@link Board}, every entity should
 /// extend this class to be able to be rendered and ticked
@@ -27,8 +24,9 @@ public abstract class Entity {
 
     /// Parameters for the age-based death curve. Each species can set its own values in its constructor
     protected double baselineMortality = 0.0025353d;
-    protected double agingRate = 0.1d;
-    protected double onsetAge = 10000000d;
+    protected double AGING_RATE = 0.02d;
+    protected double ONSET_AGE = 2000d;
+    protected int stomachFullness;
 
     protected int breedingCooldown = 0;
     public Point currentTarget = null;
@@ -71,16 +69,7 @@ public abstract class Entity {
 
     /// Draws the debug square on this entity's target. The {@link Board} draws these for every entity before
     /// any sprite, so a sprite is never hidden by another entity's target square
-    public void renderTarget(Graphics2D graphics) {
-        if (currentTarget == null || getTargetColor() == null || !DebugVariables.SHOW_ENTITY_PATHFINDING_TARGET) return;
-
-        Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
-        graphics.setColor(getTargetColor());
-        graphics.fillRect(
-                targetCellBounds.x, targetCellBounds.y,
-                targetCellBounds.width, targetCellBounds.height
-        );
-    }
+    public abstract void renderTarget(Graphics2D graphics, Rectangle cellBounds);
 
     public Identifier getEntityID() {
         return ENTITY_ID;
@@ -125,6 +114,7 @@ public abstract class Entity {
         board.getCell(pos.x, pos.y).setContents(null);
         pos.move(copy.x, copy.y);
         destination.setContents(this);
+        stomachFullness--;
         return true;
     }
 
@@ -180,7 +170,7 @@ public abstract class Entity {
             ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
 
             if(path == null) {
-                LOGGER.warn("{} currently on [{}, {}] could not pathfind, picking another target", ENTITY_ID, pos.x, pos.y);
+                //LOGGER.warn("{} currently on [{}, {}] could not pathfind, picking another target", ENTITY_ID, pos.x, pos.y);
                 findRandomTarget();
                 continue;
             }
@@ -194,6 +184,7 @@ public abstract class Entity {
 
                 int moveX = next.x - current.x;
                 int moveY = next.y - current.y;
+
                 moves.add(Direction.fromCoordSet(moveX, moveY));
             }
             return;
@@ -216,7 +207,7 @@ public abstract class Entity {
     /// probability curve really starts climbing. Call this after creating an entity to spawn it already-aged;
     /// newborns created during the simulation should stay at the default age of 0
     public void randomizeAge() {
-        age = new Random().nextInt((int) (onsetAge / 2));
+        age = new Random().nextInt((int) (ONSET_AGE / 2));
     }
 
     /// Call once per tick to make this entity grow older
@@ -227,7 +218,7 @@ public abstract class Entity {
     /// The probability, per tick, that this entity dies of old age. Rises sharply once age passes onsetAge
     protected double getDeathProbability() {
         return 1 - Math.exp(
-                -baselineMortality * Math.exp(agingRate * (age - onsetAge))
+                -baselineMortality * Math.exp(AGING_RATE * (age - ONSET_AGE))
         );
     }
 }

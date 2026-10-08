@@ -14,7 +14,7 @@ public class BerryBush extends Entity {
     private int MAX_SEED_COOLDOWN;
 
     private int growingStage = 0;
-    private int remainingSeedCooldown = 300; //5x: same real-world value at the new, 5x higher tps
+    private int remainingSeedCooldown = 300;
     public double growSpeed = 1f;
 
     protected BerryBush() {
@@ -28,7 +28,7 @@ public class BerryBush extends Entity {
 
         created.growingStage = random.nextInt(0, 3);
         created.pos = new Point(random.nextInt(positionBounds.width), random.nextInt(positionBounds.height));
-        created.MAX_SEED_COOLDOWN = 100 + random.nextInt(400); //5x: same real-world range at the new, 5x higher tps
+        created.MAX_SEED_COOLDOWN = 100 + random.nextInt(400);
         created.remainingSeedCooldown = created.MAX_SEED_COOLDOWN;
         //Multiply the grow speed with a random value in a logarithmically distributed range between 0.5 and 2
         //This means that multiplying by a number has the same chance as dividing by that same number
@@ -41,7 +41,7 @@ public class BerryBush extends Entity {
     public void tick() {
         age++;
         remainingSeedCooldown--;
-        if(new Random().nextInt(5000) == 3) { //5x: same real-world probability at the new, 5x higher tps
+        if(new Random().nextInt(5000) <= 20) {
             growingStage = Math.min(MAX_GROWING_STAGE, growingStage + 1);
         }
 
@@ -73,6 +73,11 @@ public class BerryBush extends Entity {
                 drawHeight,
                 null
         );
+    }
+
+    @Override
+    public void renderTarget(Graphics2D graphics, Rectangle cellBounds) {
+
     }
 
     @Override

@@ -17,7 +17,7 @@ public class Main {
     public static final Logger LOGGER;
     private static Window window;
     public static Board board = null;
-    public static TickLoop tickLoop;
+    public static TickLoop tickLoop = null;
     public static Timer renderLoop = new Timer(0, _ -> getWindow().repaint());
 
     static {
@@ -29,7 +29,7 @@ public class Main {
     /// The main entrypoint of the program, responsible for resolving runtime arguments, generating files, and initializing the window
     /// @param args
     ///     - {@code --devEnv}: Used to signify that the program is running in an IDE.<br>**<span style="color:red">THIS FLAG SHOULD BE ENABLED IF AND ONLY IF THE PROGRAM RUNS IN AN IDE!</span>**
-    ///     - {@code --showPathFindingTarget}: Shows to which square every entity is path finding to.
+    ///     - {@code --showDebugInfo}: Shows to which square every entity is path finding to.
     ///     - {@code --clearLogFiles}: Clears all log files except {@code latest.log} in the log directory
     static void main(String[] args) {
         LOGGER.info("Starting application...");
@@ -41,8 +41,8 @@ public class Main {
                 continue;
             }
 
-            if(arg.equals("--showPathFindingTarget")) {
-                DebugVariables.SHOW_ENTITY_PATHFINDING_TARGET = true;
+            if(arg.equals("--showDebugInfo")) {
+                DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION = true;
             }
         }
 
@@ -71,9 +71,13 @@ public class Main {
     public static void resetBoard() {
         board = new Board(window.getScreen());
 
+        if(tickLoop != null) {
+            tickLoop.stop();
+        }
+
         Random random = new Random();
 
-            int wolfsToSpawn = 16;
+        int wolfsToSpawn = 30;
 
         for(int spawned = 0; spawned < wolfsToSpawn; spawned++) {
             int x = random.nextInt(0, board.getColumns());
@@ -88,7 +92,7 @@ public class Main {
                 spawned--;
             }
 
-            int deerToSpawn = 100;
+            int deerToSpawn = 300;
 
         for(int spawned = 0; spawned < deerToSpawn; spawned++) {
             int x = random.nextInt(0, board.getColumns());
@@ -114,7 +118,7 @@ public class Main {
             }
         }
 
-        tickLoop = new TickLoop(10, board::tick); //5x higher resolution; ticksPerMove defaults keep real-world speeds the same
+        tickLoop = new TickLoop(10, board::tick);
     }
 
     public static Window getWindow() {

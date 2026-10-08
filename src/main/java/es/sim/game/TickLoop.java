@@ -86,7 +86,11 @@ public class TickLoop {
                 }
             }
         } catch (InterruptedException e) {
-            LOGGER.error("Interrupting current Thread: {}", Thread.currentThread().getName());
+            if(stop) {
+                LOGGER.info("Stopping Ticker Thread permanently");
+            } else {
+                LOGGER.error("Ticker Thread interrupted, but not stopped");
+            }
             Thread.currentThread().interrupt();
         } catch (Throwable t) {
             LOGGER.error("Exception occured while ticking Board", t);

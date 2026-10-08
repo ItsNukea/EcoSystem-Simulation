@@ -1,12 +1,9 @@
 package es.sim.game.entities;
 
-import es.sim.*;
 import es.sim.game.*;
 import es.sim.game.board.*;
 import es.sim.texture.*;
 import es.sim.util.*;
-import org.xguzm.pathfinding.grid.*;
-import org.xguzm.pathfinding.grid.finders.*;
 
 import java.awt.*;
 import java.util.*;
@@ -14,14 +11,12 @@ import java.util.*;
 import static es.sim.Main.LOGGER;
 
 public class Deer extends Entity {
-    private static final int BREEDING_COOLDOWN_TICKS = 200; //5x: same real-world cooldown at the new, 5x higher tps
+    private static final int BREEDING_COOLDOWN_TICKS = 80;
     private static final int MAX_STOMACH_FULLNESS = 100;
     private static final int HUNGER_THRESHOLD = 90;
 
     private static final int MIN_MEAL_FULLNESS = 20;
     private static final int MAX_MEAL_FULLNESS = 40;
-
-    private int stomachFullness = MAX_STOMACH_FULLNESS / 2;
 
     /// How many times faster a deer moves while fleeing a wolf, same idea as Wolf's HUNT_SPEED
     private static final int FLEE_SPEED = 1;
@@ -32,10 +27,11 @@ public class Deer extends Entity {
 
     public Deer() {
         super(Identifier.of("entity:deer"));
+        stomachFullness = MAX_STOMACH_FULLNESS / 2;
         VIEW_DISTANCE = 6;
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
         ACTIVITY = EntityActivity.WANDERING;
-        onsetAge = 400d;
+        ONSET_AGE = 1500d;
     }
 
     /// A point exactly between two positions, rounded down. Since addition is commutative, both deer in a
@@ -68,9 +64,7 @@ public class Deer extends Entity {
         }
 
         if (ACTIVITY == EntityActivity.BREEDING && breedingPartner != null) {
-            LOGGER.info("{} breeding toward {} at distance {}", pos, breedingPartner.getPos(), pos.distance(breedingPartner.getPos()));
-
-            if (isAdjacentTo(breedingPartner.getPos())) {
+            if (Util.manhattanDistance(this.getPos(), breedingPartner.getPos()) == 1) {
                 breed(breedingPartner);
                 return;
             }
@@ -113,29 +107,13 @@ public class Deer extends Entity {
             currentTarget = null;
             moves.clear();
         }
+        if(stomachFullness <= 0) {
+            board.unregisterEntity(this);
+        }
     }
 
     @Override
     public void render(Graphics2D graphics, Rectangle cellBounds) {
-        if (currentTarget != null && DebugVariables.SHOW_ENTITY_PATHFINDING_TARGET) {
-            Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
-            graphics.setColor(new Color(30, 117, 5, 255));
-            graphics.fillRect(
-                    targetCellBounds.x, targetCellBounds.y,
-                    targetCellBounds.width, targetCellBounds.height
-            );
-        }
-
-        if(ACTIVITY == EntityActivity.BREEDING) {
-            graphics.setColor(new Color(0, 180, 184));
-            graphics.fill(cellBounds);
-        }
-
-        if(ACTIVITY == EntityActivity.FLEEING) {
-            graphics.setColor(new Color(237, 145, 33));
-            graphics.fill(cellBounds);
-        }
-
         Texture sprite = new Texture(getEntityID());
         graphics.drawImage(
                 sprite.asImage(),
@@ -145,6 +123,28 @@ public class Deer extends Entity {
                 cellBounds.height,
                 null
         );
+    }
+
+    @Override
+    public void renderTarget(Graphics2D graphics, Rectangle cellBounds) {
+        if (currentTarget != null && DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION) {
+            Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
+            graphics.setColor(new Color(30, 117, 5, 255));
+            graphics.fillRect(
+                    targetCellBounds.x, targetCellBounds.y,
+                    targetCellBounds.width, targetCellBounds.height
+            );
+        }
+
+        if(ACTIVITY == EntityActivity.BREEDING  && DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION) {
+            graphics.setColor(new Color(0, 180, 184));
+            graphics.fill(cellBounds);
+        }
+
+        if(ACTIVITY == EntityActivity.FLEEING  && DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION) {
+            graphics.setColor(new Color(237, 145, 33));
+            graphics.fill(cellBounds);
+        }
     }
 
     @Override
@@ -202,8 +202,8 @@ public class Deer extends Entity {
         }
     }
 
-    /// A point VIEW_DISTANCE away from the deer, in the opposite direction from the wolf, clamped to the board.
-    /// Using the full VIEW_DISTANCE keeps the target right at the edge of the grid recalculatePath() builds
+    /// A point {@code VIEW_DISTANCE} away from the deer, in the opposite direction from the wolf, clamped to the board.
+    /// Using the full {@code VIEW_DISTANCE} keeps the target right at the edge of the grid recalculatePath() builds
     private Point computeFleeTarget(Point wolfPos) {
         int dx = pos.x - wolfPos.x;
         int dy = pos.y - wolfPos.y;
@@ -239,12 +239,6 @@ public class Deer extends Entity {
         }
 
         ticksPerMove = normalSpeed;
-    }
-
-    private boolean isAdjacentTo(Point other) {
-        int dx = Math.abs(pos.x - other.x);
-        int dy = Math.abs(pos.y - other.y);
-        return dx <= 1 && dy <= 1 && !(dx == 0 && dy == 0);
     }
 
     private void breed(Deer partner) {

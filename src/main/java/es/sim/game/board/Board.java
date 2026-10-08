@@ -3,6 +3,7 @@ package es.sim.game.board;
 import es.sim.*;
 import es.sim.game.entities.*;
 import es.sim.gui.*;
+import es.sim.util.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,11 +29,13 @@ public class Board extends Screen {
 
     private final Cell[][] grid;
     private final CopyOnWriteArrayList<Entity> entities = new CopyOnWriteArrayList<>();
+    private final HashMap<Identifier, Integer> entityCounts = new HashMap<>();
     private final int rows;
     private final int columns;
 
     private float zoom = 1.0f;
     private float cellSize;
+    private int currentTick = 0;
 
     ///The top left point of the grid
     private float originX, originY;
@@ -112,11 +115,17 @@ public class Board extends Screen {
         e.setPos(x, y);
         entities.add(e);
         grid[x][y].setContents(e);
+
+        if(!entityCounts.containsKey(e.getEntityID())) {
+            entityCounts.put(e.getEntityID(), 0);
+        }
+        entityCounts.put(e.getEntityID(), entityCounts.get(e.getEntityID()) + 1);
     }
 
     /// Unregisters an entity to stop ticking and rendering it on the board. This will mostly be used when an entity dies
     public void unregisterEntity(Entity e) {
         entities.remove(e);
+        entityCounts.put(e.getEntityID(), entityCounts.get(e.getEntityID()) - 1);
 
         Cell cell = getCell(e.getPos().x, e.getPos().y);
         if (cell.holder.isPresent() && cell.holder.get() == e) {
@@ -135,6 +144,7 @@ public class Board extends Screen {
             if (!entities.contains(entity)) continue;
             entity.tick();
         }
+        currentTick++;
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}
@@ -240,13 +250,22 @@ public class Board extends Screen {
             }
         }
 
-//Target squares first, then sprites, so no sprite is ever hidden behind another entity's target square
-        for(Entity e : visible) {
-            e.renderTarget(g);
+        //Target squares first, then sprites, so no sprite is ever hidden behind another entity's target square
+        if(DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION) {
+            for (Entity e : visible) {
+                e.renderTarget(g, getCellBounds(e.getPos().x, e.getPos().y));
+            }
         }
         for(Entity e : visible) {
             e.render(g, getCellBounds(e.getPos().x, e.getPos().y));
         }
+
+        //now the overlays:
+        int right = Main.getWindow().getWidth();
+        g.setColor(Color.BLACK);
+        g.drawString("Tick #" + currentTick, right - 100, 10);
+        g.drawString("Deer Count: " + entityCounts.get(Identifier.of("entity:deer")), right - 100, 30);
+        g.drawString("Wolf Count: " + entityCounts.get(Identifier.of("entity:wolf")), right - 100, 50);
     }
 
     @Override
