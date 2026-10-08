@@ -12,7 +12,7 @@ import static es.sim.Main.LOGGER;
 
 public class Deer extends Entity {
     private static final int BREEDING_COOLDOWN_TICKS = 80;
-    private static final int MAX_STOMACH_FULLNESS = 100;
+    private static final int MAX_STOMACH_FULLNESS = 130;
     private static final int HUNGER_THRESHOLD = 90;
 
     private static final int MIN_MEAL_FULLNESS = 20;
