@@ -92,7 +92,7 @@ public class Main {
                 spawned--;
             }
 
-            int deerToSpawn = 300;
+            int deerToSpawn = 548;
 
         for(int spawned = 0; spawned < deerToSpawn; spawned++) {
             int x = random.nextInt(0, board.getColumns());
@@ -107,7 +107,7 @@ public class Main {
                 spawned--;
             }
 
-            int bushesToSpawn = 250;
+            int bushesToSpawn = 380;
 
         for(int spawned = 0; spawned < bushesToSpawn; spawned++) {
             BerryBush bush = BerryBush.getNewWithRandomProperties(board.getBoundsRect());

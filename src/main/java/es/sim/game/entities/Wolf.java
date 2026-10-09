@@ -18,11 +18,11 @@ public class Wolf extends Entity {
     private static final int MAX_MEAL_FULLNESS = 300;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 275;
+    private static final int REPRODUCTION_COST = 300;
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
     private static final int BREEDING_FULLNESS_THRESHOLD = 325;
-    private static final int MAX_BREEDING_COOLDOWN = 500;
+    private static final int MAX_BREEDING_COOLDOWN = 600;
 
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
@@ -35,7 +35,7 @@ public class Wolf extends Entity {
         breedingCooldown = 250;
         stomachFullness = MAX_STOMACH_FULLNESS / 2;
         VIEW_DISTANCE = 8;
-        HUNGER_THRESHOLD = 150;
+        HUNGER_THRESHOLD = 165;
         ACTIVITY = EntityActivity.WANDERING;
         ONSET_AGE = 4000d;
         AGING_RATE = 0.02d;
