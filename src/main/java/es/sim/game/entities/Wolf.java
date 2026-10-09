@@ -106,7 +106,7 @@ public class Wolf extends Entity {
         if (isHungry()) {
             prey = surroundings.getClosestEntityofType(Deer.class);
         } else if (isReadyToBreed()) {
-            breedingPartner = surroundings.getClosestEntityofType(Wolf.class, Wolf::isReadyToBreed);
+            breedingPartner = findBreedingPartner();
         }
 
         if (prey != null) {
@@ -153,6 +153,21 @@ public class Wolf extends Entity {
         if (moves.isEmpty()) return;
         if (!readyToMove()) return;
         move(moves.pollFirst());
+    }
+
+    private Wolf findBreedingPartner() {
+        double shortestDistance = Double.MAX_VALUE;
+        Wolf partner = null;
+
+        for(Entity e : board.getEntities()) {
+            if(!(e instanceof Wolf wolf)) continue;
+            if(!wolf.isReadyToBreed()) continue;
+
+            double distance = wolf.getPos().distance(this.getPos());
+            if(distance < shortestDistance) shortestDistance = distance;
+            partner = wolf;
+        }
+        return partner;
     }
 
     /// Manhattan distance, which is the number of moves needed since diagonal moves aren't allowed
