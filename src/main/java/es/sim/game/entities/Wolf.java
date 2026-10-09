@@ -24,6 +24,11 @@ public class Wolf extends Entity {
     private static final int BREEDING_FULLNESS_THRESHOLD = 325;
     private static final int MAX_BREEDING_COOLDOWN = 400;
 
+    /// How far beyond VIEW_DISTANCE a wolf can search for a breeding partner. Must stay at or below 2.0 --
+    /// the meeting point is the midpoint between the two wolves, so it's never more than half their distance
+    /// apart from either one, and a higher multiplier would let that midpoint fall outside VIEW_DISTANCE again
+    private static final double BREEDING_VIEW_DISTANCE_MULTIPLIER = 2.0;
+
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
     private Wolf breedingPartner = null;
@@ -156,16 +161,27 @@ public class Wolf extends Entity {
     }
 
     private Wolf findBreedingPartner() {
+        //The meeting point is the midpoint between the two wolves, and recalculatePath()'s grid only reaches
+        //VIEW_DISTANCE away from this wolf. So the search itself must stay within 2x that, or the midpoint can
+        //land outside the grid, and pathfinding silently falls back to a random target instead
+        int maxSearchDistance = (int) (VIEW_DISTANCE * BREEDING_VIEW_DISTANCE_MULTIPLIER);
+
         double shortestDistance = Double.MAX_VALUE;
         Wolf partner = null;
 
         for(Entity e : board.getEntities()) {
-            if(!(e instanceof Wolf wolf)) continue;
+            if(!(e instanceof Wolf wolf) || wolf == this) continue;
             if(!wolf.isReadyToBreed()) continue;
 
+            int dx = Math.abs(wolf.getPos().x - pos.x);
+            int dy = Math.abs(wolf.getPos().y - pos.y);
+            if (dx > maxSearchDistance || dy > maxSearchDistance) continue;
+
             double distance = wolf.getPos().distance(this.getPos());
-            if(distance < shortestDistance) shortestDistance = distance;
-            partner = wolf;
+            if(distance < shortestDistance) {
+                shortestDistance = distance;
+                partner = wolf;
+            }
         }
         return partner;
     }
