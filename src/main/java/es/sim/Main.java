@@ -83,12 +83,13 @@ public class Main {
             int x = random.nextInt(0, board.getColumns());
             int y = random.nextInt(0, board.getRows());
 
-                if(board.getCell(x, y).holder.isEmpty()) {
-                    Wolf wolf = new Wolf();
-                    wolf.randomizeAge();
-                    board.registerEntity(wolf, x, y);
-                    continue;
-                }
+            if(board.getCell(x, y).holder.isEmpty()) {
+                Wolf wolf = new Wolf();
+                wolf.randomizeAge();
+                wolf.setSpeedGene(Util.linearToLogarithmicDistribution(Math.random(), 0.5, 2.0, 1.5));
+                board.registerEntity(wolf, x, y);
+                continue;
+            }
                 spawned--;
             }
 
@@ -98,12 +99,13 @@ public class Main {
             int x = random.nextInt(0, board.getColumns());
             int y = random.nextInt(0, board.getRows());
 
-                if(board.getCell(x, y).holder.isEmpty()) {
-                    Deer deer = new Deer();
-                    deer.randomizeAge();
-                    board.registerEntity(deer, x, y);
-                    continue;
-                }
+            if(board.getCell(x, y).holder.isEmpty()) {
+                Deer deer = new Deer();
+                deer.randomizeAge();
+                deer.setSpeedGene(Util.linearToLogarithmicDistribution(Math.random(), 0.5, 2.0, 1.5));
+                board.registerEntity(deer, x, y);
+                continue;
+            }
                 spawned--;
             }
 

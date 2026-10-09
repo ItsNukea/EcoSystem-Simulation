@@ -22,7 +22,7 @@ public class Wolf extends Entity {
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
     private static final int BREEDING_FULLNESS_THRESHOLD = 325;
-    private static final int MAX_BREEDING_COOLDOWN = 600;
+    private static final int MAX_BREEDING_COOLDOWN = 400;
 
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
@@ -209,7 +209,10 @@ public class Wolf extends Entity {
         Point spawnPos = findEmptyNeighborCell();
         if (spawnPos == null) return; //no free tile for a baby right now, try again next tick
 
-        board.registerEntity(new Wolf(), spawnPos.x, spawnPos.y);
+        Wolf baby = new Wolf();
+        double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
+        baby.setSpeedGene(Entity.mutateGene(avgGene));
+        board.registerEntity(baby, spawnPos.x, spawnPos.y);
 
         stomachFullness -= REPRODUCTION_COST;
         partner.stomachFullness -= REPRODUCTION_COST;

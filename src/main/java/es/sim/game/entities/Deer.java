@@ -252,6 +252,8 @@ public class Deer extends Entity {
         }
 
         Deer baby = new Deer();
+        double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
+        baby.setSpeedGene(Entity.mutateGene(avgGene));
         board.registerEntity(baby, spawnPos.x, spawnPos.y);
 
         breedingCooldown = BREEDING_COOLDOWN_TICKS;

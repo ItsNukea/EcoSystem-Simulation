@@ -11,6 +11,8 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.awt.*;
 import java.util.*;
 
+import static es.sim.Main.LOGGER;
+
 /// This class represents the super class of all living things on the {@link Board}, every entity should
 /// extend this class to be able to be rendered and ticked
 public abstract class Entity {
@@ -39,6 +41,17 @@ public abstract class Entity {
     /// a genetic trait later
     protected int ticksPerMove = 5;
     private int moveCooldown = 0;
+
+    /// The single evolving trait. 1.0 is baseline. A higher value means faster movement but a faster-draining
+    /// stomach; a lower value is the opposite trade-off. This is the one variable the research question evolves
+    protected double speedGene = 1.0;
+
+    /// ticksPerMove at speedGene == 1.0. Kept separate from ticksPerMove itself so applySpeedGene() can be
+    /// called more than once (e.g. once at construction, again once the real gene value is known) without compounding
+    protected int baseTicksPerMove = 5;
+
+    /// How much speedGene can drift from a parent's value in one generation, as a fraction of its value
+    private static final double MUTATION_STRENGTH = 0.08;
 
     /// Call once per tick before stepping. Returns whether this entity may move this tick
     protected boolean readyToMove() {
@@ -114,7 +127,7 @@ public abstract class Entity {
         board.getCell(pos.x, pos.y).setContents(null);
         pos.move(copy.x, copy.y);
         destination.setContents(this);
-        stomachFullness--;
+        stomachFullness -= getMetabolicCost();
         return true;
     }
 
@@ -170,7 +183,9 @@ public abstract class Entity {
             ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
 
             if(path == null) {
-                //LOGGER.warn("{} currently on [{}, {}] could not pathfind, picking another target", ENTITY_ID, pos.x, pos.y);
+                if(this instanceof Wolf) {
+                    LOGGER.warn("{} currently on [{}, {}] could not pathfind while {}, picking another target", ENTITY_ID, pos.x, pos.y, ACTIVITY);
+                }
                 findRandomTarget();
                 continue;
             }
@@ -208,6 +223,31 @@ public abstract class Entity {
     /// newborns created during the simulation should stay at the default age of 0
     public void randomizeAge() {
         age = new Random().nextInt((int) (ONSET_AGE / 2));
+    }
+
+    protected void applySpeedGene() {
+        ticksPerMove = Math.max(1, (int) Math.round(baseTicksPerMove / speedGene));
+    }
+
+    public double getSpeedGene() {
+        return speedGene;
+    }
+
+    /// Sets this entity's speed gene and immediately recalculates the movement speed that depends on it.
+    /// Call this once, right after construction, whether seeding a starting individual or a new baby
+    public void setSpeedGene(double value) {
+        speedGene = Math.max(0.2, value); //a floor so the gene can never reach zero or go negative
+        applySpeedGene();
+    }
+
+    /// A mutated copy of a (typically averaged) parent gene value, for passing a trait on to a baby
+    public static double mutateGene(double parentGeneValue) {
+        double mutationFactor = 1 + (Math.random() * 2 - 1) * MUTATION_STRENGTH;
+        return parentGeneValue * mutationFactor;
+    }
+
+    protected int getMetabolicCost() {
+        return Math.max(1, (int) Math.round(speedGene));
     }
 
     /// Call once per tick to make this entity grow older
