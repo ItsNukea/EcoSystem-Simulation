@@ -136,6 +136,10 @@ public class Board extends Screen {
     public CopyOnWriteArrayList<Entity> getEntities() {
         return entities;
     }
+    
+    public int getCurrentTick() {
+        return currentTick;
+    }
 
     /// Ticks every registered entity and makes them advance 1 step into the future
     public void tick() {
