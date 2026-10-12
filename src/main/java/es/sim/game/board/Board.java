@@ -3,7 +3,11 @@ package es.sim.game.board;
 import es.sim.*;
 import es.sim.game.entities.*;
 import es.sim.gui.*;
+import es.sim.stats.*;
+import es.sim.stats.collectors.*;
+import es.sim.stats.graphs.*;
 import es.sim.util.*;
+import org.jfree.chart.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,6 +37,13 @@ public class Board extends Screen {
     private final int rows;
     private final int columns;
 
+    private final StatisticManager statisticManager = new StatisticManager();
+    public final PopulationStatCollector<Wolf> wolfPopulationCollector = new PopulationStatCollector<>(Wolf.class);
+    public final PopulationStatCollector<Deer> deerPopulationCollector = new PopulationStatCollector<>(Deer.class);
+    public final DeathCauseStatCollector<Wolf> wolfDeathCauseCollector = new DeathCauseStatCollector<>(Wolf.class);
+    public final DeathCauseStatCollector<Deer> deerDeathCauseCollector = new DeathCauseStatCollector<>(Deer.class);
+    public final PopulationGraph deerPopulationGraph = new PopulationGraph("Deer", deerPopulationCollector);
+
     private float zoom = 1.0f;
     private float cellSize;
     private int currentTick = 0;
@@ -41,7 +52,7 @@ public class Board extends Screen {
     private float originX, originY;
 
     private int panX = 0, panY = 0;
-    private Point lastMousePos = null;
+    private Point lastMouseHeldPos = null;
 
     public Board(Screen parent) {
         this(DEFAULT_ROWS, DEFAULT_COLUMNS, parent);
@@ -89,14 +100,36 @@ public class Board extends Screen {
             }
         });
 
+        ChartPanel chartPanel = deerPopulationGraph.getChartPanel();
+        chartPanel.setBounds(10, 90, 500, 300);
+        chartPanel.setVisible(false);
+
+        JButton toggleGraphButton = new JButton("Toggle Population Graph");
+        toggleGraphButton.setBounds(10, 50, 244, 30);
+        toggleGraphButton.addActionListener(_ -> {
+            chartPanel.setVisible(!chartPanel.isVisible());
+            revalidate();
+            repaint();
+        });
+
         stepForwardButton.setFocusable(false);
         pauseResumeButton.setFocusable(false);
         sprintTickButton.setFocusable(false);
+        toggleGraphButton.setFocusable(false);
 
         add(pauseResumeButton);
         add(stepForwardButton);
         add(sprintTickButton);
+        add(toggleGraphButton);
+        add(chartPanel);
         revalidate();
+
+        statisticManager.addAllCollectors(
+                wolfPopulationCollector,
+                deerPopulationCollector,
+                wolfDeathCauseCollector,
+                deerDeathCauseCollector
+        );
     }
 
     /// Gets a cell at a specified coordinate {@code (x, y)}
@@ -148,7 +181,13 @@ public class Board extends Screen {
             if (!entities.contains(entity)) continue;
             entity.tick();
         }
+
+        for(StatCollector collector : statisticManager.collectors) {
+            if(collector instanceof TimeSeriesCollector tsCollector) tsCollector.prepareForNextTick(currentTick);
+        }
+
         currentTick++;
+        SwingUtilities.invokeLater(deerPopulationGraph::updateGraph);
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}
@@ -181,6 +220,10 @@ public class Board extends Screen {
     /// Returns the bounds of the grid as a rectangle with a width and height, with coordinate (0, 0)
     public Rectangle getBoundsRect() {
         return new Rectangle(0, 0, columns, rows);
+    }
+
+    public StatisticManager getStatistics() {
+        return statisticManager;
     }
 
     /// Recomputes {@link #cellSize} and the centering origin so the grid fits the window
@@ -267,33 +310,33 @@ public class Board extends Screen {
         //now the overlays:
         int right = Main.getWindow().getWidth();
         g.setColor(Color.BLACK);
-        g.drawString("Tick #" + currentTick, right - 100, 10);
-        g.drawString("Deer Count: " + entityCounts.get(Identifier.of("entity:deer")), right - 100, 30);
-        g.drawString("Wolf Count: " + entityCounts.get(Identifier.of("entity:wolf")), right - 100, 50);
+        g.drawString("Tick #" + currentTick, right - 100, 15);
+        g.drawString("Deer Count: " + entityCounts.get(Identifier.of("entity:deer")), right - 100, 35);
+        g.drawString("Wolf Count: " + entityCounts.get(Identifier.of("entity:wolf")), right - 100, 55);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        lastMousePos = e.getPoint();
+        lastMouseHeldPos = e.getPoint();
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if(lastMousePos != null) {
-            int dx = e.getX() - lastMousePos.x;
-            int dy = e.getY() - lastMousePos.y;
+        if(lastMouseHeldPos != null) {
+            int dx = e.getX() - lastMouseHeldPos.x;
+            int dy = e.getY() - lastMouseHeldPos.y;
 
             panX = (int) Math.clamp((float) (panX + dx), -MAX_PAN_X, MAX_PAN_X);
             panY = (int) Math.clamp((float) (panY + dy), -MAX_PAN_Y, MAX_PAN_Y);
 
-            lastMousePos = e.getPoint();
+            lastMouseHeldPos = e.getPoint();
             repaint();
         }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        lastMousePos = null;
+        lastMouseHeldPos = null;
     }
 
     @Override

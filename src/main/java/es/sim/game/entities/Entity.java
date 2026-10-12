@@ -4,6 +4,8 @@ import es.sim.*;
 import es.sim.exceptions.*;
 import es.sim.game.*;
 import es.sim.game.board.*;
+import es.sim.stats.*;
+import es.sim.stats.collectors.*;
 import es.sim.util.*;
 import org.xguzm.pathfinding.grid.*;
 import org.xguzm.pathfinding.grid.finders.*;
@@ -11,7 +13,7 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.awt.*;
 import java.util.*;
 
-import static es.sim.Main.LOGGER;
+import static es.sim.Main.*;
 
 /// This class represents the super class of all living things on the {@link Board}, every entity should
 /// extend this class to be able to be rendered and ticked
@@ -253,6 +255,18 @@ public abstract class Entity {
     /// Call once per tick to make this entity grow older
     protected void ageUp() {
         age++;
+    }
+
+    protected void die(DeathCause cause) {
+        DeathCauseStatCollector<?> collector = DeathCauseStatCollector.getFromClass(getClass());
+        collector.increase(cause);
+        board.unregisterEntity(this);
+
+        if(this instanceof Wolf) {
+            board.wolfPopulationCollector.removeEntry();
+        } else if(this instanceof Deer) {
+            board.deerPopulationCollector.removeEntry();
+        }
     }
 
     /// The probability, per tick, that this entity dies of old age. Rises sharply once age passes onsetAge

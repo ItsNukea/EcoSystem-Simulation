@@ -88,6 +88,8 @@ public class Main {
                 wolf.randomizeAge();
                 wolf.setSpeedGene(Util.linearToLogarithmicDistribution(Math.random(), 0.5, 2.0, 1.5));
                 board.registerEntity(wolf, x, y);
+                board.wolfPopulationCollector.addEntry();
+
                 continue;
             }
                 spawned--;
@@ -104,6 +106,8 @@ public class Main {
                 deer.randomizeAge();
                 deer.setSpeedGene(Util.linearToLogarithmicDistribution(Math.random(), 0.5, 2.0, 1.5));
                 board.registerEntity(deer, x, y);
+                board.deerPopulationCollector.addEntry();
+
                 continue;
             }
                 spawned--;

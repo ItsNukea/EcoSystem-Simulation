@@ -2,6 +2,7 @@ package es.sim.game.entities;
 
 import es.sim.game.*;
 import es.sim.game.board.*;
+import es.sim.stats.*;
 import es.sim.texture.*;
 import es.sim.util.*;
 
@@ -49,7 +50,7 @@ public class Wolf extends Entity {
     @Override
     public void tick() {
         if(Math.random() <= getDeathProbability()) {
-            board.unregisterEntity(this);
+            die(DeathCause.OLD_AGE);
             return;
         }
 
@@ -67,7 +68,7 @@ public class Wolf extends Entity {
         }
 
         if(stomachFullness == 0) {
-            board.unregisterEntity(this);
+            die(DeathCause.STARVATION);
         }
     }
 
@@ -141,7 +142,7 @@ public class Wolf extends Entity {
 
         if (distanceTo(prey.getPos()) <= 1) {
             ticksPerMove = normalSpeed;
-            board.unregisterEntity(prey);
+            prey.die(DeathCause.PREDATION);
             prey = null;
             moves.clear();
             currentTarget = null;
@@ -229,6 +230,7 @@ public class Wolf extends Entity {
         double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
         baby.setSpeedGene(Entity.mutateGene(avgGene));
         board.registerEntity(baby, spawnPos.x, spawnPos.y);
+        board.wolfPopulationCollector.addEntry();
 
         stomachFullness -= REPRODUCTION_COST;
         partner.stomachFullness -= REPRODUCTION_COST;

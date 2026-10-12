@@ -2,6 +2,7 @@ package es.sim.game.entities;
 
 import es.sim.game.*;
 import es.sim.game.board.*;
+import es.sim.stats.*;
 import es.sim.texture.*;
 import es.sim.util.*;
 
@@ -43,7 +44,7 @@ public class Deer extends Entity {
     @Override
     public void tick() {
         if(Math.random() <= getDeathProbability()) {
-            board.unregisterEntity(this);
+            die(DeathCause.OLD_AGE);
             return;
         }
 
@@ -108,7 +109,7 @@ public class Deer extends Entity {
             moves.clear();
         }
         if(stomachFullness <= 0) {
-            board.unregisterEntity(this);
+            die(DeathCause.STARVATION);
         }
     }
 
@@ -255,6 +256,7 @@ public class Deer extends Entity {
         double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
         baby.setSpeedGene(Entity.mutateGene(avgGene));
         board.registerEntity(baby, spawnPos.x, spawnPos.y);
+        board.deerPopulationCollector.addEntry();
 
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
         partner.breedingCooldown = BREEDING_COOLDOWN_TICKS;

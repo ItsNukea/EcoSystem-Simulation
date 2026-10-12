@@ -22,6 +22,7 @@ dependencies {
     implementation "org.jetbrains:annotations:26.1.0"           //for handy @Annotations like @Nullable
     implementation "com.github.xaguzman:pathfinding:0.2.6"      //Pathfinding algorithms. Documentation at https://github.com/xaguzman/pathfinding
     implementation "com.github.czyzby:noise4j:0.1.0"            //Noise map generation. Documentation at https://github.com/czyzby/noise4j
+    implementation "org.jfree:jfreechart:1.5.6"                 //Chart generation.
 }
 
 shadowJar {
