@@ -14,10 +14,10 @@ import static es.sim.Main.LOGGER;
 public class Deer extends Entity {
     private static final int BREEDING_COOLDOWN_TICKS = 80;
     private static final int MAX_STOMACH_FULLNESS = 130;
-    private static final int HUNGER_THRESHOLD = 90;
+    private static final int HUNGER_THRESHOLD = 60;
 
-    private static final int MIN_MEAL_FULLNESS = 20;
-    private static final int MAX_MEAL_FULLNESS = 40;
+    private static final int MIN_MEAL_FULLNESS = 15;
+    private static final int MAX_MEAL_FULLNESS = 30;
 
     /// How many times faster a deer moves while fleeing a wolf, same idea as Wolf's HUNT_SPEED
     private static final int FLEE_SPEED = 1;
