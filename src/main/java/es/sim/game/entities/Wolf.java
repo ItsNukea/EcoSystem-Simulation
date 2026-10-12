@@ -23,7 +23,7 @@ public class Wolf extends Entity {
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
     private static final int BREEDING_FULLNESS_THRESHOLD = 325;
-    private static final int MAX_BREEDING_COOLDOWN = 400;
+    private static final int MAX_BREEDING_COOLDOWN = 375;
 
     /// How far beyond VIEW_DISTANCE a wolf can search for a breeding partner. Must stay at or below 2.0 --
     /// the meeting point is the midpoint between the two wolves, so it's never more than half their distance
@@ -67,7 +67,7 @@ public class Wolf extends Entity {
             wander();
         }
 
-        if(stomachFullness == 0) {
+        if(stomachFullness <= 0) {
             die(DeathCause.STARVATION);
         }
     }

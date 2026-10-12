@@ -114,7 +114,7 @@ public class Main {
                 spawned--;
             }
 
-            int bushesToSpawn = 380;
+            int bushesToSpawn = 325;
 
         for(int spawned = 0; spawned < bushesToSpawn; spawned++) {
             BerryBush bush = BerryBush.getNewWithRandomProperties(board.getBoundsRect());

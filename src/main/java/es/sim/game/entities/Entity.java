@@ -30,7 +30,7 @@ public abstract class Entity {
     protected double baselineMortality = 0.0025353d;
     protected double AGING_RATE = 0.02d;
     protected double ONSET_AGE = 2000d;
-    protected int stomachFullness;
+    protected double stomachFullness;
 
     protected int breedingCooldown = 0;
     public Point currentTarget = null;
@@ -129,7 +129,7 @@ public abstract class Entity {
         board.getCell(pos.x, pos.y).setContents(null);
         pos.move(copy.x, copy.y);
         destination.setContents(this);
-        stomachFullness -= getMetabolicCost();
+        stomachFullness -= speedGene;
         return true;
     }
 
@@ -250,10 +250,6 @@ public abstract class Entity {
     public static double mutateGene(double parentGeneValue) {
         double mutationFactor = 1 + (Math.random() * 2 - 1) * MUTATION_STRENGTH;
         return parentGeneValue * mutationFactor;
-    }
-
-    protected int getMetabolicCost() {
-        return Math.max(1, (int) Math.round(speedGene));
     }
 
     /// Call once per tick to make this entity grow older
