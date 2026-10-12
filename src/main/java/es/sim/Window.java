@@ -93,6 +93,19 @@ public class Window extends JFrame {
                 getScreen().mouseMoved(e);
             }
         };
+
+        FocusListener fl = new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {}
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if(Main.board != null) {
+                    Main.tickLoop.pause();
+                }
+            }
+        };
+        this.addFocusListener(fl);
         this.addMouseListener(ma);
         this.addMouseMotionListener(ma);
         this.addMouseWheelListener(ma);

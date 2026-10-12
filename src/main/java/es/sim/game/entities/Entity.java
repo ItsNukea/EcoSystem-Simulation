@@ -227,6 +227,10 @@ public abstract class Entity {
         age = new Random().nextInt((int) (ONSET_AGE / 2));
     }
 
+    public void randomizeBreedingCooldown(int maxCooldown) {
+        breedingCooldown = new Random().nextInt(maxCooldown);
+    }
+
     protected void applySpeedGene() {
         ticksPerMove = Math.max(1, (int) Math.round(baseTicksPerMove / speedGene));
     }

@@ -1,37 +1,39 @@
 package es.sim.stats.graphs;
 
-import es.sim.game.entities.*;
-import es.sim.stats.collectors.*;
-import org.jfree.chart.*;
-import org.jfree.data.xy.*;
+import es.sim.stats.collectors.PopulationStatCollector;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
-import java.util.*;
+import java.util.ArrayList;
 
 public class PopulationGraph {
-    public final XYSeries series;
-    public final PopulationStatCollector<?> collector;
+    private final ArrayList<Entry> entries = new ArrayList<>();
     private final ChartPanel panel;
+    private final XYSeriesCollection dataset;
 
     public PopulationGraph(String entityName, PopulationStatCollector<?> collector) {
-        this.collector = collector;
-        this.series = new XYSeries(entityName + " Population");
-
-        // Populate the initial history.
-        ArrayList<Long> data = collector.getData();
-        for (int tick = 0; tick < data.size(); tick++) {
-            series.add(tick, data.get(tick));
-        }
-
-        XYSeriesCollection dataset = new XYSeriesCollection(series);
+        dataset = new XYSeriesCollection();
 
         JFreeChart chart = ChartFactory.createXYLineChart(
-                entityName + " Population Over Time",
+                "Population Over Time",
                 "Tick",
                 "Population",
                 dataset
         );
 
         panel = new ChartPanel(chart);
+
+        addCollector(entityName, collector);
+    }
+
+    public void addCollector(String entityName, PopulationStatCollector<?> collector) {
+        Entry entry = new Entry(entityName, collector);
+
+        entries.add(entry);
+        dataset.addSeries(entry.series);
     }
 
     public ChartPanel getChartPanel() {
@@ -39,10 +41,42 @@ public class PopulationGraph {
     }
 
     public void updateGraph() {
-        ArrayList<Long> data = collector.getData();
+        for (Entry entry : entries) {
+            ArrayList<Long> data = entry.collector.getData();
 
-        for (int tick = series.getItemCount(); tick < data.size(); tick++) {
-            series.add(tick, data.get(tick));
+            for (int tick = 0; tick < data.size(); tick++) {
+                Long population = data.get(tick);
+
+                if (population == null) continue;
+
+                if (tick < entry.series.getItemCount()) {
+                    // Update an existing point.
+                    entry.series.update(tick, population);
+                } else {
+                    // Add a new point.
+                    entry.series.add(tick, population);
+                }
+            }
+        }
+    }
+
+    private class Entry {
+        private final XYSeries series;
+        private final PopulationStatCollector<?> collector;
+
+        private Entry(String entityName, PopulationStatCollector<?> collector) {
+            this.collector = collector;
+            this.series = new XYSeries(entityName + " Population");
+
+            ArrayList<Long> data = collector.getData();
+
+            for (int tick = 0; tick < data.size(); tick++) {
+                Long population = data.get(tick);
+
+                if (population != null) {
+                    series.add(tick, population);
+                }
+            }
         }
     }
 }

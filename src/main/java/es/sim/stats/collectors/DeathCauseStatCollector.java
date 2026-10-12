@@ -2,6 +2,7 @@ package es.sim.stats.collectors;
 
 import es.sim.game.entities.*;
 import es.sim.stats.*;
+import org.xguzm.pathfinding.grid.finders.*;
 
 import java.util.*;
 
@@ -27,8 +28,11 @@ public class DeathCauseStatCollector<T extends Entity> implements StatCollector 
     public static <T extends Entity> DeathCauseStatCollector<T> getFromClass(Class<T> entityType) {
         for(DeathCauseStatCollector<?> collector : allCollectors) {
             if(collector.entityType.equals(entityType)) {
-                //noinspection unchecked, we already checked this, but in an unconventional way
-                return (DeathCauseStatCollector<T>) collector;
+                //We already checked this, but in a way the compiler doesn't like it.
+                //We need to perform a sacrifice so the compiler gods won't screw us over
+                @SuppressWarnings("unchecked")
+                DeathCauseStatCollector<T> casted = (DeathCauseStatCollector<T>) collector;
+                return casted;
             }
         }
         return null;

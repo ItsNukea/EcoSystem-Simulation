@@ -130,6 +130,8 @@ public class Board extends Screen {
                 wolfDeathCauseCollector,
                 deerDeathCauseCollector
         );
+
+        deerPopulationGraph.addCollector("Wolf", wolfPopulationCollector);
     }
 
     /// Gets a cell at a specified coordinate {@code (x, y)}

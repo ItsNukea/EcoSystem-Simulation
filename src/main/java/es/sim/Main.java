@@ -92,10 +92,10 @@ public class Main {
 
                 continue;
             }
-                spawned--;
-            }
+            spawned--;
+        }
 
-            int deerToSpawn = 548;
+        int deerToSpawn = 548;
 
         for(int spawned = 0; spawned < deerToSpawn; spawned++) {
             int x = random.nextInt(0, board.getColumns());
@@ -104,6 +104,7 @@ public class Main {
             if(board.getCell(x, y).holder.isEmpty()) {
                 Deer deer = new Deer();
                 deer.randomizeAge();
+                deer.randomizeBreedingCooldown(Deer.BREEDING_COOLDOWN_TICKS);
                 deer.setSpeedGene(Util.linearToLogarithmicDistribution(Math.random(), 0.5, 2.0, 1.5));
                 board.registerEntity(deer, x, y);
                 board.deerPopulationCollector.addEntry();
