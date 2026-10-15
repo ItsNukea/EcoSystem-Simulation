@@ -40,22 +40,28 @@ public class PopulationGraph {
         return panel;
     }
 
+    //FIXME: old data gets corrupted somehow
     public void updateGraph() {
         for (Entry entry : entries) {
             ArrayList<Long> data = entry.collector.getData();
 
-            for (int tick = 0; tick < data.size(); tick++) {
-                Long population = data.get(tick);
+            if (data.isEmpty()) {
+                continue;
+            }
 
-                if (population == null) continue;
+            int tick = data.size() - 1;
+            Long value = data.get(tick);
 
-                if (tick < entry.series.getItemCount()) {
-                    // Update an existing point.
-                    entry.series.update(tick, population);
-                } else {
-                    // Add a new point.
-                    entry.series.add(tick, population);
-                }
+            if (value == null) {
+                continue;
+            }
+
+            int itemCount = entry.series.getItemCount();
+
+            if (itemCount > 0 && entry.series.getX(itemCount - 1).intValue() == tick) {
+                entry.series.update(itemCount - 1, value);
+            } else {
+                entry.series.add(tick, value);
             }
         }
     }
@@ -67,16 +73,6 @@ public class PopulationGraph {
         private Entry(String entityName, PopulationStatCollector<?> collector) {
             this.collector = collector;
             this.series = new XYSeries(entityName + " Population");
-
-            ArrayList<Long> data = collector.getData();
-
-            for (int tick = 0; tick < data.size(); tick++) {
-                Long population = data.get(tick);
-
-                if (population != null) {
-                    series.add(tick, population);
-                }
-            }
         }
     }
 }

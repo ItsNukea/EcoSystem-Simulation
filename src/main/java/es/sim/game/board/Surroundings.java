@@ -68,12 +68,12 @@ public class Surroundings {
     }
 
     @SafeVarargs
-    public final <T extends Entity> T getClosestEntityofType(Class<T> entityClass, Predicate<T>... checks) {
+    public final <T extends Entity> T getClosestEntityOfType(Class<T> entityClass, Predicate<T>... checks) {
         T closest = null;
         double closestDistance = Double.MAX_VALUE;
 
         for (Cell[] arr : surroundings) {
-            loop:
+            middle:
             for (Cell cell : arr) {
                 if (cell == null || cell.holder.isEmpty()) continue;
 
@@ -87,7 +87,7 @@ public class Surroundings {
 
                 for (Predicate<T> check : checks) {
                     if (!check.test(typedEntity)) {
-                        continue loop;
+                        continue middle;
                     }
                 }
 

@@ -165,7 +165,7 @@ public class Deer extends Entity {
         surroundings = Surroundings.ofEntity(this);
 
         if (surroundings.entityCountOfType("wolf") != 0) {
-            Wolf nearestWolf = surroundings.getClosestEntityofType(Wolf.class);
+            Wolf nearestWolf = surroundings.getClosestEntityOfType(Wolf.class);
             if (nearestWolf != null) {
                 ACTIVITY = EntityActivity.FLEEING;
                 currentTarget = computeFleeTarget(nearestWolf.getPos());
@@ -174,7 +174,7 @@ public class Deer extends Entity {
             }
             breedingPartner = null;
         } else if (isHungry()) {
-            BerryBush bush = surroundings.getClosestEntityofType(BerryBush.class, BerryBush::hasBerries);
+            BerryBush bush = surroundings.getClosestEntityOfType(BerryBush.class, BerryBush::hasBerries);
 
             if (bush != null) {
                 ACTIVITY = EntityActivity.GATHERING;
@@ -187,7 +187,7 @@ public class Deer extends Entity {
             targetedBush = bush;
             breedingPartner = null;
         } else if (isReadyToBreed()) {
-            Deer partner = surroundings.getClosestEntityofType(Deer.class, Deer::isReadyToBreed);
+            Deer partner = surroundings.getClosestEntityOfType(Deer.class, Deer::isReadyToBreed);
             targetedBush = null;
             if (partner != null) {
                 breedingPartner = partner;

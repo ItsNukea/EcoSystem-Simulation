@@ -110,7 +110,7 @@ public class Wolf extends Entity {
         breedingPartner = null;
 
         if (isHungry()) {
-            prey = surroundings.getClosestEntityofType(Deer.class);
+            prey = surroundings.getClosestEntityOfType(Deer.class);
         } else if (isReadyToBreed()) {
             breedingPartner = findBreedingPartner();
         }
