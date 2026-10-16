@@ -43,6 +43,7 @@ public class Board extends Screen {
     public final DeathCauseStatCollector<Wolf> wolfDeathCauseCollector = new DeathCauseStatCollector<>(Wolf.class);
     public final DeathCauseStatCollector<Deer> deerDeathCauseCollector = new DeathCauseStatCollector<>(Deer.class);
     public final PopulationGraph deerPopulationGraph = new PopulationGraph("Deer", deerPopulationCollector);
+    public final SpeedGeneGraph speedGeneGraph = new SpeedGeneGraph();
 
     private float zoom = 1.0f;
     private float cellSize;
@@ -122,6 +123,25 @@ public class Board extends Screen {
         add(sprintTickButton);
         add(toggleGraphButton);
         add(chartPanel);
+
+        ChartPanel speedGenePanel = speedGeneGraph.getChartPanel();
+        speedGenePanel.setBounds(520, 90, 500, 300);
+        speedGenePanel.setVisible(false);
+        add(speedGenePanel);
+
+        JButton toggleSpeedGeneButton =
+                new JButton("Toggle SpeedGene Graph");
+
+        toggleSpeedGeneButton.setBounds(258, 50, 244, 30);
+        toggleSpeedGeneButton.addActionListener(_ -> {
+            speedGenePanel.setVisible(!speedGenePanel.isVisible());
+            revalidate();
+            repaint();
+        });
+
+        toggleSpeedGeneButton.setFocusable(false);
+        add(toggleSpeedGeneButton);
+
         revalidate();
 
         statisticManager.addAllCollectors(
@@ -189,7 +209,10 @@ public class Board extends Screen {
         }
 
         currentTick++;
-        SwingUtilities.invokeLater(deerPopulationGraph::updateGraph);
+        SwingUtilities.invokeLater(() -> {
+            deerPopulationGraph.updateGraph();
+            speedGeneGraph.updateGraph();
+        });
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}

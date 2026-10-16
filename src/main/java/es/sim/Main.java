@@ -95,7 +95,7 @@ public class Main {
             spawned--;
         }
 
-        int deerToSpawn = 30;
+        int deerToSpawn = 500;
 
         for(int spawned = 0; spawned < deerToSpawn; spawned++) {
             int x = random.nextInt(0, board.getColumns());
