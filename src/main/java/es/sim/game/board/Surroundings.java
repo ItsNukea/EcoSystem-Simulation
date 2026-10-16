@@ -30,6 +30,8 @@ public class Surroundings {
         int viewDiameter = e.getViewDistance() * 2 + 1;
 
         Cell[][] surroundings = new Cell[viewDiameter][viewDiameter];
+        //Created once here instead of once per cell: Board#getBoundsRect() makes a new Rectangle on every call
+        Rectangle bounds = board.getBoundsRect();
 
         for(int x = 0; x < viewDiameter; x++) {
             for(int y = 0; y < viewDiameter; y++) {

@@ -12,15 +12,21 @@ import java.util.*;
 import static es.sim.Main.LOGGER;
 
 public class Deer extends Entity {
-    public static final int BREEDING_COOLDOWN_TICKS = 80;
+    public static final int BREEDING_COOLDOWN_TICKS = 50;
     private static final int MAX_STOMACH_FULLNESS = 130;
-    private static final int HUNGER_THRESHOLD = 60;
+    private static final int HUNGER_THRESHOLD = 86;
 
     private static final int MIN_MEAL_FULLNESS = 15;
     private static final int MAX_MEAL_FULLNESS = 30;
 
     /// How many times faster a deer moves while fleeing a wolf, same idea as Wolf's HUNT_SPEED
     private static final int FLEE_SPEED = 1;
+
+    /// A deer will not breed while more than this many deer (itself included) are in its view. Without this limit
+    /// the deer pile up into one solid block: the deer inside cannot move, never get hungry, and cannot be reached by
+    /// wolves, so the block only grows and slows the whole simulation down. The view of a deer is
+    /// {@code (2 * VIEW_DISTANCE + 1)^2} = 169 tiles, so 25 means about 15% of the view
+    private static final int MAX_DEER_IN_VIEW_TO_BREED = 15;
 
 
     private Deer breedingPartner = null;
@@ -32,7 +38,7 @@ public class Deer extends Entity {
         VIEW_DISTANCE = 6;
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
         ACTIVITY = EntityActivity.WANDERING;
-        ONSET_AGE = 1500d;
+        ONSET_AGE = 1988d;
     }
 
     /// A point exactly between two positions, rounded down. Since addition is commutative, both deer in a
@@ -186,7 +192,8 @@ public class Deer extends Entity {
             currentTarget = bush.pos;
             targetedBush = bush;
             breedingPartner = null;
-        } else if (isReadyToBreed()) {
+        } else if (isReadyToBreed() && !isCrowded()) {
+            //A crowded deer skips this branch and just wanders, see MAX_DEER_IN_VIEW_TO_BREED
             Deer partner = surroundings.getClosestEntityOfType(Deer.class, Deer::isReadyToBreed);
             targetedBush = null;
             if (partner != null) {
@@ -266,6 +273,24 @@ public class Deer extends Entity {
 
         ACTIVITY = EntityActivity.WANDERING;
         partner.ACTIVITY = EntityActivity.WANDERING;
+    }
+
+    /// Whether too many deer share this deer's view to breed, see {@link #MAX_DEER_IN_VIEW_TO_BREED}.
+    /// Uses the {@link Surroundings} of the current tick, so {@link #analyzeSurroundings()} has to have run first
+    /// @return {@code true} if the number of deer in view (this deer included) is above the limit
+    private boolean isCrowded() {
+        int deerInView = 0;
+
+        for (Cell[] column : surroundings.toCellArray()) {
+            for (Cell cell : column) {
+                //Cells outside the board are null, empty cells hold no entity
+                if (cell != null && cell.holder.isPresent() && cell.holder.get() instanceof Deer) {
+                    deerInView++;
+                }
+            }
+        }
+
+        return deerInView > MAX_DEER_IN_VIEW_TO_BREED;
     }
 
     private boolean isHungry() {

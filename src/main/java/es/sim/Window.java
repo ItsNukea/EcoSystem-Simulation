@@ -19,7 +19,9 @@ public class Window extends JFrame {
         super("Eco System Simulator");
     }
 
-    ///This method initializes the window, sets it in fullscreen, and adds a window icon
+    ///This method initializes the window as a normal maximized window (title bar, close button and taskbar stay
+    ///available, so it can always be closed, even if the program freezes), and adds a window icon.
+    ///Fullscreen is optional: press F11 or use the fullscreen button
     public void init() {
         //set the correct size first
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -28,8 +30,7 @@ public class Window extends JFrame {
         Texture iconImage = new Texture(Identifier.withDefaultNamespace("appicon"));
 
         this.setSize(new Dimension(bounds.width, bounds.height));
-        this.setUndecorated(true);
-        this.setFullScreen();
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setIconImage(iconImage.asImage());
 
@@ -37,6 +38,11 @@ public class Window extends JFrame {
         KeyAdapter ka = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                //F11 switches between the normal window and fullscreen, and is not passed on to the current screen
+                if (e.getKeyCode() == KeyEvent.VK_F11) {
+                    toggleFullScreen();
+                    return;
+                }
                 getScreen().keyPressed(e);
             }
 
@@ -123,26 +129,38 @@ public class Window extends JFrame {
         return (Screen) getContentPane();
     }
 
+    ///Switches between the normal window and fullscreen. Bound to the F11 key and to the fullscreen button,
+    ///see {@link #applyFullScreen(boolean)}
     public void toggleFullScreen() {
-        if(isFullScreen) {
-            unFullScreen();
-        } else {
-            setFullScreen();
-        }
+        applyFullScreen(!isFullScreen);
     }
 
+    ///Makes the window fullscreen, see {@link #applyFullScreen(boolean)}
     public void setFullScreen() {
-        GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(this);
-        isFullScreen = true;
+        applyFullScreen(true);
     }
 
+    ///Returns the window to its normal maximized state, with title bar, see {@link #applyFullScreen(boolean)}
     public void unFullScreen() {
-        GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(null);
-        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        revalidate();
+        applyFullScreen(false);
+    }
 
-        this.repaint();
-        isFullScreen = false;
+    ///"Fullscreen" is a borderless window covering the screen, deliberately NOT Java's exclusive fullscreen mode.
+    ///Exclusive mode cannot be left when the program freezes, which left the user stuck. As an ordinary window,
+    ///Alt+Tab, the Windows key, Ctrl+Shift+Esc (Task Manager) and the "not responding" dialog keep working
+    ///@param enable {@code true} to go fullscreen, {@code false} to go back to the normal window
+    private void applyFullScreen(boolean enable) {
+        if (isFullScreen == enable) return;
+
+        //Decorations can only be changed while the window is not displayable
+        dispose();
+        setUndecorated(enable);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setVisible(true);
+        toFront();
+        requestFocus();
+
+        isFullScreen = enable;
     }
 
     public static void setFullscreenWindow(Window window) {

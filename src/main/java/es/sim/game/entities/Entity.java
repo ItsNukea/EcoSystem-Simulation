@@ -156,8 +156,17 @@ public abstract class Entity {
     }
 
     protected void recalculatePath() {
+        //While the move cooldown is running the entity cannot step this tick, so keep the path it has
+        //and replan on the tick it is actually allowed to move
+        if (moveCooldown > 0 && !moves.isEmpty()) return;
+
         surroundings = Surroundings.ofEntity(this);
         moves = new ArrayDeque<>();
+
+        if (currentTarget == null) {
+            findRandomTarget();
+            if (currentTarget == null) return; //no free tile in view (crowded): stay put this tick
+        }
 
         GridCell[][] cells = surroundings.toGridCellArray();
         int center = cells.length / 2;

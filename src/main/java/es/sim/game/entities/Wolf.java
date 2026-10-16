@@ -12,18 +12,18 @@ import java.util.Random;
 public class Wolf extends Entity {
     /// How many cells the wolf moves per tick while chasing prey. It needs to be higher than the deer's speed,
     /// otherwise it could never catch a deer that flees
-    private static final int HUNT_SPEED = 2;
+    private static final int HUNT_SPEED = 1;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
-    private static final int MIN_MEAL_FULLNESS = 150;
+    private static final int MIN_MEAL_FULLNESS = 113;
     private static final int MAX_MEAL_FULLNESS = 300;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 300;
+    private static final int REPRODUCTION_COST = 269;
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
-    private static final int BREEDING_FULLNESS_THRESHOLD = 325;
-    private static final int MAX_BREEDING_COOLDOWN = 375;
+    private static final int BREEDING_FULLNESS_THRESHOLD = 337;
+    private static final int MAX_BREEDING_COOLDOWN = 652;
 
     /// How far beyond VIEW_DISTANCE a wolf can search for a breeding partner. Must stay at or below 2.0 --
     /// the meeting point is the midpoint between the two wolves, so it's never more than half their distance
@@ -43,7 +43,7 @@ public class Wolf extends Entity {
         VIEW_DISTANCE = 8;
         HUNGER_THRESHOLD = 165;
         ACTIVITY = EntityActivity.WANDERING;
-        ONSET_AGE = 4000d;
+        ONSET_AGE = 5924d;
         AGING_RATE = 0.02d;
     }
 
@@ -158,7 +158,9 @@ public class Wolf extends Entity {
     private void followPath() {
         if (moves.isEmpty()) return;
         if (!readyToMove()) return;
-        move(moves.pollFirst());
+        if (!move(moves.pollFirst())) {
+            moves.clear(); //blocked by another animal: the rest of the path is now off by a tile, so plan again
+        }
     }
 
     private Wolf findBreedingPartner() {

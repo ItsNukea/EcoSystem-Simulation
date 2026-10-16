@@ -125,7 +125,8 @@ public class Board extends Screen {
         add(chartPanel);
 
         ChartPanel speedGenePanel = speedGeneGraph.getChartPanel();
-        speedGenePanel.setBounds(520, 90, 500, 300);
+        //Directly below the population graph: that one starts at y = 90 and is 300 tall, plus a 10 pixel gap
+        speedGenePanel.setBounds(10, 400, 500, 300);
         speedGenePanel.setVisible(false);
         add(speedGenePanel);
 
@@ -254,8 +255,9 @@ public class Board extends Screen {
     /// Recomputes {@link #cellSize} and the centering origin so the grid fits the window
     /// as large as possible at the current zoom level, then centers it
     private void recalcGrid() {
-        int width = Main.getWindow().getWidth();
-        int height = Main.getWindow().getHeight();
+        //The size of this panel, not of the window: the window also includes the title bar and borders
+        int width = getWidth();
+        int height = getHeight();
 
         cellSize = Math.min((float) width / columns, (float) height / rows) * zoom;
 
@@ -314,7 +316,8 @@ public class Board extends Screen {
         }
 
         //Do some entity culling because why not
-        Rectangle screenRect = Main.getWindow().getBounds();
+        //The visible area is this panel itself, in its own coordinates, not the window's position on the screen
+        Rectangle screenRect = new Rectangle(0, 0, getWidth(), getHeight());
         ArrayList<Entity> visible = new ArrayList<>();
         for(Entity e : entities) {
             if(getCellBounds(e.getPos().x, e.getPos().y).intersects(screenRect)) {
@@ -333,7 +336,8 @@ public class Board extends Screen {
         }
 
         //now the overlays:
-        int right = Main.getWindow().getWidth();
+        //The right edge of this panel, so the text stays inside the visible area when the window has a title bar
+        int right = getWidth();
         g.setColor(Color.BLACK);
         g.drawString("Tick #" + currentTick, right - 100, 15);
         g.drawString("Deer Count: " + entityCounts.get(Identifier.of("entity:deer")), right - 100, 35);

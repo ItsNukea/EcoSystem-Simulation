@@ -77,7 +77,7 @@ public class Main {
 
         Random random = new Random();
 
-        int wolfsToSpawn = 30;
+        int wolfsToSpawn = 42;
 
         for(int spawned = 0; spawned < wolfsToSpawn; spawned++) {
             int x = random.nextInt(0, board.getColumns());
@@ -95,7 +95,7 @@ public class Main {
             spawned--;
         }
 
-        int deerToSpawn = 500;
+        int deerToSpawn = 699;
 
         for(int spawned = 0; spawned < deerToSpawn; spawned++) {
             int x = random.nextInt(0, board.getColumns());
