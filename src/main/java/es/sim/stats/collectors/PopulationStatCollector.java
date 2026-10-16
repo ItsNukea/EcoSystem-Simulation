@@ -28,7 +28,7 @@ public class PopulationStatCollector<T extends Entity> implements TimeSeriesColl
     }
 
     public synchronized ArrayList<Long> getData() {
-        return new ArrayList<>(populationSize);
+        return populationSize;
     }
 
     @Override

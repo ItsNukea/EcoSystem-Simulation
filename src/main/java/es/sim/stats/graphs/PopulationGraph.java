@@ -1,5 +1,6 @@
 package es.sim.stats.graphs;
 
+import es.sim.*;
 import es.sim.stats.collectors.PopulationStatCollector;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -40,7 +41,6 @@ public class PopulationGraph {
         return panel;
     }
 
-    //FIXME: old data gets corrupted somehow
     public void updateGraph() {
         for (Entry entry : entries) {
             ArrayList<Long> data = entry.collector.getData();
@@ -49,20 +49,10 @@ public class PopulationGraph {
                 continue;
             }
 
-            int tick = data.size() - 1;
+            int tick = Main.board.getCurrentTick();
             Long value = data.get(tick);
 
-            if (value == null) {
-                continue;
-            }
-
-            int itemCount = entry.series.getItemCount();
-
-            if (itemCount > 0 && entry.series.getX(itemCount - 1).intValue() == tick) {
-                entry.series.update(itemCount - 1, value);
-            } else {
-                entry.series.add(tick, value);
-            }
+            entry.series.add(tick, value);
         }
     }
 

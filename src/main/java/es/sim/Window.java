@@ -101,7 +101,7 @@ public class Window extends JFrame {
             @Override
             public void focusLost(FocusEvent e) {
                 if(Main.board != null) {
-                    Main.tickLoop.pause();
+                    //Main.tickLoop.pause();
                 }
             }
         };
