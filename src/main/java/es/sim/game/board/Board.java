@@ -54,6 +54,8 @@ public class Board extends Screen {
 
     private int panX = 0, panY = 0;
     private Point lastMouseHeldPos = null;
+    
+    private Random RANDOM = new Random();
 
     public Board(Screen parent) {
         this(DEFAULT_ROWS, DEFAULT_COLUMNS, parent);
@@ -241,6 +243,10 @@ public class Board extends Screen {
 
     public int getColumns() {
         return columns;
+    }
+    
+    public Random getRandom() {
+        return RANDOM;
     }
 
     /// Returns the bounds of the grid as a rectangle with a width and height, with coordinate (0, 0)

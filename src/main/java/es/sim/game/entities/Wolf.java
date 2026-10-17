@@ -17,13 +17,15 @@ public class Wolf extends Entity {
     /// A deer restores a random amount of stomach fullness between these two values (both included)
     private static final int MIN_MEAL_FULLNESS = 113;
     private static final int MAX_MEAL_FULLNESS = 300;
+    private static final int MAX_STOMACH_FULLNESS = 375;
+    private final int HUNGER_THRESHOLD;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 269;
+    private static final int REPRODUCTION_COST = 200;
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
     private static final int BREEDING_FULLNESS_THRESHOLD = 337;
-    private static final int MAX_BREEDING_COOLDOWN = 652;
+    private static final int MAX_BREEDING_COOLDOWN = 400;
 
     /// How far beyond VIEW_DISTANCE a wolf can search for a breeding partner. Must stay at or below 2.0 --
     /// the meeting point is the midpoint between the two wolves, so it's never more than half their distance
@@ -33,13 +35,11 @@ public class Wolf extends Entity {
     private final Texture sprite = new Texture(getEntityID());
     private Entity prey = null;
     private Wolf breedingPartner = null;
-    private final int MAX_STOMACH_FULLNESS = 375;
-    private final int HUNGER_THRESHOLD;
 
     public Wolf() {
         super(Identifier.of("entity:wolf"));
         breedingCooldown = 250;
-        stomachFullness = MAX_STOMACH_FULLNESS / 2;
+        stomachFullness = (double) MAX_STOMACH_FULLNESS / 2;
         VIEW_DISTANCE = 8;
         HUNGER_THRESHOLD = 165;
         ACTIVITY = EntityActivity.WANDERING;
@@ -146,7 +146,7 @@ public class Wolf extends Entity {
             prey = null;
             moves.clear();
             currentTarget = null;
-            Random random = new Random();
+            Random random = board.getRandom();
             stomachFullness = Math.min(stomachFullness + random.nextInt(MIN_MEAL_FULLNESS, MAX_MEAL_FULLNESS + 1), MAX_STOMACH_FULLNESS);
             return;
         }

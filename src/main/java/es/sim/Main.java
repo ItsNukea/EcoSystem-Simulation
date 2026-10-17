@@ -75,9 +75,9 @@ public class Main {
             tickLoop.stop();
         }
 
-        Random random = new Random();
+        Random random = board.getRandom();
 
-        int wolfsToSpawn = 42;
+        int wolfsToSpawn = 30;
 
         for(int spawned = 0; spawned < wolfsToSpawn; spawned++) {
             int x = random.nextInt(0, board.getColumns());
@@ -95,7 +95,7 @@ public class Main {
             spawned--;
         }
 
-        int deerToSpawn = 699;
+        int deerToSpawn = 500;
 
         for(int spawned = 0; spawned < deerToSpawn; spawned++) {
             int x = random.nextInt(0, board.getColumns());
@@ -117,7 +117,7 @@ public class Main {
             int bushesToSpawn = 325;
 
         for(int spawned = 0; spawned < bushesToSpawn; spawned++) {
-            BerryBush bush = BerryBush.getNewWithRandomProperties(board.getBoundsRect());
+            BerryBush bush = BerryBush.getNewWithRandomProperties(board);
             if (board.getCell(bush.getPos().x, bush.getPos().y).holder.isEmpty()) {
                 board.registerEntity(bush, bush.getPos().x, bush.getPos().y);
             } else {

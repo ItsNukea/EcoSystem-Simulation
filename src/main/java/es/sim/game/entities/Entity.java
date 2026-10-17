@@ -13,8 +13,6 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.awt.*;
 import java.util.*;
 
-import static es.sim.Main.*;
-
 /// This class represents the super class of all living things on the {@link Board}, every entity should
 /// extend this class to be able to be rendered and ticked
 public abstract class Entity {
@@ -44,7 +42,7 @@ public abstract class Entity {
     protected int ticksPerMove = 5;
     private int moveCooldown = 0;
 
-    /// The single evolving trait. 1.0 is baseline. A higher value means faster movement but a faster-draining
+    /// The single evolving trait. 1.0 is the baseline. A higher value means faster movement but a faster-draining
     /// stomach; a lower value is the opposite trade-off. This is the one variable the research question evolves
     protected double speedGene = 1.0;
 
@@ -76,11 +74,6 @@ public abstract class Entity {
     /// Renders the entity on the screen.
     /// @param cellBounds The {@link Rectangle} that shows the bounds of the cell this entity is in.
     public abstract void render(Graphics2D graphics, Rectangle cellBounds);
-
-    /// The color of the debug square drawn on this entity's target, or {@code null} for no square
-    protected Color getTargetColor() {
-        return null;
-    }
 
     /// Draws the debug square on this entity's target. The {@link Board} draws these for every entity before
     /// any sprite, so a sprite is never hidden by another entity's target square
@@ -141,7 +134,7 @@ public abstract class Entity {
     
     /// Finds a random target that lies within the bounds of {@link Main#board}
     protected void findRandomTarget() {
-        Random random = new Random();
+        Random random = board.getRandom();
         Rectangle bounds = board.getBoundsRect();
         for (int attempt = 0; attempt < 200; attempt++) {
             int dx = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
@@ -156,7 +149,7 @@ public abstract class Entity {
     }
 
     protected void recalculatePath() {
-        //While the move cooldown is running the entity cannot step this tick, so keep the path it has
+        //While the move cooldown is running, the entity cannot step this tick, so keep the path it has
         //and replan on the tick it is actually allowed to move
         if (moveCooldown > 0 && !moves.isEmpty()) return;
 
@@ -182,7 +175,7 @@ public abstract class Entity {
             int dx = currentTarget.x - pos.x;
             int dy = currentTarget.y - pos.y;
 
-            //The target can end up outside the surroundings grid, e.g. when a detour around another entity takes us away from it
+            //The target can end up outside the Surroundings grid, e.g. when a detour around another entity takes us away from it
             if (Math.abs(dx) > center || Math.abs(dy) > center) {
                 findRandomTarget();
                 continue;
@@ -230,11 +223,11 @@ public abstract class Entity {
     /// probability curve really starts climbing. Call this after creating an entity to spawn it already-aged;
     /// newborns created during the simulation should stay at the default age of 0
     public void randomizeAge() {
-        age = new Random().nextInt((int) (ONSET_AGE / 2));
+        age = board.getRandom().nextInt((int) (ONSET_AGE / 2));
     }
 
     public void randomizeBreedingCooldown(int maxCooldown) {
-        breedingCooldown = new Random().nextInt(maxCooldown);
+        breedingCooldown = board.getRandom().nextInt(maxCooldown);
     }
 
     protected void applySpeedGene() {

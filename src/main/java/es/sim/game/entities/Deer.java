@@ -87,7 +87,7 @@ public class Deer extends Entity {
             }
             if(pos.distance(targetedBush.getPos()) == 1) {
                 targetedBush.eatBerries();
-                Random random = new Random();
+                Random random = board.getRandom();
                 stomachFullness = Math.min(stomachFullness + random.nextInt(MIN_MEAL_FULLNESS, MAX_MEAL_FULLNESS + 1), MAX_STOMACH_FULLNESS);
             }
         }
@@ -106,7 +106,7 @@ public class Deer extends Entity {
 
         if (!move(moves.pollFirst())) {
             moves.clear();
-            waitTicks = new Random().nextInt(1, 4);
+            waitTicks = board.getRandom().nextInt(1, 4);
             return;
         }
 
