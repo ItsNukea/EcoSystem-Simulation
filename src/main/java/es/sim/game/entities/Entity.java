@@ -194,9 +194,6 @@ public abstract class Entity {
             ArrayList<GridCell> path = (ArrayList<GridCell>) ASGF.findPath(start, end, navGrid);
 
             if(path == null) {
-                if(this instanceof Wolf) {
-                    LOGGER.warn("{} currently on [{}, {}] could not pathfind while {}, picking another target", ENTITY_ID, pos.x, pos.y, ACTIVITY);
-                }
                 findRandomTarget();
                 continue;
             }
