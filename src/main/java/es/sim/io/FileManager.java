@@ -39,8 +39,7 @@ public class FileManager {
         if(DebugVariables.IS_DEVELOPMENT_ENVIRONMENT) {
             runDir = Paths.get("run");
         } else {
-            Path userHome = Paths.get(System.getProperty("user.home"));
-            runDir = userHome.resolve("AppData", "Roaming", "EcoSystemSimulation");
+            runDir = Paths.get(System.getenv("APPDATA"), "EcoSystemSimulation");
         }
         return runDir;
     }
