@@ -1,18 +1,18 @@
 package es.sim.game.entities;
 
-import es.sim.game.*;
-import es.sim.game.board.*;
-import es.sim.stats.*;
-import es.sim.texture.*;
+import es.sim.game.EntityActivity;
+import es.sim.game.board.Surroundings;
+import es.sim.stats.DeathCause;
+import es.sim.texture.Texture;
 import es.sim.util.*;
 
 import java.awt.*;
-import java.util.*;
+import java.util.Random;
 
 import static es.sim.Main.LOGGER;
 
 public class Deer extends Entity {
-    public static final int BREEDING_COOLDOWN_TICKS = 50;
+    public static final int BREEDING_COOLDOWN_TICKS = 90;
     private static final int MAX_STOMACH_FULLNESS = 130;
     private static final int HUNGER_THRESHOLD = 86;
 
@@ -26,7 +26,7 @@ public class Deer extends Entity {
     /// the deer pile up into one solid block: the deer inside cannot move, never get hungry, and cannot be reached by
     /// wolves, so the block only grows and slows the whole simulation down. The view of a deer is
     /// {@code (2 * VIEW_DISTANCE + 1)^2} = 169 tiles, so 25 means about 15% of the view
-    private static final int MAX_DEER_IN_VIEW_TO_BREED = 15;
+    private static final int MAX_DEER_IN_VIEW_TO_BREED = 30;
 
 
     private Deer breedingPartner = null;
@@ -34,7 +34,7 @@ public class Deer extends Entity {
 
     public Deer() {
         super(Identifier.of("entity:deer"));
-        stomachFullness = MAX_STOMACH_FULLNESS / 2;
+        stomachFullness = (double) MAX_STOMACH_FULLNESS / 2;
         VIEW_DISTANCE = 6;
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
         ACTIVITY = EntityActivity.WANDERING;
@@ -154,11 +154,6 @@ public class Deer extends Entity {
         }
     }
 
-    @Override
-    protected Color getTargetColor() {
-        return new Color(30, 117, 5, 255);
-    }
-
     public boolean isReadyToBreed() {
         return breedingCooldown <= 0;
     }
@@ -170,7 +165,7 @@ public class Deer extends Entity {
         //Here goes EntityActivity logic. It is decided here what an entity will do a certain tick.
         surroundings = Surroundings.ofEntity(this);
 
-        if (surroundings.entityCountOfType("wolf") != 0) {
+        if (surroundings.entityCountOfType(Wolf.class) != 0) {
             Wolf nearestWolf = surroundings.getClosestEntityOfType(Wolf.class);
             if (nearestWolf != null) {
                 ACTIVITY = EntityActivity.FLEEING;
@@ -261,7 +256,7 @@ public class Deer extends Entity {
 
         Deer baby = new Deer();
         double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
-        baby.setSpeedGene(Entity.mutateGene(avgGene));
+        baby.setSpeedGene(mutateGene(avgGene));
         board.registerEntity(baby, spawnPos.x, spawnPos.y);
         board.deerPopulationCollector.addEntry();
 
@@ -279,16 +274,7 @@ public class Deer extends Entity {
     /// Uses the {@link Surroundings} of the current tick, so {@link #analyzeSurroundings()} has to have run first
     /// @return {@code true} if the number of deer in view (this deer included) is above the limit
     private boolean isCrowded() {
-        int deerInView = 0;
-
-        for (Cell[] column : surroundings.toCellArray()) {
-            for (Cell cell : column) {
-                //Cells outside the board are null, empty cells hold no entity
-                if (cell != null && cell.holder.isPresent() && cell.holder.get() instanceof Deer) {
-                    deerInView++;
-                }
-            }
-        }
+        int deerInView = surroundings.entityCountOfType(Deer.class);
 
         return deerInView > MAX_DEER_IN_VIEW_TO_BREED;
     }

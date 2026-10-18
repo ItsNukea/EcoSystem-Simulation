@@ -1,9 +1,9 @@
 package es.sim.game.entities;
 
-import es.sim.game.*;
-import es.sim.game.board.*;
-import es.sim.stats.*;
-import es.sim.texture.*;
+import es.sim.game.EntityActivity;
+import es.sim.game.board.Surroundings;
+import es.sim.stats.DeathCause;
+import es.sim.texture.Texture;
 import es.sim.util.*;
 
 import java.awt.*;
@@ -12,11 +12,11 @@ import java.util.Random;
 public class Wolf extends Entity {
     /// How many cells the wolf moves per tick while chasing prey. It needs to be higher than the deer's speed,
     /// otherwise it could never catch a deer that flees
-    private static final int HUNT_SPEED = 1;
+    private static final double HUNT_SPEED = 1.7d;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
-    private static final int MIN_MEAL_FULLNESS = 113;
-    private static final int MAX_MEAL_FULLNESS = 300;
+    private static final int MIN_MEAL_FULLNESS = 50;
+    private static final int MAX_MEAL_FULLNESS = 150;
     private static final int MAX_STOMACH_FULLNESS = 375;
     private final int HUNGER_THRESHOLD;
 
@@ -24,7 +24,7 @@ public class Wolf extends Entity {
     private static final int REPRODUCTION_COST = 200;
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
-    private static final int BREEDING_FULLNESS_THRESHOLD = 337;
+    private static final int BREEDING_FULLNESS_THRESHOLD = 200;
     private static final int MAX_BREEDING_COOLDOWN = 400;
 
     /// How far beyond VIEW_DISTANCE a wolf can search for a breeding partner. Must stay at or below 2.0 --
@@ -40,7 +40,7 @@ public class Wolf extends Entity {
         super(Identifier.of("entity:wolf"));
         breedingCooldown = 250;
         stomachFullness = (double) MAX_STOMACH_FULLNESS / 2;
-        VIEW_DISTANCE = 8;
+        VIEW_DISTANCE = 9;
         HUNGER_THRESHOLD = 165;
         ACTIVITY = EntityActivity.WANDERING;
         ONSET_AGE = 5924d;
@@ -138,7 +138,7 @@ public class Wolf extends Entity {
         recalculatePath();
 
         int normalSpeed = ticksPerMove;
-        ticksPerMove = Math.max(1, ticksPerMove / HUNT_SPEED); //hunting is faster than the wolf's normal pace
+        ticksPerMove = (int) Math.max(1, ticksPerMove / HUNT_SPEED); //hunting is faster than the wolf's normal pace
 
         if (distanceTo(prey.getPos()) <= 1) {
             ticksPerMove = normalSpeed;
@@ -230,7 +230,7 @@ public class Wolf extends Entity {
 
         Wolf baby = new Wolf();
         double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
-        baby.setSpeedGene(Entity.mutateGene(avgGene));
+        baby.setSpeedGene(mutateGene(avgGene));
         board.registerEntity(baby, spawnPos.x, spawnPos.y);
         board.wolfPopulationCollector.addEntry();
 

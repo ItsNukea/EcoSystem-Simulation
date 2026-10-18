@@ -1,14 +1,11 @@
 
 package es.sim.stats.graphs;
 
-import es.sim.*;
+import es.sim.Main;
 import es.sim.game.board.Board;
 import es.sim.game.entities.*;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.chart.*;
+import org.jfree.data.xy.*;
 
 public class SpeedGeneGraph {
 
@@ -39,31 +36,23 @@ public class SpeedGeneGraph {
         return panel;
     }
 
-    public void updateGraph() {
+    public void updateGraph(double deerSum, int deerCount, double wolfSum, int wolfCount) {
         Board board = Main.board;
         int tick = board.getCurrentTick();
+        
+        double deerAverage = deerSum / deerCount;
+        double wolfAverage = wolfSum / wolfCount;
 
-        double deerAverage = calculateAverage(
-                board, Deer.class
-        );
-
-        double wolfAverage = calculateAverage(
-                board, Wolf.class
-        );
-
-        if (!Double.isNaN(deerAverage)) {
+        if (Double.isFinite(deerAverage)) {
             deerSeries.add(tick, deerAverage);
         }
 
-        if (!Double.isNaN(wolfAverage)) {
+        if (Double.isFinite(wolfAverage)) {
             wolfSeries.add(tick, wolfAverage);
         }
     }
 
-    private double calculateAverage(
-            Board board,
-            Class<? extends Entity> entityType
-    ) {
+    private double calculateAverage(Board board, Class<? extends Entity> entityType) {
         double total = 0;
         int count = 0;
 

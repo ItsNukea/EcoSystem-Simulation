@@ -1,12 +1,9 @@
 package es.sim.stats.graphs;
 
-import es.sim.*;
+import es.sim.Main;
 import es.sim.stats.collectors.PopulationStatCollector;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.chart.*;
+import org.jfree.data.xy.*;
 
 import java.util.ArrayList;
 

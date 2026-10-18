@@ -1,6 +1,6 @@
 package es.sim.gui;
 
-import es.sim.*;
+import es.sim.Main;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,6 +9,8 @@ import static es.sim.Main.*;
 
 ///The screen that shows on startup of the program
 public class TitleScreen extends Screen {
+    private final JButton continueButton;
+    
     public TitleScreen() {
         super(null);
 
@@ -21,7 +23,7 @@ public class TitleScreen extends Screen {
         int buttonWidth = 200;
         int buttonHeight = 50;
 
-        JButton startButton = new JButton("START!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        JButton startButton = new JButton("Start New Simulation");
         startButton.setBounds(
                 midX - buttonWidth / 2,
                 midY - buttonHeight / 2,
@@ -29,10 +31,30 @@ public class TitleScreen extends Screen {
                 buttonHeight
         );
         startButton.addActionListener(_ -> {
-            LOGGER.info("Starting Simulation...");
+            LOGGER.info("Starting New Simulation...");
             resetBoard();
             tickLoop.start();
-            renderLoop.start();
+            if(!renderLoop.isRunning()) {
+                renderLoop.start();
+            }
+            Main.getWindow().showScreen(board);
+        });
+        
+        continueButton = new JButton("Continue Last Simulation");
+        continueButton.setBounds(
+                midX - buttonWidth / 2,
+                midY - buttonHeight / 2 + 20,
+                buttonWidth,
+                buttonHeight
+        );
+        continueButton.setEnabled(board != null);
+        continueButton.addActionListener(_ -> {
+            LOGGER.info("Continuing Last Simulation...");
+            tickLoop.start();
+            if(!renderLoop.isRunning()) {
+                renderLoop.start();
+            }
+            
             Main.getWindow().showScreen(board);
         });
 
@@ -41,6 +63,7 @@ public class TitleScreen extends Screen {
         fullScreenButton.addActionListener(_ -> Main.getWindow().toggleFullScreen());
 
         add(startButton);
+        add(continueButton);
         add(fullScreenButton);
     }
 
@@ -50,6 +73,7 @@ public class TitleScreen extends Screen {
 
         g.setFont(new Font("Sans Serif", Font.PLAIN, 80));
         drawCenteredString(g, "Eco System Simulation", screenSize.width / 2, screenSize.height / 2);
+        continueButton.setEnabled(board != null);
     }
 
     @Override

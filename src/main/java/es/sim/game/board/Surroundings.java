@@ -52,7 +52,7 @@ public class Surroundings {
     }
 
     /// Counts the number of entities within its {@link Surroundings}
-    public int entityCountOfType(String entityIdentifierPath) {
+    public int entityCountOfType(Class<? extends Entity> entityClass) {
         int count = 0;
 
         for(Cell[] arr : surroundings) {
@@ -61,8 +61,8 @@ public class Surroundings {
 
                 Optional<Entity> holder = cell.holder;
                 if(holder.isEmpty()) continue;
-                Identifier containerID = holder.get().getEntityID();
-                if(containerID.getPath().equals(entityIdentifierPath)) count++;
+                
+                if(holder.get().getClass().equals(entityClass)) count++;
             }
         }
 

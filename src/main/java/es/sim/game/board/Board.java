@@ -1,19 +1,20 @@
 package es.sim.game.board;
 
-import es.sim.*;
 import es.sim.game.entities.*;
-import es.sim.gui.*;
+import es.sim.gui.Screen;
+import es.sim.io.StatisticsSaver;
 import es.sim.stats.*;
 import es.sim.stats.collectors.*;
 import es.sim.stats.graphs.*;
 import es.sim.util.*;
-import org.jfree.chart.*;
+import org.jfree.chart.ChartPanel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.*;
 
 import static es.sim.Main.*;
 
@@ -44,6 +45,16 @@ public class Board extends Screen {
     public final DeathCauseStatCollector<Deer> deerDeathCauseCollector = new DeathCauseStatCollector<>(Deer.class);
     public final PopulationGraph deerPopulationGraph = new PopulationGraph("Deer", deerPopulationCollector);
     public final SpeedGeneGraph speedGeneGraph = new SpeedGeneGraph();
+    public final JButton pauseResumeButton;
+    public final JButton stepForwardButton;
+    public final JButton sprintTickButton;
+    
+    
+    private static final int SIMULATION_TICK_LIMIT = 30000;
+    private static final double EQUILIBRIUM_THRESHOLD = 0.01; // Gene change smaller than this
+    private double lastDeerAvgSpeed = Double.NaN;
+    private double lastWolfAvgSpeed = Double.NaN;
+    private boolean isInEquilibrium = false;
 
     private float zoom = 1.0f;
     private float cellSize;
@@ -75,33 +86,21 @@ public class Board extends Screen {
 
         this.setLayout(null);
 
-        JButton stepForwardButton = new JButton("Step Forward");
+        stepForwardButton = new JButton("Step Forward");
         stepForwardButton.setBounds(134, 10, 120, 30);
         stepForwardButton.addActionListener(_ -> this.tick());
         stepForwardButton.setEnabled(false);
 
-        JButton sprintTickButton = new JButton("Sprint");
+        sprintTickButton = new JButton("Sprint");
         sprintTickButton.setBounds(258, 10, 120, 30);
         sprintTickButton.addActionListener(_ -> {
             tickLoop.sprint(!tickLoop.isSprinting());
             sprintTickButton.setText(tickLoop.isSprinting() ? "Stop Sprinting" : "Sprint");
         });
 
-        JButton pauseResumeButton = new JButton("Pause");
+        pauseResumeButton = new JButton("Pause");
         pauseResumeButton.setBounds(10, 10, 120, 30);
-        pauseResumeButton.addActionListener(_ -> {
-            if(tickLoop.isPaused()) {
-                tickLoop.resume();
-                pauseResumeButton.setText("Pause");
-                stepForwardButton.setEnabled(false);
-                sprintTickButton.setEnabled(true);
-            } else {
-                tickLoop.pause();
-                pauseResumeButton.setText("Resume");
-                stepForwardButton.setEnabled(true);
-                sprintTickButton.setEnabled(false);
-            }
-        });
+        pauseResumeButton.addActionListener(_ -> togglePause());
 
         ChartPanel chartPanel = deerPopulationGraph.getChartPanel();
         chartPanel.setBounds(10, 90, 500, 300);
@@ -201,10 +200,46 @@ public class Board extends Screen {
 
     /// Ticks every registered entity and makes them advance 1 step into the future
     public void tick() {
+        //Check end conditions before ticking
+        if(shouldEndSimulation()) {
+            tickLoop.pause();
+            saveSimulationStatistics();
+            return;
+        }
+        
+        // Check if wolves are extinct
+        if(entityCounts.get(Identifier.of("entity:wolf")) == 0) {
+            tickLoop.pause();
+            saveSimulationStatistics();
+            return;
+        }
+        
+        AtomicReference<Double> deerSum = new AtomicReference<>(0d);
+        AtomicInteger deerCount = new AtomicInteger(0);
+        
+        AtomicReference<Double> wolfSum = new AtomicReference<>(0d);
+        AtomicInteger wolfCount = new AtomicInteger(0);
+        
         for(Entity entity : entities) {
             //Removed earlier this tick (e.g. eaten by a wolf), so it must not act anymore
             if (!entities.contains(entity)) continue;
             entity.tick();
+            
+            if(entity instanceof Wolf wolf) {
+                wolfSum.set(wolfSum.get() + wolf.getSpeedGene());
+                wolfCount.incrementAndGet();
+            } else if(entity instanceof Deer deer) {
+                deerSum.set(deerSum.get() + deer.getSpeedGene());
+                deerCount.incrementAndGet();
+            }
+        }
+        
+        // Update equilibrium tracking (only if we've reached 30K ticks)
+        if(currentTick >= SIMULATION_TICK_LIMIT && deerCount.get() > 0 && wolfCount.get() > 0) {
+            double deerAvg = deerSum.get() / deerCount.get();
+            double wolfAvg = wolfSum.get() / wolfCount.get();
+            
+            checkEquilibrium(deerAvg, wolfAvg);
         }
 
         for(StatCollector collector : statisticManager.collectors) {
@@ -214,7 +249,7 @@ public class Board extends Screen {
         currentTick++;
         SwingUtilities.invokeLater(() -> {
             deerPopulationGraph.updateGraph();
-            speedGeneGraph.updateGraph();
+            speedGeneGraph.updateGraph(deerSum.get(), deerCount.get(), wolfSum.get(), wolfCount.get());
         });
     }
 
@@ -349,7 +384,61 @@ public class Board extends Screen {
         g.drawString("Deer Count: " + entityCounts.get(Identifier.of("entity:deer")), right - 100, 35);
         g.drawString("Wolf Count: " + entityCounts.get(Identifier.of("entity:wolf")), right - 100, 55);
     }
-
+    
+    public void togglePause() {
+        if(tickLoop.isPaused()) {
+            resume();
+        } else {
+            pause();
+        }
+    }
+    
+    public void resume() {
+        tickLoop.resume();
+        pauseResumeButton.setText("Pause");
+        stepForwardButton.setEnabled(false);
+        sprintTickButton.setEnabled(true);
+    }
+    
+    public void pause() {
+        tickLoop.pause();
+        pauseResumeButton.setText("Resume");
+        stepForwardButton.setEnabled(true);
+        sprintTickButton.setEnabled(false);
+    }
+    
+    private boolean shouldEndSimulation() {
+        // Check if we've reached 30K ticks AND are in equilibrium
+        if(currentTick >= SIMULATION_TICK_LIMIT && isInEquilibrium) {
+            LOGGER.info("Simulation ended: reached 30,000 ticks in equilibrium");
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private void checkEquilibrium(double deerAvg, double wolfAvg) {
+        if(Double.isNaN(lastDeerAvgSpeed) || Double.isNaN(lastWolfAvgSpeed)) {
+            lastDeerAvgSpeed = deerAvg;
+            lastWolfAvgSpeed = wolfAvg;
+            isInEquilibrium = false;
+            return;
+        }
+        
+        double deerChange = Math.abs(deerAvg - lastDeerAvgSpeed);
+        double wolfChange = Math.abs(wolfAvg - lastWolfAvgSpeed);
+        
+        // Both species must have minimal speed gene change
+        isInEquilibrium = (deerChange < EQUILIBRIUM_THRESHOLD && wolfChange < EQUILIBRIUM_THRESHOLD);
+        
+        lastDeerAvgSpeed = deerAvg;
+        lastWolfAvgSpeed = wolfAvg;
+    }
+    
+    private void saveSimulationStatistics() {
+        StatisticsSaver.saveSimulationStatistics(this);
+    }
+    
     @Override
     public void mousePressed(MouseEvent e) {
         lastMouseHeldPos = e.getPoint();

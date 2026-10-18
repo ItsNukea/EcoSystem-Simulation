@@ -1,16 +1,16 @@
 package es.sim;
 
-import es.sim.game.*;
-import es.sim.game.board.*;
+import es.sim.game.TickLoop;
+import es.sim.game.board.Board;
 import es.sim.game.entities.*;
-import es.sim.gui.*;
-import es.sim.io.*;
+import es.sim.gui.TitleScreen;
+import es.sim.io.FileManager;
 import es.sim.util.*;
 import org.slf4j.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
-import java.text.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Main {
@@ -18,7 +18,7 @@ public class Main {
     private static Window window;
     public static Board board = null;
     public static TickLoop tickLoop = null;
-    public static Timer renderLoop = new Timer(0, _ -> getWindow().repaint());
+    public static Timer renderLoop = new Timer(4, _ -> getWindow().repaint());
 
     static {
         String sessionTimestamp = new SimpleDateFormat("dd.MM.yyyy-HH.mm.ss").format(new Date());
@@ -61,6 +61,7 @@ public class Main {
             window.setVisible(true);
             window.toFront();
             window.requestFocus();
+            window.setFullScreen();
             LOGGER.info("Window initalized");
             window.showScreen(new TitleScreen());
 
