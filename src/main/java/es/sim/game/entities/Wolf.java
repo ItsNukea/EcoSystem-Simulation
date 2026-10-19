@@ -15,17 +15,17 @@ public class Wolf extends Entity {
     private static final double HUNT_SPEED = 1d;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
-    private static final int MIN_MEAL_FULLNESS = 125;
-    private static final int MAX_MEAL_FULLNESS = 175;
-    private static final int MAX_STOMACH_FULLNESS = 400;
+    private static final int MIN_MEAL_FULLNESS = 100;
+    private static final int MAX_MEAL_FULLNESS = 200;
+    private static final int MAX_STOMACH_FULLNESS = 375;
     private final int HUNGER_THRESHOLD;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 300;
+    private static final int REPRODUCTION_COST = 0;
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
-    private static final int BREEDING_FULLNESS_THRESHOLD = 300;
-    private static final int MAX_BREEDING_COOLDOWN = 600;
+    private static final int BREEDING_FULLNESS_THRESHOLD = 200;
+    private static final int MAX_BREEDING_COOLDOWN = 800;
 
     /// How far beyond VIEW_DISTANCE a wolf can search for a breeding partner. Must stay at or below 2.0 --
     /// the meeting point is the midpoint between the two wolves, so it's never more than half their distance
@@ -43,13 +43,13 @@ public class Wolf extends Entity {
         VIEW_DISTANCE = 9;
         HUNGER_THRESHOLD = 200;
         ACTIVITY = EntityActivity.WANDERING;
-        ONSET_AGE = 5000d;
+        ONSET_AGE = 2000d;
         AGING_RATE = 0.02d;
     }
 
     @Override
     public void tick() {
-        if(Math.random() <= getDeathProbability()) {
+        if(board.getRandom().nextDouble() <= getDeathProbability()) {
             die(DeathCause.OLD_AGE);
             return;
         }

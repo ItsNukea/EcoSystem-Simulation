@@ -1,5 +1,7 @@
 package es.sim.stats;
 
-public interface StatCollector {
-    
+import es.sim.io.*;
+
+public interface StatCollector extends Savable {
+    String getName();
 }

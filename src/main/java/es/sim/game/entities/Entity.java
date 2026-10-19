@@ -247,7 +247,7 @@ public abstract class Entity {
 
     /// A mutated copy of a (typically averaged) parent gene value, for passing a trait on to a baby
     public double mutateGene(double parentGeneValue) {
-        double mutationFactor = 1 + (board.getRandom().nextDouble() * 2 - 1) * MUTATION_STRENGTH;
+        double mutationFactor = Util.linearToLogarithmicDistribution(board.getRandom().nextDouble(), 1d / (1d + MUTATION_STRENGTH), 1d + MUTATION_STRENGTH, 1.2d);
         return parentGeneValue * mutationFactor;
     }
 

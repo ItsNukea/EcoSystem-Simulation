@@ -1,43 +1,50 @@
 
 package es.sim.io;
 
-import es.sim.game.board.Board;
-import es.sim.stats.StatCollector;
+import es.sim.game.board.*;
+import es.sim.stats.*;
+import tools.jackson.databind.*;
+import tools.jackson.databind.node.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import static es.sim.Main.LOGGER;
+import java.time.*;
+import java.time.format.*;
+import java.util.*;
 
 public class StatisticsSaver {
+	private static final ObjectMapper MAPPER = new ObjectMapper();
+	private static final ObjectWriter WRITER = MAPPER.writerWithDefaultPrettyPrinter();
 	
-	public static void saveSimulationStatistics(Board board) {
-		
-		
-		try {
-			String timestamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-			String filename = "simulation_" + timestamp + ".txt";
-			Path savePath = FileManager.getRunDirectory().resolve("saves").resolve(filename);
-			
-			StringBuilder stats = new StringBuilder();
-			stats.append("=== Ecosystem Simulation Statistics ===\n");
-			stats.append("Timestamp: ").append(new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(new Date())).append("\n");
-			stats.append("Final Tick: ").append(board.getCurrentTick()).append("\n\n");
-			
-			// Collect all statistics
-			for(StatCollector collector : board.getStatistics().collectors) {
-				stats.append(collector.getClass().getSimpleName()).append(":\n");
-				stats.append(collector).append("\n\n");
+	public static synchronized void saveSimulationStatistics(Board board) {
+		Path savePath = getSavePath();
+
+		ObjectNode root = MAPPER.createObjectNode();
+		ArrayList<StatCollector> stats = board.getStatistics().collectors;
+
+		ObjectNode metadata = root.putObject("meta");
+		metadata.put("seed", board.getRandomSeed());
+		metadata.put("last_tick", board.getCurrentTick());
+		ObjectNode statisticsNode = root.putObject("statistics");
+
+		for(StatCollector collector : stats) {
+			collector.save(statisticsNode.putObject(collector.getName()));
+		}
+
+		FileManager.getRunDirectory().resolve("saves").toFile().mkdirs();
+		WRITER.writeValue(savePath, root);
+	}
+
+	private static Path getSavePath() {
+		LocalDateTime currentTime = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+
+		while(true) {
+			Path path = FileManager.getRunDirectory().resolve("saves", formatter.format(currentTime) + ".json");
+			if(!path.toFile().exists()) {
+				return path;
 			}
-			
-			// Write to file
-			Files.writeString(savePath, stats.toString());
-			LOGGER.info("Simulation statistics saved to: {}", savePath.toAbsolutePath());
-			
-		} catch(IOException e) {
-			LOGGER.error("Failed to save simulation statistics", e);
+			currentTime.plusSeconds(1);
 		}
 	}
 }

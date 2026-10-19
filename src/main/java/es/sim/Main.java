@@ -87,7 +87,7 @@ public class Main {
             if(board.getCell(x, y).holder.isEmpty()) {
                 Wolf wolf = new Wolf();
                 wolf.randomizeAge();
-                wolf.setSpeedGene(Util.linearToLogarithmicDistribution(Math.random(), 0.5, 2.0, 1.5));
+                wolf.setSpeedGene(Util.linearToLogarithmicDistribution(board.getRandom().nextDouble(), 0.5, 2.0, 1.5));
                 board.registerEntity(wolf, x, y);
                 board.wolfPopulationCollector.addEntry();
 
@@ -106,7 +106,7 @@ public class Main {
                 Deer deer = new Deer();
                 deer.randomizeAge();
                 deer.randomizeBreedingCooldown(Deer.BREEDING_COOLDOWN_TICKS);
-                deer.setSpeedGene(Util.linearToLogarithmicDistribution(Math.random(), 0.5, 2.0, 1.5));
+                deer.setSpeedGene(Util.linearToLogarithmicDistribution(board.getRandom().nextDouble(), 0.5, 2.0, 1.5));
                 board.registerEntity(deer, x, y);
                 board.deerPopulationCollector.addEntry();
 

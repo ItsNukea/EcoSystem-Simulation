@@ -65,8 +65,9 @@ public class Board extends Screen {
 
     private int panX = 0, panY = 0;
     private Point lastMouseHeldPos = null;
-    
-    private Random RANDOM = new Random();
+
+    private final long SEED;
+    private final Random RANDOM = new Random();
 
     public Board(Screen parent) {
         this(DEFAULT_ROWS, DEFAULT_COLUMNS, parent);
@@ -131,8 +132,7 @@ public class Board extends Screen {
         speedGenePanel.setVisible(false);
         add(speedGenePanel);
 
-        JButton toggleSpeedGeneButton =
-                new JButton("Toggle SpeedGene Graph");
+        JButton toggleSpeedGeneButton = new JButton("Toggle SpeedGene Graph");
 
         toggleSpeedGeneButton.setBounds(258, 50, 244, 30);
         toggleSpeedGeneButton.addActionListener(_ -> {
@@ -154,6 +154,9 @@ public class Board extends Screen {
         );
 
         deerPopulationGraph.addCollector("Wolf", wolfPopulationCollector);
+
+        SEED = RANDOM.nextLong();
+        RANDOM.setSeed(SEED);
     }
 
     /// Gets a cell at a specified coordinate {@code (x, y)}
@@ -202,15 +205,8 @@ public class Board extends Screen {
     public void tick() {
         //Check end conditions before ticking
         if(shouldEndSimulation()) {
-            tickLoop.pause();
             saveSimulationStatistics();
-            return;
-        }
-        
-        // Check if wolves are extinct
-        if(entityCounts.get(Identifier.of("entity:wolf")) == 0) {
-            tickLoop.pause();
-            saveSimulationStatistics();
+            tickLoop.stop();
             return;
         }
         
@@ -328,6 +324,10 @@ public class Board extends Screen {
         return new Rectangle(x0, y0, x1 - x0, y1 - y0);
     }
 
+    public long getRandomSeed() {
+        return SEED;
+    }
+
     @Override
     public void render(Graphics2D g) {
         recalcGrid();
@@ -421,8 +421,8 @@ public class Board extends Screen {
     
     private boolean shouldEndSimulation() {
         // Check if we've reached 30K ticks AND are in equilibrium
-        if(currentTick >= SIMULATION_TICK_LIMIT && isInEquilibrium) {
-            LOGGER.info("Simulation ended: reached 30,000 ticks in equilibrium");
+        if(entityCounts.get(Identifier.of("entity:wolf")) == 0) {
+            LOGGER.info("Simulation ended: No more wolves");
             return true;
         }
         
