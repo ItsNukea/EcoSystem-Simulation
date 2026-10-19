@@ -43,8 +43,10 @@ public class Board extends Screen {
     public final PopulationStatCollector<Deer> deerPopulationCollector = new PopulationStatCollector<>(Deer.class);
     public final DeathCauseStatCollector<Wolf> wolfDeathCauseCollector = new DeathCauseStatCollector<>(Wolf.class);
     public final DeathCauseStatCollector<Deer> deerDeathCauseCollector = new DeathCauseStatCollector<>(Deer.class);
-    public final PopulationGraph deerPopulationGraph = new PopulationGraph("Deer", deerPopulationCollector);
-    public final SpeedGeneGraph speedGeneGraph = new SpeedGeneGraph();
+    public final SpeedGeneStatCollector<Wolf> wolfSpeedGeneCollector = new SpeedGeneStatCollector<>(Wolf.class);
+    public final SpeedGeneStatCollector<Deer> deerSpeedGeneCollector = new SpeedGeneStatCollector<>(Deer.class);
+    public final PopulationGraph populationGraph = new PopulationGraph("Deer", deerPopulationCollector);
+    public final SpeedGeneGraph speedGeneGraph = new SpeedGeneGraph(deerSpeedGeneCollector, wolfSpeedGeneCollector);
     public final JButton pauseResumeButton;
     public final JButton stepForwardButton;
     public final JButton sprintTickButton;
@@ -103,7 +105,7 @@ public class Board extends Screen {
         pauseResumeButton.setBounds(10, 10, 120, 30);
         pauseResumeButton.addActionListener(_ -> togglePause());
 
-        ChartPanel chartPanel = deerPopulationGraph.getChartPanel();
+        ChartPanel chartPanel = populationGraph.getChartPanel();
         chartPanel.setBounds(10, 90, 500, 300);
         chartPanel.setVisible(false);
 
@@ -150,10 +152,12 @@ public class Board extends Screen {
                 wolfPopulationCollector,
                 deerPopulationCollector,
                 wolfDeathCauseCollector,
-                deerDeathCauseCollector
+                deerDeathCauseCollector,
+                wolfSpeedGeneCollector,
+                deerSpeedGeneCollector
         );
 
-        deerPopulationGraph.addCollector("Wolf", wolfPopulationCollector);
+        populationGraph.addCollector("Wolf", wolfPopulationCollector);
 
         SEED = RANDOM.nextLong();
         RANDOM.setSeed(SEED);
@@ -210,43 +214,26 @@ public class Board extends Screen {
             return;
         }
         
-        AtomicReference<Double> deerSum = new AtomicReference<>(0d);
-        AtomicInteger deerCount = new AtomicInteger(0);
-        
-        AtomicReference<Double> wolfSum = new AtomicReference<>(0d);
-        AtomicInteger wolfCount = new AtomicInteger(0);
-        
         for(Entity entity : entities) {
             //Removed earlier this tick (e.g. eaten by a wolf), so it must not act anymore
             if (!entities.contains(entity)) continue;
             entity.tick();
             
             if(entity instanceof Wolf wolf) {
-                wolfSum.set(wolfSum.get() + wolf.getSpeedGene());
-                wolfCount.incrementAndGet();
+                wolfSpeedGeneCollector.addSpeedGene(wolf.getSpeedGene());
             } else if(entity instanceof Deer deer) {
-                deerSum.set(deerSum.get() + deer.getSpeedGene());
-                deerCount.incrementAndGet();
+                deerSpeedGeneCollector.addSpeedGene(deer.getSpeedGene());
             }
         }
         
-        // Update equilibrium tracking (only if we've reached 30K ticks)
-        if(currentTick >= SIMULATION_TICK_LIMIT && deerCount.get() > 0 && wolfCount.get() > 0) {
-            double deerAvg = deerSum.get() / deerCount.get();
-            double wolfAvg = wolfSum.get() / wolfCount.get();
-            
-            checkEquilibrium(deerAvg, wolfAvg);
-        }
+        populationGraph.updateGraph();
+        speedGeneGraph.updateGraph();
 
         for(StatCollector collector : statisticManager.collectors) {
             if(collector instanceof TimeSeriesCollector tsCollector) tsCollector.prepareForNextTick(currentTick);
         }
 
         currentTick++;
-        SwingUtilities.invokeLater(() -> {
-            deerPopulationGraph.updateGraph();
-            speedGeneGraph.updateGraph(deerSum.get(), deerCount.get(), wolfSum.get(), wolfCount.get());
-        });
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}

@@ -46,8 +46,8 @@ public class PopulationStatCollector<T extends Entity> implements TimeSeriesColl
         root.put("entityType", entityType.getName());
         ArrayNode sizes = root.putArray("data");
 
-        for(long size : populationSize) {
-            sizes.add(size);
+        for(long tick : populationSize) {
+            sizes.add(tick);
         }
     }
 

@@ -4,11 +4,12 @@ import es.sim.game.entities.*;
 import es.sim.stats.*;
 import tools.jackson.databind.node.*;
 
+import java.io.IOException;
 import java.util.*;
 
 public class DeathCauseStatCollector<T extends Entity> implements StatCollector {
-    public EnumMap<DeathCause, Long> data = new EnumMap<>(DeathCause.class);
     public Class<T> entityType;
+    public EnumMap<DeathCause, Long> data = new EnumMap<>(DeathCause.class);
 
     public DeathCauseStatCollector(Class<T> entityType) {
         this.entityType = entityType;
@@ -19,14 +20,6 @@ public class DeathCauseStatCollector<T extends Entity> implements StatCollector 
 
     public void increase(DeathCause cause) {
         data.put(cause, data.get(cause) + 1L);
-    }
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(entityType.getSimpleName()).append(" deaths:");
-        for (Map.Entry<DeathCause, Long> entry : data.entrySet()) {
-            sb.append("\n  ").append(entry.getKey()).append(": ").append(entry.getValue());
-        }
-        return sb.toString();
     }
 
     @Override
