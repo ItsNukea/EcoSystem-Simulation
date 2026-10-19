@@ -12,7 +12,7 @@ import java.util.Random;
 import static es.sim.Main.LOGGER;
 
 public class Deer extends Entity {
-    public static final int BREEDING_COOLDOWN_TICKS = 90;
+    public static final int BREEDING_COOLDOWN_TICKS = 150;
     private static final int MAX_STOMACH_FULLNESS = 130;
     private static final int HUNGER_THRESHOLD = 86;
 
