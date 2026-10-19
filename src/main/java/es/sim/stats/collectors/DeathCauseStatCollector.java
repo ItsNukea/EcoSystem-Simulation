@@ -7,7 +7,6 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.util.*;
 
 public class DeathCauseStatCollector<T extends Entity> implements StatCollector {
-    private static final ArrayList<DeathCauseStatCollector<?>> allCollectors = new ArrayList<>();
 
     public EnumMap<DeathCause, Long> amounts = new EnumMap<>(DeathCause.class);
     public Class<T> entityType;
@@ -17,24 +16,17 @@ public class DeathCauseStatCollector<T extends Entity> implements StatCollector 
         for(DeathCause cause : DeathCause.values()) {
             amounts.put(cause, 0L);
         }
-
-        allCollectors.add(this);
     }
 
     public void increase(DeathCause cause) {
         amounts.put(cause, amounts.get(cause) + 1L);
     }
-
-    public static <T extends Entity> DeathCauseStatCollector<T> getFromClass(Class<T> entityType) {
-        for(DeathCauseStatCollector<?> collector : allCollectors) {
-            if(collector.entityType.equals(entityType)) {
-                //We already checked this, but in a way the compiler doesn't like it.
-                //We need to perform a sacrifice so the compiler gods won't screw us over
-                @SuppressWarnings("unchecked")
-                DeathCauseStatCollector<T> casted = (DeathCauseStatCollector<T>) collector;
-                return casted;
-            }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(entityType.getSimpleName()).append(" deaths:");
+        for (Map.Entry<DeathCause, Long> entry : amounts.entrySet()) {
+            sb.append("\n  ").append(entry.getKey()).append(": ").append(entry.getValue());
         }
-        return null;
+        return sb.toString();
     }
 }

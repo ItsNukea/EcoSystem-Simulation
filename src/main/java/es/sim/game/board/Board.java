@@ -293,6 +293,12 @@ public class Board extends Screen {
         return statisticManager;
     }
 
+    public DeathCauseStatCollector<?> getDeathCauseCollector(Class<? extends Entity> type) {
+        if (type == Wolf.class) return wolfDeathCauseCollector;
+        if (type == Deer.class) return deerDeathCauseCollector;
+        return null;
+    }
+
     /// Recomputes {@link #cellSize} and the centering origin so the grid fits the window
     /// as large as possible at the current zoom level, then centers it
     private void recalcGrid() {
@@ -405,6 +411,12 @@ public class Board extends Screen {
         pauseResumeButton.setText("Resume");
         stepForwardButton.setEnabled(true);
         sprintTickButton.setEnabled(false);
+    }
+
+    @Override
+    public void onClose() {
+        pause();
+        super.onClose();
     }
     
     private boolean shouldEndSimulation() {

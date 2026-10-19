@@ -43,7 +43,7 @@ public class BerryBush extends Entity {
     public void tick() {
         age++;
         remainingSeedCooldown--;
-        if(board.getRandom().nextInt(5000) <= 25) {
+        if(board.getRandom().nextInt(2500) <= 25) {
             growingStage = Math.min(MAX_GROWING_STAGE, growingStage + 1);
         }
 

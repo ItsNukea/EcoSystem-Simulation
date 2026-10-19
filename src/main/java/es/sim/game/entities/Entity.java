@@ -257,8 +257,8 @@ public abstract class Entity {
     }
 
     protected void die(DeathCause cause) {
-        DeathCauseStatCollector<?> collector = DeathCauseStatCollector.getFromClass(getClass());
-        collector.increase(cause);
+        DeathCauseStatCollector<?> collector = board.getDeathCauseCollector(getClass());
+        if (collector != null) collector.increase(cause);
         board.unregisterEntity(this);
 
         if(this instanceof Wolf) {
