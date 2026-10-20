@@ -50,13 +50,6 @@ public class Board extends Screen {
     public final JButton pauseResumeButton;
     public final JButton stepForwardButton;
     public final JButton sprintTickButton;
-    
-    
-    private static final int SIMULATION_TICK_LIMIT = 30000;
-    private static final double EQUILIBRIUM_THRESHOLD = 0.01; // Gene change smaller than this
-    private double lastDeerAvgSpeed = Double.NaN;
-    private double lastWolfAvgSpeed = Double.NaN;
-    private boolean isInEquilibrium = false;
 
     private float zoom = 1.0f;
     private float cellSize;
@@ -129,7 +122,7 @@ public class Board extends Screen {
         add(chartPanel);
 
         ChartPanel speedGenePanel = speedGeneGraph.getChartPanel();
-        //Directly below the population graph: that one starts at y = 90 and is 300 tall, plus a 10 pixel gap
+        //Directly below the population graph: that one starts at y = 90 and is 300 tall, plus a 10-pixel gap
         speedGenePanel.setBounds(10, 400, 500, 300);
         speedGenePanel.setVisible(false);
         add(speedGenePanel);
@@ -414,24 +407,6 @@ public class Board extends Screen {
         }
         
         return false;
-    }
-    
-    private void checkEquilibrium(double deerAvg, double wolfAvg) {
-        if(Double.isNaN(lastDeerAvgSpeed) || Double.isNaN(lastWolfAvgSpeed)) {
-            lastDeerAvgSpeed = deerAvg;
-            lastWolfAvgSpeed = wolfAvg;
-            isInEquilibrium = false;
-            return;
-        }
-        
-        double deerChange = Math.abs(deerAvg - lastDeerAvgSpeed);
-        double wolfChange = Math.abs(wolfAvg - lastWolfAvgSpeed);
-        
-        // Both species must have minimal speed gene change
-        isInEquilibrium = (deerChange < EQUILIBRIUM_THRESHOLD && wolfChange < EQUILIBRIUM_THRESHOLD);
-        
-        lastDeerAvgSpeed = deerAvg;
-        lastWolfAvgSpeed = wolfAvg;
     }
     
     private void saveSimulationStatistics() {
