@@ -16,7 +16,7 @@ public class Deer extends Entity {
     private static final int MAX_STOMACH_FULLNESS = (int) Util.toTicks(simulation, 13);
     private static final int HUNGER_THRESHOLD = 86;
 
-    private static final int MIN_MEAL_FULLNESS = (int) Util.toTicks(simulation, 15);
+    private static final int MIN_MEAL_FULLNESS = (int) Util.toTicks(simulation, 1.5);
     private static final int MAX_MEAL_FULLNESS = (int) Util.toTicks(simulation, 3);
 
     /// How many times faster a deer moves while fleeing a wolf, same idea as Wolf's HUNT_SPEED
