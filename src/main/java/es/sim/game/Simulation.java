@@ -1,5 +1,6 @@
 package es.sim.game;
 
+import es.sim.*;
 import es.sim.game.board.*;
 import es.sim.game.entities.*;
 import es.sim.io.*;
@@ -19,8 +20,6 @@ public class Simulation {
     public static final int DEFAULT_ROWS = 100;
     public static final int DEFAULT_COLUMNS = 100;
 
-    private static final Identifier WOLF_ID = Identifier.of("entity:wolf");
-
     // World
     private final Cell[][] grid;
     private final CopyOnWriteArrayList<Entity> entities = new CopyOnWriteArrayList<>();
@@ -29,6 +28,7 @@ public class Simulation {
     private final int columns;
     private final long seed;
     private final Random random = new Random();
+    public final int SIMULATION_TICK_LIMIT = 30000;
 
     // Statistics
     public final PopulationStatCollector<Wolf> wolfPopulationCollector = new PopulationStatCollector<>(Wolf.class);
@@ -53,8 +53,8 @@ public class Simulation {
         this.columns = columns;
         grid = new Cell[columns][rows];
 
-        for (int x = 0; x < columns; x++) {
-            for (int y = 0; y < rows; y++) {
+        for(int x = 0; x < columns; x++) {
+            for(int y = 0; y < rows; y++) {
                 grid[x][y] = new Cell();
             }
         }
@@ -80,13 +80,13 @@ public class Simulation {
     /// Ticks every registered entity and makes them advance 1 step into the future
     public void tick() {
         //Check end conditions before ticking
-        if (shouldEndSimulation()) {
+        if(shouldEndSimulation()) {
             StatisticsSaver.saveSimulationStatistics(this);
             tickLoop.stop();
             return;
         }
 
-        for (Entity entity : entities) {
+        for(Entity entity : entities) {
             //Removed earlier this tick (e.g. eaten by a wolf), so it must not act anymore
             if (!entities.contains(entity)) continue;
             entity.tick();
@@ -98,22 +98,28 @@ public class Simulation {
             }
         }
 
-        for (Runnable listener : tickListeners) {
+        for(Runnable listener : tickListeners) {
             listener.run();
         }
 
-        for (StatCollector collector : statisticManager.collectors) {
-            if (collector instanceof TimeSeriesCollector tsCollector) tsCollector.prepareForNextTick(currentTick);
+        for(StatCollector collector : statisticManager.collectors) {
+            if(collector instanceof TimeSeriesCollector tsCollector) tsCollector.prepareForNextTick(currentTick);
         }
 
         currentTick++;
     }
 
     private boolean shouldEndSimulation() {
-        if (getEntityCount(WOLF_ID) == 0) {
+        if(getEntityCount(Identifier.of("entity:wolf")) == 0) {
             LOGGER.info("Simulation ended: No more wolves");
             return true;
         }
+
+        if(currentTick >= SIMULATION_TICK_LIMIT && DebugVariables.LIMIT_SIMULATION_TICK_LENGTH) {
+            LOGGER.info("Simulation ended: Hit tick length limit");
+            return true;
+        }
+
         return false;
     }
 
@@ -126,7 +132,7 @@ public class Simulation {
 
     /// Gets a cell at a specified coordinate {@code (x, y)}
     public Cell getCell(int x, int y) {
-        if (x < 0 || x >= columns || y < 0 || y >= rows) {
+        if(x < 0 || x >= columns || y < 0 || y >= rows) {
             String message = String.format("Could not provide Cell at coordinate (%d, %d) because the coordinate does not exist", x, y);
             LOGGER.error(message);
             throw new IllegalArgumentException(message);
@@ -151,7 +157,7 @@ public class Simulation {
         entityCounts.merge(e.getEntityID(), -1, Integer::sum);
 
         Cell cell = getCell(e.getPos().x, e.getPos().y);
-        if (cell.holder.isPresent() && cell.holder.get() == e) {
+        if(cell.holder.isPresent() && cell.holder.get() == e) {
             cell.setContents(null);
         }
     }

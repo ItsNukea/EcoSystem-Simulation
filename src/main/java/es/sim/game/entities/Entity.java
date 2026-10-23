@@ -246,6 +246,9 @@ public abstract class Entity {
     }
 
     /// A mutated copy of a (typically averaged) parent gene value, for passing a trait on to a baby
+    /// The mutation factor will be a logarithmically distributed value between {@code 1 + MUTATION_STRENGTH} and {@code 1 / (1 + MUTATION_STRENGTH)}.
+    /// The factor will have the greatest chance of occurring around 1, and a factor and its reciprocal will have the
+    /// same probability of occurring
     public double mutateGene(double parentGeneValue) {
         double mutationFactor = Util.linearToLogarithmicDistribution(sim.getRandom().nextDouble(), 1d / (1d + MUTATION_STRENGTH), 1d + MUTATION_STRENGTH, 1.2d);
         return parentGeneValue * mutationFactor;
@@ -270,8 +273,6 @@ public abstract class Entity {
 
     /// The probability, per tick, that this entity dies of old age. Rises sharply once age passes onsetAge
     protected double getDeathProbability() {
-        return 1 - Math.exp(
-                -baselineMortality * Math.exp(AGING_RATE * (age - ONSET_AGE))
-        );
+        return 1 - Math.exp(-baselineMortality * Math.exp(AGING_RATE * (age - ONSET_AGE)));
     }
 }

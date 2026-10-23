@@ -31,18 +31,16 @@ public class Main {
     ///     - {@code --devEnv}: Used to signify that the program is running in an IDE.<br>**<span style="color:red">THIS FLAG SHOULD BE ENABLED IF AND ONLY IF THE PROGRAM RUNS IN AN IDE!</span>**
     ///     - {@code --showDebugInfo}: Shows to which square every entity is path finding to.
     ///     - {@code --clearLogFiles}: Clears all log files except {@code latest.log} in the log directory
+    ///     - {@code --limitTickLength}: Does not let a simulation simulate forever, but ends it when hitting a certain tick count
     static void main(String[] args) {
         LOGGER.info("Starting application...");
 
         //First, do critical flags
         for(String arg : args) {
-            if (arg.equals("--devEnv")) {
-                DebugVariables.IS_DEVELOPMENT_ENVIRONMENT = true;
-                continue;
-            }
-
-            if(arg.equals("--showDebugInfo")) {
-                DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION = true;
+            switch(arg) {
+                case "--devEnv" -> DebugVariables.IS_DEVELOPMENT_ENVIRONMENT = true;
+                case "--showDebugInfo" -> DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION = true;
+                case "--limitTickLength" -> DebugVariables.LIMIT_SIMULATION_TICK_LENGTH = true;
             }
         }
 
