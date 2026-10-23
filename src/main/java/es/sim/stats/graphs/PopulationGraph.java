@@ -46,7 +46,7 @@ public class PopulationGraph {
                 continue;
             }
 
-            int tick = Main.board.getCurrentTick();
+            int tick = Main.simulation.getCurrentTick();
             Long value = data.get(tick);
 
             entry.series.add(tick, value);

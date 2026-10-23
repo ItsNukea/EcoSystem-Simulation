@@ -1,6 +1,6 @@
 package es.sim.gui;
 
-import es.sim.Main;
+import es.sim.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,7 +33,7 @@ public class TitleScreen extends Screen {
         startButton.addActionListener(_ -> {
             LOGGER.info("Starting New Simulation...");
             resetBoard();
-            tickLoop.start();
+            simulation.start();
             if(!renderLoop.isRunning()) {
                 renderLoop.start();
             }
@@ -50,7 +50,7 @@ public class TitleScreen extends Screen {
         continueButton.setEnabled(board != null);
         continueButton.addActionListener(_ -> {
             LOGGER.info("Continuing Last Simulation...");
-            tickLoop.start();
+            simulation.start();
             if(!renderLoop.isRunning()) {
                 renderLoop.start();
             }

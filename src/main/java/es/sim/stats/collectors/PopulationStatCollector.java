@@ -18,12 +18,12 @@ public class PopulationStatCollector<T extends Entity> implements TimeSeriesColl
     }
 
     public void addEntry() {
-        int i = Main.board.getCurrentTick();
+        int i = Main.simulation.getCurrentTick();
         populationSize.set(i, populationSize.get(i) + 1);
     }
 
     public void removeEntry() {
-        int i = Main.board.getCurrentTick();
+        int i = Main.simulation.getCurrentTick();
         populationSize.set(i, populationSize.get(i) - 1);
     }
 

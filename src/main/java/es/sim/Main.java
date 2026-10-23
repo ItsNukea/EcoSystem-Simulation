@@ -1,23 +1,23 @@
 package es.sim;
 
-import es.sim.game.TickLoop;
-import es.sim.game.board.Board;
+import es.sim.game.*;
+import es.sim.game.board.*;
 import es.sim.game.entities.*;
-import es.sim.gui.TitleScreen;
-import es.sim.io.FileManager;
+import es.sim.gui.*;
+import es.sim.io.*;
 import es.sim.util.*;
 import org.slf4j.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.*;
 
 public class Main {
     public static final Logger LOGGER;
     private static Window window;
+    public static Simulation simulation;
     public static Board board = null;
-    public static TickLoop tickLoop = null;
     public static Timer renderLoop = new Timer(4, _ -> getWindow().repaint());
 
     static {
@@ -70,63 +70,55 @@ public class Main {
     }
 
     public static void resetBoard() {
-        board = new Board(window.getScreen());
+        if (simulation != null) simulation.stop();
 
-        if(tickLoop != null) {
-            tickLoop.stop();
-        }
+        simulation = new Simulation(10);
+        board = new Board(window.getScreen(), simulation);
 
-        Random random = board.getRandom();
+        Random random = simulation.getRandom();
 
         int wolfsToSpawn = 30;
+        for (int spawned = 0; spawned < wolfsToSpawn; spawned++) {
+            int x = random.nextInt(0, simulation.getColumns());
+            int y = random.nextInt(0, simulation.getRows());
 
-        for(int spawned = 0; spawned < wolfsToSpawn; spawned++) {
-            int x = random.nextInt(0, board.getColumns());
-            int y = random.nextInt(0, board.getRows());
-
-            if(board.getCell(x, y).holder.isEmpty()) {
+            if (simulation.getCell(x, y).holder.isEmpty()) {
                 Wolf wolf = new Wolf();
                 wolf.randomizeAge();
-                wolf.setSpeedGene(Util.linearToLogarithmicDistribution(board.getRandom().nextDouble(), 0.5, 2.0, 1.5));
-                board.registerEntity(wolf, x, y);
-                board.wolfPopulationCollector.addEntry();
-
+                wolf.setSpeedGene(Util.linearToLogarithmicDistribution(random.nextDouble(), 0.5, 2.0, 1.5));
+                simulation.registerEntity(wolf, x, y);
+                simulation.wolfPopulationCollector.addEntry();
                 continue;
             }
             spawned--;
         }
 
         int deerToSpawn = 500;
+        for (int spawned = 0; spawned < deerToSpawn; spawned++) {
+            int x = random.nextInt(0, simulation.getColumns());
+            int y = random.nextInt(0, simulation.getRows());
 
-        for(int spawned = 0; spawned < deerToSpawn; spawned++) {
-            int x = random.nextInt(0, board.getColumns());
-            int y = random.nextInt(0, board.getRows());
-
-            if(board.getCell(x, y).holder.isEmpty()) {
+            if (simulation.getCell(x, y).holder.isEmpty()) {
                 Deer deer = new Deer();
                 deer.randomizeAge();
                 deer.randomizeBreedingCooldown(Deer.BREEDING_COOLDOWN_TICKS);
-                deer.setSpeedGene(Util.linearToLogarithmicDistribution(board.getRandom().nextDouble(), 0.5, 2.0, 1.5));
-                board.registerEntity(deer, x, y);
-                board.deerPopulationCollector.addEntry();
-
+                deer.setSpeedGene(Util.linearToLogarithmicDistribution(random.nextDouble(), 0.5, 2.0, 1.5));
+                simulation.registerEntity(deer, x, y);
+                simulation.deerPopulationCollector.addEntry();
                 continue;
             }
-                spawned--;
-            }
+            spawned--;
+        }
 
-            int bushesToSpawn = 325;
-
-        for(int spawned = 0; spawned < bushesToSpawn; spawned++) {
-            BerryBush bush = BerryBush.getNewWithRandomProperties(board);
-            if (board.getCell(bush.getPos().x, bush.getPos().y).holder.isEmpty()) {
-                board.registerEntity(bush, bush.getPos().x, bush.getPos().y);
+        int bushesToSpawn = 325;
+        for (int spawned = 0; spawned < bushesToSpawn; spawned++) {
+            BerryBush bush = BerryBush.getNewWithRandomProperties(simulation);
+            if (simulation.getCell(bush.getPos().x, bush.getPos().y).holder.isEmpty()) {
+                simulation.registerEntity(bush, bush.getPos().x, bush.getPos().y);
             } else {
                 spawned--;
             }
         }
-
-        tickLoop = new TickLoop(10, board::tick);
     }
 
     public static Window getWindow() {

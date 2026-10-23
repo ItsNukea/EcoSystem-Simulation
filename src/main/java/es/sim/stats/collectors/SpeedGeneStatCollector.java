@@ -21,7 +21,7 @@ public class SpeedGeneStatCollector<T extends Entity> implements TimeSeriesColle
 	 * Adds a speed gene value to the current tick's accumulator
 	 */
 	public void addSpeedGene(double speedGene) {
-		int tick = Main.board.getCurrentTick();
+		int tick = Main.simulation.getCurrentTick();
 		double[] data = this.data.get(tick);
 		data[0] += speedGene; // sum
 		data[1] += 1;         // count
@@ -31,7 +31,7 @@ public class SpeedGeneStatCollector<T extends Entity> implements TimeSeriesColle
 	 * Gets the average speed gene for the current tick
 	 */
 	public double getCurrentAverage() {
-		int tick = Main.board.getCurrentTick();
+		int tick = Main.simulation.getCurrentTick();
 		double[] data = this.data.get(tick);
 		return data[1] == 0 ? Double.NaN : data[0] / data[1];
 	}

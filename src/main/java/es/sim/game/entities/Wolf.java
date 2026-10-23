@@ -1,5 +1,6 @@
 package es.sim.game.entities;
 
+import es.sim.*;
 import es.sim.game.EntityActivity;
 import es.sim.game.board.Surroundings;
 import es.sim.stats.DeathCause;
@@ -49,7 +50,7 @@ public class Wolf extends Entity {
 
     @Override
     public void tick() {
-        if(board.getRandom().nextDouble() <= getDeathProbability()) {
+        if(sim.getRandom().nextDouble() <= getDeathProbability()) {
             die(DeathCause.OLD_AGE);
             return;
         }
@@ -88,7 +89,7 @@ public class Wolf extends Entity {
     public void renderTarget(Graphics2D graphics, Rectangle cellBounds) {
         //Debug: mark the current target, but not while hunting, because the target is then the deer's own cell
         if (currentTarget != null && DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION) {
-            Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
+            Rectangle targetCellBounds = Main.board.getCellBounds(currentTarget.x, currentTarget.y);
             graphics.setColor(new Color(117, 111, 5));
             graphics.fill(targetCellBounds);
         }
@@ -146,7 +147,7 @@ public class Wolf extends Entity {
             prey = null;
             moves.clear();
             currentTarget = null;
-            Random random = board.getRandom();
+            Random random = sim.getRandom();
             stomachFullness = Math.min(stomachFullness + random.nextInt(MIN_MEAL_FULLNESS, MAX_MEAL_FULLNESS + 1), MAX_STOMACH_FULLNESS);
             return;
         }
@@ -172,7 +173,7 @@ public class Wolf extends Entity {
         double shortestDistance = Double.MAX_VALUE;
         Wolf partner = null;
 
-        for(Entity e : board.getEntities()) {
+        for(Entity e : sim.getEntities()) {
             if(!(e instanceof Wolf wolf) || wolf == this) continue;
             if(!wolf.isReadyToBreed()) continue;
 
@@ -231,8 +232,8 @@ public class Wolf extends Entity {
         Wolf baby = new Wolf();
         double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
         baby.setSpeedGene(mutateGene(avgGene));
-        board.registerEntity(baby, spawnPos.x, spawnPos.y);
-        board.wolfPopulationCollector.addEntry();
+        sim.registerEntity(baby, spawnPos.x, spawnPos.y);
+        sim.wolfPopulationCollector.addEntry();
 
         stomachFullness -= REPRODUCTION_COST;
         partner.stomachFullness -= REPRODUCTION_COST;

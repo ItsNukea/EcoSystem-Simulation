@@ -22,9 +22,9 @@ public class BerryBush extends Entity {
     }
 
     /// Creates a new {@link BerryBush} with random properties
-    public static BerryBush getNewWithRandomProperties(Board board) {
-        Rectangle positionBounds = board.getBoundsRect();
-        Random random = board.getRandom();
+    public static BerryBush getNewWithRandomProperties(Simulation sim) {
+        Rectangle positionBounds = sim.getBoundsRect();
+        Random random = sim.getRandom();
         
         BerryBush created = new BerryBush();
 
@@ -43,7 +43,7 @@ public class BerryBush extends Entity {
     public void tick() {
         age++;
         remainingSeedCooldown--;
-        if(board.getRandom().nextInt(2500) <= 25) {
+        if(sim.getRandom().nextInt(2500) <= 25) {
             growingStage = Math.min(MAX_GROWING_STAGE, growingStage + 1);
         }
 

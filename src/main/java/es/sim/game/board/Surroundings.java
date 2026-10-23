@@ -25,13 +25,13 @@ public class Surroundings {
 
     /// Returns the surrounding Cells of an {@link Entity}. This is the main way to get a {@link Surroundings} instance
     public static Surroundings ofEntity(Entity e) {
-        Board board = Main.board;
+        Simulation sim = Main.simulation;
 
         int viewDiameter = e.getViewDistance() * 2 + 1;
 
         Cell[][] surroundings = new Cell[viewDiameter][viewDiameter];
         //Created once here instead of once per cell: Board#getBoundsRect() makes a new Rectangle on every call
-        Rectangle bounds = board.getBoundsRect();
+        Rectangle bounds = sim.getBoundsRect();
 
         for(int x = 0; x < viewDiameter; x++) {
             for(int y = 0; y < viewDiameter; y++) {
@@ -39,8 +39,8 @@ public class Surroundings {
                 int absoluteX = e.getPos().x + x - e.getViewDistance();
                 int absoluteY = e.getPos().y + y - e.getViewDistance();
 
-                if (board.getBoundsRect().contains(absoluteX, absoluteY)) {
-                    Cell cell = board.getCell(absoluteX, absoluteY);
+                if (bounds.contains(absoluteX, absoluteY)) {
+                    Cell cell = sim.getCell(absoluteX, absoluteY);
                     surroundings[x][y] = cell;
                 } else {
                     surroundings[x][y] = null;

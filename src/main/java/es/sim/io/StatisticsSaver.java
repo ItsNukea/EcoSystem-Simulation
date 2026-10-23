@@ -1,12 +1,11 @@
 
 package es.sim.io;
 
-import es.sim.game.board.*;
+import es.sim.game.*;
 import es.sim.stats.*;
 import tools.jackson.databind.*;
 import tools.jackson.databind.node.*;
 
-import java.io.*;
 import java.nio.file.*;
 import java.time.*;
 import java.time.format.*;
@@ -16,15 +15,15 @@ public class StatisticsSaver {
 	private static final ObjectMapper MAPPER = new ObjectMapper();
 	private static final ObjectWriter WRITER = MAPPER.writerWithDefaultPrettyPrinter();
 	
-	public static synchronized void saveSimulationStatistics(Board board) {
+	public static synchronized void saveSimulationStatistics(Simulation sim) {
 		Path savePath = getSavePath();
 
 		ObjectNode root = MAPPER.createObjectNode();
-		ArrayList<StatCollector> stats = board.getStatistics().collectors;
+		ArrayList<StatCollector> stats = sim.getStatistics().collectors;
 
 		ObjectNode metadata = root.putObject("meta");
-		metadata.put("seed", board.getRandomSeed());
-		metadata.put("last_tick", board.getCurrentTick());
+		metadata.put("seed", sim.getSeed());
+		metadata.put("last_tick", sim.getCurrentTick());
 		ObjectNode statisticsNode = root.putObject("statistics");
 
 		for(StatCollector collector : stats) {

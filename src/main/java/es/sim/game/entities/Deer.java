@@ -1,15 +1,15 @@
 package es.sim.game.entities;
 
-import es.sim.game.EntityActivity;
-import es.sim.game.board.Surroundings;
-import es.sim.stats.DeathCause;
-import es.sim.texture.Texture;
+import es.sim.game.*;
+import es.sim.game.board.*;
+import es.sim.stats.*;
+import es.sim.texture.*;
 import es.sim.util.*;
 
 import java.awt.*;
-import java.util.Random;
+import java.util.*;
 
-import static es.sim.Main.LOGGER;
+import static es.sim.Main.*;
 
 public class Deer extends Entity {
     public static final int BREEDING_COOLDOWN_TICKS = 180;
@@ -49,7 +49,7 @@ public class Deer extends Entity {
 
     @Override
     public void tick() {
-        if(board.getRandom().nextDouble() <= getDeathProbability()) {
+        if(sim.getRandom().nextDouble() <= getDeathProbability()) {
             die(DeathCause.OLD_AGE);
             return;
         }
@@ -87,7 +87,7 @@ public class Deer extends Entity {
             }
             if(pos.distance(targetedBush.getPos()) == 1) {
                 targetedBush.eatBerries();
-                Random random = board.getRandom();
+                Random random = sim.getRandom();
                 stomachFullness = Math.min(stomachFullness + random.nextInt(MIN_MEAL_FULLNESS, MAX_MEAL_FULLNESS + 1), MAX_STOMACH_FULLNESS);
             }
         }
@@ -106,7 +106,7 @@ public class Deer extends Entity {
 
         if (!move(moves.pollFirst())) {
             moves.clear();
-            waitTicks = board.getRandom().nextInt(1, 4);
+            waitTicks = sim.getRandom().nextInt(1, 4);
             return;
         }
 
@@ -222,7 +222,7 @@ public class Deer extends Entity {
                 pos.y + (int) Math.round(dy * scale)
         );
 
-        Rectangle bounds = board.getBoundsRect();
+        Rectangle bounds = sim.getBoundsRect();
         target.x = Math.clamp(target.x, bounds.x, bounds.x + bounds.width - 1);
         target.y = Math.clamp(target.y, bounds.y, bounds.y + bounds.height - 1);
 
@@ -257,8 +257,8 @@ public class Deer extends Entity {
         Deer baby = new Deer();
         double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
         baby.setSpeedGene(mutateGene(avgGene));
-        board.registerEntity(baby, spawnPos.x, spawnPos.y);
-        board.deerPopulationCollector.addEntry();
+        sim.registerEntity(baby, spawnPos.x, spawnPos.y);
+        sim.deerPopulationCollector.addEntry();
 
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
         partner.breedingCooldown = BREEDING_COOLDOWN_TICKS;

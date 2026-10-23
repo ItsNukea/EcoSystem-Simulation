@@ -20,7 +20,7 @@ public abstract class Entity {
 
     protected Point pos;
     private final Identifier ENTITY_ID;
-    protected final Board board;
+    protected final Simulation sim;
 
     protected int age = 0;
 
@@ -65,7 +65,7 @@ public abstract class Entity {
     
     protected Entity(Identifier entityID) {
         this.ENTITY_ID = entityID;
-        this.board = Main.board;
+        this.sim = Main.simulation;
     }
 
     /// Ticks an entity, making it move one step further in time.
@@ -103,23 +103,23 @@ public abstract class Entity {
         copy.translate(dx, dy);
 
         //To prevent negative coordinates entering the array indices at Board.grid[][]
-        if(copy.x < 0 || copy.y < 0 || copy.x >= Main.board.getColumns() || copy.y >= Main.board.getRows()) {
+        if(copy.x < 0 || copy.y < 0 || copy.x >= sim.getColumns() || copy.y >= sim.getRows()) {
             throw new EntityPositionOutOfBoundsException(
                     String.format("An entity wanted to move out of the bounds of the map: %s was out of bounds (0, 0) to (%d, %d)",
                             copy,
-                            board.getColumns() - 1,
-                            board.getRows() - 1
+                            sim.getColumns() - 1,
+                            sim.getRows() - 1
                     )
             );
         }
 
-        Cell destination = board.getCell(copy.x, copy.y);
+        Cell destination = sim.getCell(copy.x, copy.y);
         if (destination.holder.isPresent()) {
             //Target square is already occupied, so don't move there
             return false;
         }
 
-        board.getCell(pos.x, pos.y).setContents(null);
+        sim.getCell(pos.x, pos.y).setContents(null);
         pos.move(copy.x, copy.y);
         destination.setContents(this);
         stomachFullness -= speedGene;
@@ -134,14 +134,14 @@ public abstract class Entity {
     
     /// Finds a random target that lies within the bounds of {@link Main#board}
     protected void findRandomTarget() {
-        Random random = board.getRandom();
-        Rectangle bounds = board.getBoundsRect();
+        Random random = sim.getRandom();
+        Rectangle bounds = sim.getBoundsRect();
         for (int attempt = 0; attempt < 200; attempt++) {
             int dx = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
             int dy = random.nextInt(0, 2 * VIEW_DISTANCE + 1) - VIEW_DISTANCE;
             Point temp = new Point(getPos().x + dx, getPos().y + dy);
 
-            if (bounds.contains(temp) && !(dx == 0 && dy == 0) && board.getCell(temp.x, temp.y).holder.isEmpty()) {
+            if (bounds.contains(temp) && !(dx == 0 && dy == 0) && sim.getCell(temp.x, temp.y).holder.isEmpty()) {
                 currentTarget = temp;
                 return;
             }
@@ -211,8 +211,8 @@ public abstract class Entity {
         for (Direction d : Direction.values()) {
             Point candidate = new Point(pos.x + d.xComponent(), pos.y + d.yComponent());
 
-            if (!board.getBoundsRect().contains(candidate)) continue;
-            if (board.getCell(candidate.x, candidate.y).holder.isEmpty()) {
+            if (!sim.getBoundsRect().contains(candidate)) continue;
+            if (sim.getCell(candidate.x, candidate.y).holder.isEmpty()) {
                 return candidate;
             }
         }
@@ -223,11 +223,11 @@ public abstract class Entity {
     /// probability curve really starts climbing. Call this after creating an entity to spawn it already-aged;
     /// newborns created during the simulation should stay at the default age of 0
     public void randomizeAge() {
-        age = board.getRandom().nextInt((int) (ONSET_AGE / 2));
+        age = sim.getRandom().nextInt((int) (ONSET_AGE / 2));
     }
 
     public void randomizeBreedingCooldown(int maxCooldown) {
-        breedingCooldown = board.getRandom().nextInt(maxCooldown);
+        breedingCooldown = sim.getRandom().nextInt(maxCooldown);
     }
 
     protected void applySpeedGene() {
@@ -247,7 +247,7 @@ public abstract class Entity {
 
     /// A mutated copy of a (typically averaged) parent gene value, for passing a trait on to a baby
     public double mutateGene(double parentGeneValue) {
-        double mutationFactor = Util.linearToLogarithmicDistribution(board.getRandom().nextDouble(), 1d / (1d + MUTATION_STRENGTH), 1d + MUTATION_STRENGTH, 1.2d);
+        double mutationFactor = Util.linearToLogarithmicDistribution(sim.getRandom().nextDouble(), 1d / (1d + MUTATION_STRENGTH), 1d + MUTATION_STRENGTH, 1.2d);
         return parentGeneValue * mutationFactor;
     }
 
@@ -257,14 +257,14 @@ public abstract class Entity {
     }
 
     protected void die(DeathCause cause) {
-        DeathCauseStatCollector<?> collector = board.getDeathCauseCollector(getClass());
+        DeathCauseStatCollector<?> collector = sim.getDeathCauseCollector(getClass());
         if (collector != null) collector.increase(cause);
-        board.unregisterEntity(this);
+        sim.unregisterEntity(this);
 
         if(this instanceof Wolf) {
-            board.wolfPopulationCollector.removeEntry();
+            sim.wolfPopulationCollector.removeEntry();
         } else if(this instanceof Deer) {
-            board.deerPopulationCollector.removeEntry();
+            sim.deerPopulationCollector.removeEntry();
         }
     }
 
