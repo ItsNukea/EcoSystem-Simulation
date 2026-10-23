@@ -12,12 +12,12 @@ import java.util.*;
 import static es.sim.Main.*;
 
 public class Deer extends Entity {
-    public static final int BREEDING_COOLDOWN_TICKS = 180;
+    public static final int BREEDING_COOLDOWN_TICKS = 150;
     private static final int MAX_STOMACH_FULLNESS = 130;
     private static final int HUNGER_THRESHOLD = 86;
 
-    private static final int MIN_MEAL_FULLNESS = 120;
-    private static final int MAX_MEAL_FULLNESS = 200;
+    private static final int MIN_MEAL_FULLNESS = 15;
+    private static final int MAX_MEAL_FULLNESS = 30;
 
     /// How many times faster a deer moves while fleeing a wolf, same idea as Wolf's HUNT_SPEED
     private static final int FLEE_SPEED = 1;
