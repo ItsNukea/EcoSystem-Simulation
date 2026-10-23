@@ -14,7 +14,7 @@ public class BerryBush extends Entity {
     private int MAX_SEED_COOLDOWN;
 
     private int growingStage = 0;
-    private int remainingSeedCooldown = 300;
+    private int remainingSeedCooldown = (int) Util.toTicks(sim, 30);
     public double growSpeed = 1f;
 
     protected BerryBush() {
@@ -43,7 +43,7 @@ public class BerryBush extends Entity {
     public void tick() {
         age++;
         remainingSeedCooldown--;
-        if(sim.getRandom().nextInt(2500) <= 25) {
+        if(sim.getRandom().nextInt((int) Util.toTicks(sim, 250)) <= 25) {
             growingStage = Math.min(MAX_GROWING_STAGE, growingStage + 1);
         }
 

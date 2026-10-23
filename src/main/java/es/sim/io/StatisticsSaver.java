@@ -43,7 +43,7 @@ public class StatisticsSaver {
 			if(!path.toFile().exists()) {
 				return path;
 			}
-			currentTime.plusSeconds(1);
+			currentTime = currentTime.plusSeconds(1);
 		}
 	}
 }

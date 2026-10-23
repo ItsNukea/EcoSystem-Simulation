@@ -12,12 +12,12 @@ import java.util.*;
 import static es.sim.Main.*;
 
 public class Deer extends Entity {
-    public static final int BREEDING_COOLDOWN_TICKS = 150;
-    private static final int MAX_STOMACH_FULLNESS = 130;
+    public static final int BREEDING_COOLDOWN_TICKS = (int) Util.toTicks(simulation, 15);
+    private static final int MAX_STOMACH_FULLNESS = (int) Util.toTicks(simulation, 13);
     private static final int HUNGER_THRESHOLD = 86;
 
-    private static final int MIN_MEAL_FULLNESS = 15;
-    private static final int MAX_MEAL_FULLNESS = 30;
+    private static final int MIN_MEAL_FULLNESS = (int) Util.toTicks(simulation, 15);
+    private static final int MAX_MEAL_FULLNESS = (int) Util.toTicks(simulation, 3);
 
     /// How many times faster a deer moves while fleeing a wolf, same idea as Wolf's HUNT_SPEED
     private static final int FLEE_SPEED = 1;
@@ -38,7 +38,7 @@ public class Deer extends Entity {
         VIEW_DISTANCE = 6;
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
         ACTIVITY = EntityActivity.WANDERING;
-        ONSET_AGE = 1300;
+        ONSET_AGE = Util.toTicks(simulation, 130);
     }
 
     /// A point exactly between two positions, rounded down. Since addition is commutative, both deer in a

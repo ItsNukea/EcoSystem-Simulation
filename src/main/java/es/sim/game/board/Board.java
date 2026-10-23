@@ -1,5 +1,6 @@
 package es.sim.game.board;
 
+import es.sim.*;
 import es.sim.game.Simulation;
 import es.sim.game.entities.*;
 import es.sim.gui.Screen;
@@ -111,8 +112,11 @@ public class Board extends Screen {
     }
 
     private void updateGraphs() {
-        populationGraph.updateGraph();
-        speedGeneGraph.updateGraph();
+        //do something
+        if(simulation.getCurrentTick() % 50 == 0) {
+            populationGraph.updateGraph();
+            speedGeneGraph.updateGraph();
+        }
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}

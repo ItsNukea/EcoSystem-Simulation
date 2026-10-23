@@ -1,7 +1,7 @@
 package es.sim.game.entities;
 
 import es.sim.*;
-import es.sim.game.EntityActivity;
+import es.sim.game.*;
 import es.sim.game.board.Surroundings;
 import es.sim.stats.DeathCause;
 import es.sim.texture.Texture;
@@ -10,23 +10,25 @@ import es.sim.util.*;
 import java.awt.*;
 import java.util.Random;
 
+import static es.sim.Main.simulation;
+
 public class Wolf extends Entity {
     /// How many cells the wolf moves per tick while chasing prey. It needs to be higher than the deer's speed,
     /// otherwise it could never catch a deer that flees
     private static final double HUNT_SPEED = 1d;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
-    private static final int MIN_MEAL_FULLNESS = 125;
-    private static final int MAX_MEAL_FULLNESS = 175;
-    private static final int MAX_STOMACH_FULLNESS = 400;
+    private static final int MIN_MEAL_FULLNESS = (int) Util.toTicks(simulation, 12.5);
+    private static final int MAX_MEAL_FULLNESS = (int) Util.toTicks(simulation, 17.5);
+    private static final int MAX_STOMACH_FULLNESS = (int) Util.toTicks(simulation, 40);
     private final int HUNGER_THRESHOLD;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 300;
+    private static final int REPRODUCTION_COST = (int) Util.toTicks(simulation, 30);
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
-    private static final int BREEDING_FULLNESS_THRESHOLD = 300;
-    private static final int MAX_BREEDING_COOLDOWN = 600;
+    private static final int BREEDING_FULLNESS_THRESHOLD = (int) Util.toTicks(simulation, 30);
+    private static final int MAX_BREEDING_COOLDOWN = (int) Util.toTicks(simulation, 60);
 
     /// How far beyond VIEW_DISTANCE a wolf can search for a breeding partner. Must stay at or below 2.0 --
     /// the meeting point is the midpoint between the two wolves, so it's never more than half their distance

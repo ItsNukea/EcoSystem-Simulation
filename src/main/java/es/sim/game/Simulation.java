@@ -189,4 +189,8 @@ public class Simulation {
     public boolean isPaused() { return tickLoop.isPaused(); }
     public boolean isSprinting() { return tickLoop.isSprinting(); }
     public void sprint(boolean sprint) { tickLoop.sprint(sprint); }
+
+    public TickLoop getTickLoop() {
+        return tickLoop;
+    }
 }

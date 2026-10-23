@@ -148,4 +148,8 @@ public class TickLoop {
     public void sprint(boolean sprint) {
         this.sprinting = sprint;
     }
+
+    public long getTPS() {
+        return 1000000000 / delayNanos;
+    }
 }
