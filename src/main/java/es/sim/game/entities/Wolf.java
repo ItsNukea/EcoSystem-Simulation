@@ -13,7 +13,7 @@ import java.util.Random;
 public class Wolf extends Entity {
     /// How many cells the wolf moves per tick while chasing prey. It needs to be higher than the deer's speed,
     /// otherwise it could never catch a deer that flees
-    private static final double HUNT_SPEED = 1d;
+    private static final double HUNT_SPEED = 1.7d;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
     private static final int MIN_MEAL_FULLNESS = 125;
@@ -26,7 +26,7 @@ public class Wolf extends Entity {
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
     private static final int BREEDING_FULLNESS_THRESHOLD = 300;
-    private static final int MAX_BREEDING_COOLDOWN = 600;
+    private static final int MAX_BREEDING_COOLDOWN = 1800;
 
     /// How far beyond VIEW_DISTANCE a wolf can search for a breeding partner. Must stay at or below 2.0 --
     /// the meeting point is the midpoint between the two wolves, so it's never more than half their distance
@@ -39,13 +39,13 @@ public class Wolf extends Entity {
 
     public Wolf() {
         super(Identifier.of("entity:wolf"));
-        breedingCooldown = 250;
+        breedingCooldown = 750;
         stomachFullness = (double) MAX_STOMACH_FULLNESS / 2;
         VIEW_DISTANCE = 9;
         HUNGER_THRESHOLD = 200;
         ACTIVITY = EntityActivity.WANDERING;
-        ONSET_AGE = 5000d;
-        AGING_RATE = 0.02d;
+        ONSET_AGE = 15000d;
+        AGING_RATE = 0.00667d;
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.*;
 import static es.sim.Main.*;
 
 public class Deer extends Entity {
-    public static final int BREEDING_COOLDOWN_TICKS = 150;
+    public static final int BREEDING_COOLDOWN_TICKS = 450;
     private static final int MAX_STOMACH_FULLNESS = 130;
     private static final int HUNGER_THRESHOLD = 86;
 
@@ -38,7 +38,7 @@ public class Deer extends Entity {
         VIEW_DISTANCE = 6;
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
         ACTIVITY = EntityActivity.WANDERING;
-        ONSET_AGE = 1300;
+        ONSET_AGE = 3900;
     }
 
     /// A point exactly between two positions, rounded down. Since addition is commutative, both deer in a
@@ -106,7 +106,7 @@ public class Deer extends Entity {
 
         if (!move(moves.pollFirst())) {
             moves.clear();
-            waitTicks = sim.getRandom().nextInt(1, 4);
+            waitTicks = sim.getRandom().nextInt(3, 10);
             return;
         }
 

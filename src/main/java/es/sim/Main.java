@@ -72,7 +72,7 @@ public class Main {
     public static void resetBoard() {
         if (simulation != null) simulation.stop();
 
-        simulation = new Simulation(10);
+        simulation = new Simulation(30);
         board = new Board(window.getScreen(), simulation);
 
         Random random = simulation.getRandom();

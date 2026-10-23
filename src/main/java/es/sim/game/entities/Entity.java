@@ -25,9 +25,9 @@ public abstract class Entity {
     protected int age = 0;
 
     /// Parameters for the age-based death curve. Each species can set its own values in its constructor
-    protected double baselineMortality = 0.0025353d;
-    protected double AGING_RATE = 0.02d;
-    protected double ONSET_AGE = 2000d;
+    protected double baselineMortality = 0.0008451d;
+    protected double AGING_RATE = 0.00667d;
+    protected double ONSET_AGE = 6000d;
     protected double stomachFullness;
 
     protected int breedingCooldown = 0;
@@ -36,10 +36,10 @@ public abstract class Entity {
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
     protected int waitTicks = 0;
     public EntityActivity ACTIVITY;
-    /// Ticks needed to cross one tile. 1 = fastest, moves every tick. TPS was raised 5x without changing any
+    /// Ticks needed to cross one tile. 1 = fastest, moves every tick. TPS was raised 5x (again 3x) without changing any
     /// animal's real-world walking speed, so this default of 5 keeps today's speed identical. Will become
     /// a genetic trait later
-    protected int ticksPerMove = 5;
+    protected int ticksPerMove = 15;
     private int moveCooldown = 0;
 
     /// The single evolving trait. 1.0 is the baseline. A higher value means faster movement but a faster-draining
@@ -48,7 +48,7 @@ public abstract class Entity {
 
     /// ticksPerMove at speedGene == 1.0. Kept separate from ticksPerMove itself so applySpeedGene() can be
     /// called more than once (e.g. once at construction, again once the real gene value is known) without compounding
-    protected int baseTicksPerMove = 5;
+    protected int baseTicksPerMove = 15;
 
     /// How much speedGene can drift from a parent's value in one generation, as a fraction of its value
     private static final double MUTATION_STRENGTH = 0.08;
