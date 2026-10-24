@@ -31,6 +31,19 @@ public abstract class Entity {
     protected double stomachFullness;
 
     protected int breedingCooldown = 0;
+
+    /// The pathfinder used by {@link #recalculatePath()}, one per thread. It is kept between searches on purpose: it
+    /// counts its searches, and that count is how the reused {@link GridCell}s from
+    /// {@link Surroundings#toGridCellArray()} tell an old search from the current one. A new finder for every search
+    /// would restart that count and mix the searches up
+    private static final ThreadLocal<AStarGridFinder<GridCell>> FINDER = ThreadLocal.withInitial(() -> {
+        //Imagine having options for a gf
+        GridFinderOptions gfOptions = new GridFinderOptions();
+        gfOptions.allowDiagonal = false;
+        gfOptions.isYDown = true;
+        return new AStarGridFinder<>(GridCell.class, gfOptions);
+    });
+
     public Point currentTarget = null;
     protected Surroundings surroundings = null;
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
@@ -164,12 +177,8 @@ public abstract class Entity {
         GridCell[][] cells = surroundings.toGridCellArray();
         int center = cells.length / 2;
         NavigationGrid<GridCell> navGrid = new NavigationGrid<>(cells, false);
-        //Imagine having options for a gf
-        GridFinderOptions gfOptions = new GridFinderOptions();
-        gfOptions.allowDiagonal = false;
-        gfOptions.isYDown = true;
-
-        AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
+        //The shared finder of this thread, see FINDER
+        AStarGridFinder<GridCell> ASGF = FINDER.get();
 
         for (int attempt = 0; attempt < 20; attempt++) {
             int dx = currentTarget.x - pos.x;
