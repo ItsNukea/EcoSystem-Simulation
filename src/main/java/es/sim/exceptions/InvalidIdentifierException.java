@@ -1,6 +1,6 @@
 package es.sim.exceptions;
 
-import es.sim.util.Identifier;
+import es.sim.util.*;
 
 /// An {@link Exception} that is thrown whenever an invalid {@link Identifier} is supplied to any {@link Identifier}
 /// constructor.

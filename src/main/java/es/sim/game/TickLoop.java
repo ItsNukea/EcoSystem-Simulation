@@ -1,17 +1,14 @@
 package es.sim.game;
 
-import es.sim.Main;
-import es.sim.game.board.Board;
-import es.sim.gui.*;
+import es.sim.*;
+import es.sim.game.board.*;
 import es.sim.io.*;
 import es.sim.util.*;
-
-import javax.swing.*;
 
 import java.awt.*;
 import java.io.*;
 
-import static es.sim.Main.LOGGER;
+import static es.sim.Main.*;
 
 /// The main tick loop of the game: Handles ticking {@link Board} with a target count of {@code tps} times per second.<br>
 /// Ticking is updating the Board class and advancing a single step into the future

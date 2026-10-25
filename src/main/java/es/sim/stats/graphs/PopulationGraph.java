@@ -1,11 +1,11 @@
 package es.sim.stats.graphs;
 
-import es.sim.Main;
-import es.sim.stats.collectors.PopulationStatCollector;
+import es.sim.*;
+import es.sim.stats.collectors.*;
 import org.jfree.chart.*;
 import org.jfree.data.xy.*;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class PopulationGraph {
     private final ArrayList<Entry> entries = new ArrayList<>();

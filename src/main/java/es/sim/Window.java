@@ -4,12 +4,9 @@ import es.sim.gui.*;
 import es.sim.texture.*;
 import es.sim.util.*;
 
-import javax.imageio.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
-import java.io.*;
 
 ///This class represents the main window of the program.
 public class Window extends JFrame {

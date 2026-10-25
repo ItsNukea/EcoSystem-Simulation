@@ -1,6 +1,5 @@
 package es.sim.game;
 
-import es.sim.*;
 import es.sim.game.board.*;
 import es.sim.game.entities.*;
 import es.sim.io.*;

@@ -1,8 +1,8 @@
 
 package es.sim.stats.graphs;
 
-import es.sim.Main;
-import es.sim.stats.collectors.SpeedGeneStatCollector;
+import es.sim.*;
+import es.sim.stats.collectors.*;
 import org.jfree.chart.*;
 import org.jfree.data.xy.*;
 

@@ -1,11 +1,11 @@
 package es.sim.stats.collectors;
 
-import es.sim.Main;
-import es.sim.game.entities.Entity;
-import es.sim.stats.TimeSeriesCollector;
+import es.sim.*;
+import es.sim.game.entities.*;
+import es.sim.stats.*;
 import tools.jackson.databind.node.*;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class SpeedGeneStatCollector<T extends Entity> implements TimeSeriesCollector {
 	private final Class<T> entityType;

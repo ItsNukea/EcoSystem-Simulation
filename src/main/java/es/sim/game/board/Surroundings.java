@@ -3,7 +3,6 @@ package es.sim.game.board;
 import es.sim.*;
 import es.sim.game.*;
 import es.sim.game.entities.*;
-import es.sim.util.*;
 import org.xguzm.pathfinding.grid.*;
 
 import java.awt.*;

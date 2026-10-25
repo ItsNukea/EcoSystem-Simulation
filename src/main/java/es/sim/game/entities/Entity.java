@@ -13,7 +13,7 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.awt.*;
 import java.util.*;
 
-import static es.sim.Main.simulation;
+import static es.sim.Main.*;
 
 /// This class represents the super class of all living things on the {@link Board}, every entity should
 /// extend this class to be able to be rendered and ticked

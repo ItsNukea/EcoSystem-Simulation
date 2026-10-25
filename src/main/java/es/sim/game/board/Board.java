@@ -1,12 +1,11 @@
 package es.sim.game.board;
 
-import es.sim.*;
-import es.sim.game.Simulation;
+import es.sim.game.*;
 import es.sim.game.entities.*;
-import es.sim.gui.Screen;
+import es.sim.gui.*;
 import es.sim.stats.graphs.*;
 import es.sim.util.*;
-import org.jfree.chart.ChartPanel;
+import org.jfree.chart.*;
 
 import javax.swing.*;
 import java.awt.*;
