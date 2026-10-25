@@ -13,8 +13,6 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.awt.*;
 import java.util.*;
 
-import static es.sim.Main.*;
-
 /// This class represents the super class of all living things on the {@link Board}, every entity should
 /// extend this class to be able to be rendered and ticked
 public abstract class Entity {
@@ -22,7 +20,7 @@ public abstract class Entity {
 
     protected Point pos;
     private final Identifier ENTITY_ID;
-    protected final Simulation sim;
+    public final Simulation sim;
 
     protected int age = 0;
 
@@ -54,7 +52,7 @@ public abstract class Entity {
     /// Ticks needed to cross one tile. 1 = fastest, moves every tick. TPS was raised 5x without changing any
     /// animal's real-world walking speed, so this default of 5 keeps today's speed identical. Will become
     /// a genetic trait later
-    protected int ticksPerMove = (int) Util.tickSpeedDependant(simulation, 0.5);
+    protected int ticksPerMove;
     private int moveCooldown = 0;
 
     /// The single evolving trait. 1.0 is the baseline. A higher value means faster movement but a faster-draining
@@ -68,19 +66,11 @@ public abstract class Entity {
     /// How much speedGene can drift from a parent's value in one generation, as a fraction of its value
     private static final double MUTATION_STRENGTH = 0.08;
 
-    /// Call once per tick before stepping. Returns whether this entity may move this tick
-    protected boolean readyToMove() {
-        if (moveCooldown > 0) {
-            moveCooldown--;
-            return false;
-        }
-        moveCooldown = ticksPerMove - 1;
-        return true;
-    }
     
-    protected Entity(Identifier entityID) {
+    protected Entity(Identifier entityID, Simulation sim) {
         this.ENTITY_ID = entityID;
-        this.sim = simulation;
+        this.sim = sim;
+        this.ticksPerMove = (int) Util.tickSpeedDependant(sim, 0.5);
     }
 
     /// Ticks an entity, making it move one step further in time.
@@ -147,7 +137,6 @@ public abstract class Entity {
 
     protected void analyzeSurroundings() {}
     
-    /// Finds a random target that lies within the bounds of {@link Main#board}
     protected void findRandomTarget() {
         Random random = sim.getRandom();
         Rectangle bounds = sim.getBoundsRect();
@@ -179,8 +168,11 @@ public abstract class Entity {
         GridCell[][] cells = surroundings.toGridCellArray();
         int center = cells.length / 2;
         NavigationGrid<GridCell> navGrid = new NavigationGrid<>(cells, false);
-        //The shared finder of this thread, see FINDER
-        AStarGridFinder<GridCell> ASGF = FINDER.get();
+        //Imagine having options for a gf
+        GridFinderOptions gfOptions = new GridFinderOptions();
+        gfOptions.allowDiagonal = false;
+        gfOptions.isYDown = true;
+        AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
 
         for (int attempt = 0; attempt < 20; attempt++) {
             int dx = currentTarget.x - pos.x;
@@ -216,6 +208,16 @@ public abstract class Entity {
             }
             return;
         }
+    }
+
+    /// Call once per tick before stepping. Returns whether this entity may move this tick
+    protected boolean readyToMove() {
+        if (moveCooldown > 0) {
+            moveCooldown--;
+            return false;
+        }
+        moveCooldown = ticksPerMove - 1;
+        return true;
     }
 
     protected Point findEmptyNeighborCell() {

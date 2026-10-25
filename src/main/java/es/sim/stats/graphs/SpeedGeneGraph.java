@@ -41,7 +41,7 @@ public class SpeedGeneGraph {
     }
     
     public void updateGraph() {
-        int tick = Main.simulation.getCurrentTick();
+        int tick = Main.manager.getSelected().getCurrentTick();
         
         double deerAverage = deerCollector.getAverageForTick(tick);
         double wolfAverage = wolfCollector.getAverageForTick(tick);

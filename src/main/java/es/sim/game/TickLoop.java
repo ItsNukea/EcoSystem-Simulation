@@ -7,6 +7,7 @@ import es.sim.util.*;
 
 import java.awt.*;
 import java.io.*;
+import java.util.function.*;
 
 import static es.sim.Main.*;
 
@@ -14,7 +15,8 @@ import static es.sim.Main.*;
 /// Ticking is updating the Board class and advancing a single step into the future
 public class TickLoop {
     private final long delayNanos;
-    private final Thread loopThread = new Thread(this::loop, "Ticker");
+    private final Thread loopThread;
+    private final Consumer<Throwable> crashHandler;
     private final Runnable tickAction;
 
     private volatile boolean stop = false;
@@ -22,9 +24,11 @@ public class TickLoop {
     private volatile boolean paused = false;
     private volatile boolean sprinting = false;
 
-    public TickLoop(int tps, Runnable tickAction) {
+    public TickLoop(String name, int tps, Runnable tickAction, Consumer<Throwable> crashHandler) {
         this.tickAction = tickAction;
-        delayNanos = 1000000000L / tps;
+        this.crashHandler = crashHandler;
+        this.delayNanos = 1000000000L / tps;
+        this.loopThread = new Thread(this::loop, name);
     }
 
     private void loop() {
@@ -90,20 +94,9 @@ public class TickLoop {
             }
             Thread.currentThread().interrupt();
         } catch (Throwable t) {
-            LOGGER.error("Exception occured while ticking Board", t);
-            Main.getWindow().showScreen(Main.board.parent);
-
-            String timestamp = System.getProperty("session.timestamp");
-            File logFile = FileManager.getRunDirectory().resolve("logs", timestamp + ".log").toFile();
-            LOGGER.info("Full crash details written to: {}", logFile.getAbsolutePath());
-
-            try {
-                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                    Desktop.getDesktop().open(logFile);
-                }
-            } catch (IOException e) {
-                LOGGER.warn("Could not automatically open the log file. You can open it manually at: {}", logFile.getAbsolutePath());
-            }
+            LOGGER.error("Exception occurred while ticking ({})", Thread.currentThread().getName(), t);
+            stop = true;
+            crashHandler.accept(t);
         }
     }
 
@@ -136,6 +129,9 @@ public class TickLoop {
 
     public boolean isPaused() {
         return paused || pauseRequested;
+    }
+    public boolean isStopped() {
+        return stop;
     }
 
     public boolean isSprinting() {

@@ -61,7 +61,7 @@ public class Board extends Screen {
         pauseResumeButton.setBounds(10, 10, 120, 30);
         pauseResumeButton.addActionListener(_ -> togglePause());
 
-        populationGraph = new PopulationGraph("Deer", simulation.deerPopulationCollector);
+        populationGraph = new PopulationGraph("Deer", simulation.deerPopulationCollector, simulation);
         populationGraph.addCollector("Wolf", simulation.wolfPopulationCollector);
         speedGeneGraph = new SpeedGeneGraph(simulation.deerSpeedGeneCollector, simulation.wolfSpeedGeneCollector);
 

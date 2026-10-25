@@ -10,6 +10,7 @@ import es.sim.util.*;
 import java.awt.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.*;
 
 import static es.sim.Main.*;
 
@@ -20,6 +21,7 @@ public class Simulation {
     public static final int DEFAULT_COLUMNS = 100;
 
     // World
+    public final int SIMULATION_TICK_LIMIT = 30000;
     private final Cell[][] grid;
     private final CopyOnWriteArrayList<Entity> entities = new CopyOnWriteArrayList<>();
     private final HashMap<Identifier, Integer> entityCounts = new HashMap<>();
@@ -27,15 +29,17 @@ public class Simulation {
     private final int columns;
     private final long seed;
     private final Random random = new Random();
-    public final int SIMULATION_TICK_LIMIT = 30000;
+    private final int id;
+    private final Consumer<Simulation> crashListener;
+    private Board board;
 
     // Statistics
-    public final PopulationStatCollector<Wolf> wolfPopulationCollector = new PopulationStatCollector<>(Wolf.class);
-    public final PopulationStatCollector<Deer> deerPopulationCollector = new PopulationStatCollector<>(Deer.class);
-    public final DeathCauseStatCollector<Wolf> wolfDeathCauseCollector = new DeathCauseStatCollector<>(Wolf.class);
-    public final DeathCauseStatCollector<Deer> deerDeathCauseCollector = new DeathCauseStatCollector<>(Deer.class);
-    public final SpeedGeneStatCollector<Wolf> wolfSpeedGeneCollector = new SpeedGeneStatCollector<>(Wolf.class);
-    public final SpeedGeneStatCollector<Deer> deerSpeedGeneCollector = new SpeedGeneStatCollector<>(Deer.class);
+    public final PopulationStatCollector<Wolf> wolfPopulationCollector;
+    public final PopulationStatCollector<Deer> deerPopulationCollector;
+    public final DeathCauseStatCollector<Wolf> wolfDeathCauseCollector;
+    public final DeathCauseStatCollector<Deer> deerDeathCauseCollector;
+    public final SpeedGeneStatCollector<Wolf> wolfSpeedGeneCollector;
+    public final SpeedGeneStatCollector<Deer> deerSpeedGeneCollector;
     private final StatisticManager statisticManager = new StatisticManager();
 
     // Time
@@ -43,13 +47,17 @@ public class Simulation {
     private final CopyOnWriteArrayList<Runnable> tickListeners = new CopyOnWriteArrayList<>();
     private int currentTick = 0;
 
-    public Simulation(int tps) {
-        this(DEFAULT_ROWS, DEFAULT_COLUMNS, tps);
+    public Simulation(int id, int tps, Consumer<Simulation> crashListener) {
+        this(id, tps, DEFAULT_ROWS, DEFAULT_COLUMNS, crashListener);
     }
 
-    public Simulation(int rows, int columns, int tps) {
+    public Simulation(int id, int tps, int rows, int columns, Consumer<Simulation> crashListener) {
         this.rows = rows;
         this.columns = columns;
+        this.crashListener = crashListener;
+        this.id = id;
+
+
         grid = new Cell[columns][rows];
 
         for(int x = 0; x < columns; x++) {
@@ -62,6 +70,14 @@ public class Simulation {
         seed = random.nextLong();
         random.setSeed(seed);
 
+        wolfPopulationCollector = new PopulationStatCollector<>(Wolf.class, this);
+        deerPopulationCollector = new PopulationStatCollector<>(Deer.class, this);
+        wolfDeathCauseCollector = new DeathCauseStatCollector<>(Wolf.class);
+        deerDeathCauseCollector = new DeathCauseStatCollector<>(Deer.class);
+        wolfSpeedGeneCollector = new SpeedGeneStatCollector<>(Wolf.class, this);
+        deerSpeedGeneCollector = new SpeedGeneStatCollector<>(Deer.class, this);
+
+
         statisticManager.addAllCollectors(
                 wolfPopulationCollector,
                 deerPopulationCollector,
@@ -71,7 +87,10 @@ public class Simulation {
                 deerSpeedGeneCollector
         );
 
-        tickLoop = new TickLoop(tps, this::tick);
+        tickLoop = new TickLoop("Simulation Ticker #" + id, tps, this::tick, t -> {
+            LOGGER.error("Simulation Crashed", t);
+            crashListener.accept(this);
+        });
     }
 
     // ---------------------------------------------------------------- ticking
@@ -140,6 +159,10 @@ public class Simulation {
         return grid[x][y];
     }
 
+    public int getId() {
+        return id;
+    }
+
     /// Registers an entity so that it can be ticked and rendered
     ///     @param x The x-coordinate of the cell the entity should be registered on
     ///     @param y The y-coordinate of the cell the entity should be registered on
@@ -161,12 +184,24 @@ public class Simulation {
         }
     }
 
-    public CopyOnWriteArrayList<Entity> getEntities() { return entities; }
-
-    public int getEntityCount(Identifier id) { return entityCounts.getOrDefault(id, 0); }
-
-    public int getRows() { return rows; }
-    public int getColumns() { return columns; }
+    public CopyOnWriteArrayList<Entity> getEntities() {
+        return entities;
+    }
+    public int getEntityCount(Identifier id) {
+        return entityCounts.getOrDefault(id, 0);
+    }
+    public int getRows() {
+        return rows;
+    }
+    public int getColumns() {
+        return columns;
+    }
+    public Board getBoard() {
+        return board;
+    }
+    public void setBoard(Board board) {
+        this.board = board;
+    }
 
     /// Returns the bounds of the grid as a rectangle with a width and height, with coordinate (0, 0)
     public Rectangle getBoundsRect() { return new Rectangle(0, 0, columns, rows); }
@@ -187,13 +222,30 @@ public class Simulation {
 
     // ---------------------------------------------------------- loop control
 
-    public void start() { tickLoop.start(); }
-    public void stop() { tickLoop.stop(); }
-    public void pause() { tickLoop.pause(); }
-    public void resume() { tickLoop.resume(); }
-    public boolean isPaused() { return tickLoop.isPaused(); }
-    public boolean isSprinting() { return tickLoop.isSprinting(); }
-    public void sprint(boolean sprint) { tickLoop.sprint(sprint); }
+    public void start() {
+        tickLoop.start();
+    }
+    public void stop() {
+        tickLoop.stop();
+    }
+    public void pause() {
+        tickLoop.pause();
+    }
+    public void resume() {
+        tickLoop.resume();
+    }
+    public boolean isPaused() {
+        return tickLoop.isPaused();
+    }
+    public boolean isSprinting() {
+        return tickLoop.isSprinting();
+    }
+    public boolean isStopped() {
+        return tickLoop.isStopped();
+    }
+    public void sprint(boolean sprint) {
+        tickLoop.sprint(sprint);
+    }
 
     public TickLoop getTickLoop() {
         return tickLoop;
