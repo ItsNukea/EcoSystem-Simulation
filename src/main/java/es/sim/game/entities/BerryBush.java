@@ -7,14 +7,13 @@ import es.sim.util.*;
 
 import java.awt.*;
 import java.util.*;
-import java.util.zip.*;
 
 public class BerryBush extends Entity {
     private final int MAX_GROWING_STAGE = 2;
     private int MAX_SEED_COOLDOWN;
 
     private int growingStage = 0;
-    private int remainingSeedCooldown = (int) Util.toTicks(sim, 30);
+    private int remainingSeedCooldown = (int) Util.tickSpeedDependant(sim, 30);
     public double growSpeed = 1f;
 
     protected BerryBush() {
@@ -43,7 +42,7 @@ public class BerryBush extends Entity {
     public void tick() {
         age++;
         remainingSeedCooldown--;
-        if(sim.getRandom().nextInt((int) Util.toTicks(sim, 250)) <= 25) {
+        if(sim.getRandom().nextInt((int) Util.tickSpeedDependant(sim, 250)) <= 25) {
             growingStage = Math.min(MAX_GROWING_STAGE, growingStage + 1);
         }
 

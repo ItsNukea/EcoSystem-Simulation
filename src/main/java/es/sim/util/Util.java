@@ -52,8 +52,8 @@ public class Util {
         return Math.abs(p2.x - p1.x) + Math.abs(p2.y - p1.y);
     }
 
-    public static long toTicks(Simulation sim, double timeSeconds) {
+    public static long tickSpeedDependant(Simulation sim, double value) {
         long tps =  sim.getTickLoop().getTPS();
-        return (long) (tps * timeSeconds);
+        return (long) (tps * value);
     }
 }

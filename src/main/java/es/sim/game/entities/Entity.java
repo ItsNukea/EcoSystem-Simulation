@@ -13,6 +13,8 @@ import org.xguzm.pathfinding.grid.finders.*;
 import java.awt.*;
 import java.util.*;
 
+import static es.sim.Main.simulation;
+
 /// This class represents the super class of all living things on the {@link Board}, every entity should
 /// extend this class to be able to be rendered and ticked
 public abstract class Entity {
@@ -27,7 +29,7 @@ public abstract class Entity {
     /// Parameters for the age-based death curve. Each species can set its own values in its constructor
     protected double baselineMortality = 0.0025353d;
     protected double AGING_RATE = 0.02d;
-    protected double ONSET_AGE = 2000d;
+    protected double ONSET_AGE;
     protected double stomachFullness;
 
     protected int breedingCooldown = 0;
@@ -39,7 +41,7 @@ public abstract class Entity {
     /// Ticks needed to cross one tile. 1 = fastest, moves every tick. TPS was raised 5x without changing any
     /// animal's real-world walking speed, so this default of 5 keeps today's speed identical. Will become
     /// a genetic trait later
-    protected int ticksPerMove = 5;
+    protected int ticksPerMove = (int) Util.tickSpeedDependant(simulation, 0.5);
     private int moveCooldown = 0;
 
     /// The single evolving trait. 1.0 is the baseline. A higher value means faster movement but a faster-draining
@@ -65,7 +67,7 @@ public abstract class Entity {
     
     protected Entity(Identifier entityID) {
         this.ENTITY_ID = entityID;
-        this.sim = Main.simulation;
+        this.sim = simulation;
     }
 
     /// Ticks an entity, making it move one step further in time.
