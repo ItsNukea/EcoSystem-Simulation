@@ -12,6 +12,11 @@ import java.util.function.*;
 
 /// This class has utility methods to get information about the surroundings of an entity. Used for entity pathfinding
 public class Surroundings {
+    /// The grid cells that {@link #toGridCellArray()} hands out, kept per view size and per thread. Building them is
+    /// expensive (every {@link GridCell} creates two hash maps), so they are reused instead of rebuilt on every
+    /// path search. One pool per thread, so simulations ticking on different threads never share cells
+    private static final ThreadLocal<HashMap<Integer, GridCell[][]>> GRID_POOL = ThreadLocal.withInitial(HashMap::new);
+
     public Entity owner;
 
     /// The 2D-grid of {@link Cell} objects that are visible to the entity. The value corresponding to
@@ -130,14 +135,27 @@ public class Surroundings {
         return surroundings;
     }
 
-    ///Transforms this Surroundings instance into a 2D-GridCell array, used for navigating a {@link NavigationGrid}
+    ///Transforms this Surroundings instance into a 2D-GridCell array, used for navigating a {@link NavigationGrid}.
+    ///The cells come from {@link #GRID_POOL} and are reused, so the returned array is only valid until the next call
+    ///on the same thread: use it for one search and do not keep it
     public GridCell[][] toGridCellArray() {
-        GridCell[][] grid = new GridCell[owner.getViewDistance() * 2 + 1][owner.getViewDistance() * 2 + 1];
+        int diameter = owner.getViewDistance() * 2 + 1;
+        //Takes the cells for this view size from the pool, and only builds them the first time
+        GridCell[][] grid = GRID_POOL.get().computeIfAbsent(diameter, size -> {
+            GridCell[][] created = new GridCell[size][size];
+            for(int x = 0; x < size; x++) {
+                for(int y = 0; y < size; y++) {
+                    created[x][y] = new GridCell(x, y);
+                }
+            }
+            return created;
+        });
 
         for(int x = 0; x <= owner.getViewDistance() * 2; x++) {
             for(int y = 0; y <= owner.getViewDistance() * 2; y++) {
                 Cell cell = surroundings[x][y];
-                GridCell gridCell = new GridCell(x, y);
+                GridCell gridCell = grid[x][y];
+                gridCell.setWalkable(true); //reset: this cell was used by an earlier search
 
                 boolean thisEntity =
                         x == owner.getViewDistance()
