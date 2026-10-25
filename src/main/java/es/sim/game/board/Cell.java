@@ -1,8 +1,8 @@
 package es.sim.game.board;
 
-import es.sim.game.entities.Entity;
+import es.sim.game.entities.*;
 
-import java.util.Optional;
+import java.util.*;
 
 ///A class that represents a single square on the {@link Board}. Each cell can hold nothing, or an entity.
 public class Cell {

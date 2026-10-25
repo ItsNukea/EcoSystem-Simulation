@@ -1,19 +1,22 @@
 package es.sim.stats.collectors;
 
-import es.sim.Main;
-import es.sim.game.entities.Entity;
-import es.sim.stats.TimeSeriesCollector;
+import es.sim.*;
+import es.sim.game.*;
+import es.sim.game.entities.*;
+import es.sim.stats.*;
 import tools.jackson.databind.node.*;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class SpeedGeneStatCollector<T extends Entity> implements TimeSeriesCollector {
 	private final Class<T> entityType;
+	private final Simulation owner;
 	// The index of the list is the tick. Each entry stores [sum, count] to calculate average later
 	private final ArrayList<double[]> data = new ArrayList<>();
 	
-	public SpeedGeneStatCollector(Class<T> entityType) {
+	public SpeedGeneStatCollector(Class<T> entityType, Simulation sim) {
 		this.entityType = entityType;
+		this.owner = sim;
 		data.addFirst(new double[]{0.0, 0.0}); // [sum, count] for tick 0
 	}
 	
@@ -21,7 +24,7 @@ public class SpeedGeneStatCollector<T extends Entity> implements TimeSeriesColle
 	 * Adds a speed gene value to the current tick's accumulator
 	 */
 	public void addSpeedGene(double speedGene) {
-		int tick = Main.simulation.getCurrentTick();
+		int tick = owner.getCurrentTick();
 		double[] data = this.data.get(tick);
 		data[0] += speedGene; // sum
 		data[1] += 1;         // count
@@ -31,7 +34,7 @@ public class SpeedGeneStatCollector<T extends Entity> implements TimeSeriesColle
 	 * Gets the average speed gene for the current tick
 	 */
 	public double getCurrentAverage() {
-		int tick = Main.simulation.getCurrentTick();
+		int tick = owner.getCurrentTick();
 		double[] data = this.data.get(tick);
 		return data[1] == 0 ? Double.NaN : data[0] / data[1];
 	}

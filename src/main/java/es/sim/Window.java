@@ -4,12 +4,9 @@ import es.sim.gui.*;
 import es.sim.texture.*;
 import es.sim.util.*;
 
-import javax.imageio.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
-import java.io.*;
 
 ///This class represents the main window of the program.
 public class Window extends JFrame {
@@ -105,11 +102,7 @@ public class Window extends JFrame {
             public void focusGained(FocusEvent e) {}
 
             @Override
-            public void focusLost(FocusEvent e) {
-                if(Main.board != null) {
-                    //Main.tickLoop.pause();
-                }
-            }
+            public void focusLost(FocusEvent e) {}
         };
         this.addFocusListener(fl);
         this.addMouseListener(ma);

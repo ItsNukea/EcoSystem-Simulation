@@ -1,11 +1,11 @@
 package es.sim.game.board;
 
-import es.sim.game.Simulation;
+import es.sim.game.*;
 import es.sim.game.entities.*;
-import es.sim.gui.Screen;
+import es.sim.gui.*;
 import es.sim.stats.graphs.*;
 import es.sim.util.*;
-import org.jfree.chart.ChartPanel;
+import org.jfree.chart.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,7 +61,7 @@ public class Board extends Screen {
         pauseResumeButton.setBounds(10, 10, 120, 30);
         pauseResumeButton.addActionListener(_ -> togglePause());
 
-        populationGraph = new PopulationGraph("Deer", simulation.deerPopulationCollector);
+        populationGraph = new PopulationGraph("Deer", simulation.deerPopulationCollector, simulation);
         populationGraph.addCollector("Wolf", simulation.wolfPopulationCollector);
         speedGeneGraph = new SpeedGeneGraph(simulation.deerSpeedGeneCollector, simulation.wolfSpeedGeneCollector);
 
@@ -111,8 +111,11 @@ public class Board extends Screen {
     }
 
     private void updateGraphs() {
-        populationGraph.updateGraph();
-        speedGeneGraph.updateGraph();
+        //do something
+        if(simulation.getCurrentTick() % 50 == 0) {
+            populationGraph.updateGraph();
+            speedGeneGraph.updateGraph();
+        }
     }
 
     /// Increases the zoom level by one step, clamped to {@link #MAX_ZOOM}

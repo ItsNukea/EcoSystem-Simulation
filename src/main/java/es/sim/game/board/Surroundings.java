@@ -3,7 +3,6 @@ package es.sim.game.board;
 import es.sim.*;
 import es.sim.game.*;
 import es.sim.game.entities.*;
-import es.sim.util.*;
 import org.xguzm.pathfinding.grid.*;
 
 import java.awt.*;
@@ -25,7 +24,7 @@ public class Surroundings {
 
     /// Returns the surrounding Cells of an {@link Entity}. This is the main way to get a {@link Surroundings} instance
     public static Surroundings ofEntity(Entity e) {
-        Simulation sim = Main.simulation;
+        Simulation sim = e.sim;
 
         int viewDiameter = e.getViewDistance() * 2 + 1;
 

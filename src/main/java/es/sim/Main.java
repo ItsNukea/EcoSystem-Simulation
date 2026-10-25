@@ -2,7 +2,6 @@ package es.sim;
 
 import es.sim.game.*;
 import es.sim.game.board.*;
-import es.sim.game.entities.*;
 import es.sim.gui.*;
 import es.sim.io.*;
 import es.sim.util.*;
@@ -10,14 +9,15 @@ import org.slf4j.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
+import java.awt.*;
+import java.io.*;
 import java.text.*;
 import java.util.*;
 
 public class Main {
     public static final Logger LOGGER;
     private static Window window;
-    public static Simulation simulation;
-    public static Board board = null;
+    public static SimulationManager manager;
     public static Timer renderLoop = new Timer(4, _ -> getWindow().repaint());
 
     static {
@@ -31,18 +31,16 @@ public class Main {
     ///     - {@code --devEnv}: Used to signify that the program is running in an IDE.<br>**<span style="color:red">THIS FLAG SHOULD BE ENABLED IF AND ONLY IF THE PROGRAM RUNS IN AN IDE!</span>**
     ///     - {@code --showDebugInfo}: Shows to which square every entity is path finding to.
     ///     - {@code --clearLogFiles}: Clears all log files except {@code latest.log} in the log directory
+    ///     - {@code --limitTickLength}: Does not let a simulation simulate forever, but ends it when hitting a certain tick count
     static void main(String[] args) {
         LOGGER.info("Starting application...");
 
         //First, do critical flags
         for(String arg : args) {
-            if (arg.equals("--devEnv")) {
-                DebugVariables.IS_DEVELOPMENT_ENVIRONMENT = true;
-                continue;
-            }
-
-            if(arg.equals("--showDebugInfo")) {
-                DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION = true;
+            switch(arg) {
+                case "--devEnv" -> DebugVariables.IS_DEVELOPMENT_ENVIRONMENT = true;
+                case "--showDebugInfo" -> DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION = true;
+                case "--limitTickLength" -> DebugVariables.LIMIT_SIMULATION_TICK_LENGTH = true;
             }
         }
 
@@ -56,69 +54,50 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             window = new Window();
-            LOGGER.info("Initalizing window");
+            LOGGER.info("Initializing window");
             window.init();
             window.setVisible(true);
             window.toFront();
             window.requestFocus();
             window.setFullScreen();
-            LOGGER.info("Window initalized");
+            LOGGER.info("Window initialized");
             window.showScreen(new TitleScreen());
 
             renderLoop.start();
         });
     }
 
-    public static void resetBoard() {
-        if (simulation != null) simulation.stop();
+    /// Stops any running simulations, starts {@code simulationCount} fresh ones in parallel, and creates a
+    /// {@link Board} for the first one, which is the one the user watches
+    public static void startSimulations() {
+        if (manager != null) manager.stopAll();
 
-        simulation = new Simulation(30);
-        board = new Board(window.getScreen(), simulation);
+        // Change this variable to determine how many simulations should run in parallel
+        int simulationCount = 2;
+        manager = new SimulationManager(simulationCount, Main::onSimulationCrashed);
+        manager.fillFreeSimulationSlots();
+        manager.startAll();
+    }
 
-        Random random = simulation.getRandom();
+    private static void onSimulationCrashed(Simulation crashed) {
+        // Runs on the crashed simulation's ticker thread; TickLoop already logged the exception
+        SwingUtilities.invokeLater(() -> {
+            // A simulation nobody is watching just stops. Only the watched one sends the user back to the title screen
 
-        int wolfsToSpawn = 30;
-        for (int spawned = 0; spawned < wolfsToSpawn; spawned++) {
-            int x = random.nextInt(0, simulation.getColumns());
-            int y = random.nextInt(0, simulation.getRows());
+            getWindow().showScreen(crashed.getBoard().parent);
 
-            if (simulation.getCell(x, y).holder.isEmpty()) {
-                Wolf wolf = new Wolf();
-                wolf.randomizeAge();
-                wolf.setSpeedGene(Util.linearToLogarithmicDistribution(random.nextDouble(), 0.5, 2.0, 1.5));
-                simulation.registerEntity(wolf, x, y);
-                simulation.wolfPopulationCollector.addEntry();
-                continue;
+            String timestamp = System.getProperty("session.timestamp");
+            File logFile = FileManager.getRunDirectory().resolve("logs", timestamp + ".log").toFile();
+            LOGGER.info("Full crash details written to: {}", logFile.getAbsolutePath());
+
+            try {
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                    Desktop.getDesktop().open(logFile);
+                }
+            } catch (IOException e) {
+                LOGGER.warn("Could not automatically open the log file. You can open it manually at: {}", logFile.getAbsolutePath());
             }
-            spawned--;
-        }
-
-        int deerToSpawn = 500;
-        for (int spawned = 0; spawned < deerToSpawn; spawned++) {
-            int x = random.nextInt(0, simulation.getColumns());
-            int y = random.nextInt(0, simulation.getRows());
-
-            if (simulation.getCell(x, y).holder.isEmpty()) {
-                Deer deer = new Deer();
-                deer.randomizeAge();
-                deer.randomizeBreedingCooldown(Deer.BREEDING_COOLDOWN_TICKS);
-                deer.setSpeedGene(Util.linearToLogarithmicDistribution(random.nextDouble(), 0.5, 2.0, 1.5));
-                simulation.registerEntity(deer, x, y);
-                simulation.deerPopulationCollector.addEntry();
-                continue;
-            }
-            spawned--;
-        }
-
-        int bushesToSpawn = 325;
-        for (int spawned = 0; spawned < bushesToSpawn; spawned++) {
-            BerryBush bush = BerryBush.getNewWithRandomProperties(simulation);
-            if (simulation.getCell(bush.getPos().x, bush.getPos().y).holder.isEmpty()) {
-                simulation.registerEntity(bush, bush.getPos().x, bush.getPos().y);
-            } else {
-                spawned--;
-            }
-        }
+        });
     }
 
     public static Window getWindow() {

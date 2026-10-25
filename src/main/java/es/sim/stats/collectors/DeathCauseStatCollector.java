@@ -4,7 +4,6 @@ import es.sim.game.entities.*;
 import es.sim.stats.*;
 import tools.jackson.databind.node.*;
 
-import java.io.IOException;
 import java.util.*;
 
 public class DeathCauseStatCollector<T extends Entity> implements StatCollector {

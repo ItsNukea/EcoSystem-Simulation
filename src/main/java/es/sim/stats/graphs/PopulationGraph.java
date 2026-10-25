@@ -1,19 +1,22 @@
 package es.sim.stats.graphs;
 
-import es.sim.Main;
-import es.sim.stats.collectors.PopulationStatCollector;
+import es.sim.*;
+import es.sim.game.*;
+import es.sim.stats.collectors.*;
 import org.jfree.chart.*;
 import org.jfree.data.xy.*;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class PopulationGraph {
     private final ArrayList<Entry> entries = new ArrayList<>();
     private final ChartPanel panel;
     private final XYSeriesCollection dataset;
+    private final Simulation owner;
 
-    public PopulationGraph(String entityName, PopulationStatCollector<?> collector) {
-        dataset = new XYSeriesCollection();
+    public PopulationGraph(String entityName, PopulationStatCollector<?> collector, Simulation owner) {
+        this.dataset = new XYSeriesCollection();
+        this.owner = owner;
 
         JFreeChart chart = ChartFactory.createXYLineChart(
                 "Population Over Time",
@@ -22,7 +25,7 @@ public class PopulationGraph {
                 dataset
         );
 
-        panel = new ChartPanel(chart);
+        this.panel = new ChartPanel(chart);
 
         addCollector(entityName, collector);
     }
@@ -46,7 +49,7 @@ public class PopulationGraph {
                 continue;
             }
 
-            int tick = Main.simulation.getCurrentTick();
+            int tick = owner.getCurrentTick();
             Long value = data.get(tick);
 
             entry.series.add(tick, value);

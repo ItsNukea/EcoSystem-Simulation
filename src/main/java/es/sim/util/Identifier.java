@@ -5,7 +5,7 @@ import es.sim.exceptions.*;
 import java.util.*;
 import java.util.regex.*;
 
-import static es.sim.Main.LOGGER;
+import static es.sim.Main.*;
 
 /**An Identifier is a unique name given to a texture, entity, or tile that differentiates its type from other types.<br>
  * It is valid if and only if {@link Identifier#validNameOrThrow(String, String)} does not throw an {@link InvalidIdentifierException}

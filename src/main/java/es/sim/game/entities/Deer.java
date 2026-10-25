@@ -9,15 +9,15 @@ import es.sim.util.*;
 import java.awt.*;
 import java.util.*;
 
-import static es.sim.Main.*;
+import static es.sim.Main.LOGGER;
 
 public class Deer extends Entity {
-    public static final int BREEDING_COOLDOWN_TICKS = 450;
-    private static final int MAX_STOMACH_FULLNESS = 130;
-    private static final int HUNGER_THRESHOLD = 86;
+    public final int BREEDING_COOLDOWN_TICKS;
+    private final int MAX_STOMACH_FULLNESS;
+    private final int HUNGER_THRESHOLD;
 
-    private static final int MIN_MEAL_FULLNESS = 15;
-    private static final int MAX_MEAL_FULLNESS = 30;
+    private final int MIN_MEAL_FULLNESS;
+    private final int MAX_MEAL_FULLNESS;
 
     /// How many times faster a deer moves while fleeing a wolf, same idea as Wolf's HUNT_SPEED
     private static final int FLEE_SPEED = 1;
@@ -32,13 +32,20 @@ public class Deer extends Entity {
     private Deer breedingPartner = null;
     private BerryBush targetedBush = null;
 
-    public Deer() {
-        super(Identifier.of("entity:deer"));
+    public Deer(Simulation sim) {
+        super(Identifier.of("entity:deer"), sim);
+        BREEDING_COOLDOWN_TICKS = (int) Util.tickSpeedDependant(sim, 15);
+        MAX_STOMACH_FULLNESS = (int) Util.tickSpeedDependant(sim, 13);
+        HUNGER_THRESHOLD = (int) Util.tickSpeedDependant(sim, 8.6);
+        MIN_MEAL_FULLNESS = (int) Util.tickSpeedDependant(sim, 1.5);
+        MAX_MEAL_FULLNESS = (int) Util.tickSpeedDependant(sim, 3);
+
         stomachFullness = (double) MAX_STOMACH_FULLNESS / 2;
         VIEW_DISTANCE = 6;
         breedingCooldown = BREEDING_COOLDOWN_TICKS;
         ACTIVITY = EntityActivity.WANDERING;
-        ONSET_AGE = 3900;
+        ONSET_AGE = Util.tickSpeedDependant(sim, 130);
+        AGING_RATE = 0.2d / sim.getTickLoop().getTPS();
     }
 
     /// A point exactly between two positions, rounded down. Since addition is commutative, both deer in a
@@ -106,7 +113,7 @@ public class Deer extends Entity {
 
         if (!move(moves.pollFirst())) {
             moves.clear();
-            waitTicks = sim.getRandom().nextInt(3, 10);
+            waitTicks = sim.getRandom().nextInt(1, (int) Util.tickSpeedDependant(sim, 0.4));
             return;
         }
 
@@ -135,7 +142,7 @@ public class Deer extends Entity {
     @Override
     public void renderTarget(Graphics2D graphics, Rectangle cellBounds) {
         if (currentTarget != null && DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION) {
-            Rectangle targetCellBounds = board.getCellBounds(currentTarget.x, currentTarget.y);
+            Rectangle targetCellBounds = sim.getBoard().getCellBounds(currentTarget.x, currentTarget.y);
             graphics.setColor(new Color(30, 117, 5, 255));
             graphics.fillRect(
                     targetCellBounds.x, targetCellBounds.y,
@@ -254,7 +261,7 @@ public class Deer extends Entity {
             return;
         }
 
-        Deer baby = new Deer();
+        Deer baby = new Deer(sim);
         double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
         baby.setSpeedGene(mutateGene(avgGene));
         sim.registerEntity(baby, spawnPos.x, spawnPos.y);

@@ -32,12 +32,12 @@ public class TitleScreen extends Screen {
         );
         startButton.addActionListener(_ -> {
             LOGGER.info("Starting New Simulation...");
-            resetBoard();
-            simulation.start();
+            Main.startSimulations();
+
             if(!renderLoop.isRunning()) {
                 renderLoop.start();
             }
-            Main.getWindow().showScreen(board);
+            Main.getWindow().showScreen(Main.manager.getSimulations().getFirst().getBoard());
         });
         
         continueButton = new JButton("Continue Last Simulation");
@@ -47,15 +47,15 @@ public class TitleScreen extends Screen {
                 buttonWidth,
                 buttonHeight
         );
-        continueButton.setEnabled(board != null);
+        continueButton.setEnabled(manager != null);
         continueButton.addActionListener(_ -> {
             LOGGER.info("Continuing Last Simulation...");
-            simulation.start();
+            manager.getSelected().start();
             if(!renderLoop.isRunning()) {
                 renderLoop.start();
             }
             
-            Main.getWindow().showScreen(board);
+            Main.getWindow().showScreen(manager.getSelected().getBoard());
         });
 
         JButton fullScreenButton = new JButton("Toggle fullscreen");
@@ -73,7 +73,7 @@ public class TitleScreen extends Screen {
 
         g.setFont(new Font("Sans Serif", Font.PLAIN, 80));
         drawCenteredString(g, "Eco System Simulation", screenSize.width / 2, screenSize.height / 2);
-        continueButton.setEnabled(board != null);
+        continueButton.setEnabled(manager != null);
     }
 
     @Override

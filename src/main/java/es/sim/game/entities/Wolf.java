@@ -1,32 +1,32 @@
 package es.sim.game.entities;
 
 import es.sim.*;
-import es.sim.game.EntityActivity;
-import es.sim.game.board.Surroundings;
-import es.sim.stats.DeathCause;
-import es.sim.texture.Texture;
+import es.sim.game.*;
+import es.sim.game.board.*;
+import es.sim.stats.*;
+import es.sim.texture.*;
 import es.sim.util.*;
 
 import java.awt.*;
-import java.util.Random;
+import java.util.*;
 
 public class Wolf extends Entity {
     /// How many cells the wolf moves per tick while chasing prey. It needs to be higher than the deer's speed,
     /// otherwise it could never catch a deer that flees
-    private static final double HUNT_SPEED = 1.7d;
+    private static final double HUNT_SPEED = 1d;
 
     /// A deer restores a random amount of stomach fullness between these two values (both included)
-    private static final int MIN_MEAL_FULLNESS = 125;
-    private static final int MAX_MEAL_FULLNESS = 175;
-    private static final int MAX_STOMACH_FULLNESS = 400;
+    private final int MIN_MEAL_FULLNESS;
+    private final int MAX_MEAL_FULLNESS;
+    private final int MAX_STOMACH_FULLNESS;
     private final int HUNGER_THRESHOLD;
 
     /// How much stomach fullness a wolf spends on spawning a new wolf
-    private static final int REPRODUCTION_COST = 300;
+    private final int REPRODUCTION_COST;
 
     /// A wolf is ready to breed once its stomach is at least this full ("almost max")
-    private static final int BREEDING_FULLNESS_THRESHOLD = 300;
-    private static final int MAX_BREEDING_COOLDOWN = 1800;
+    private final int BREEDING_FULLNESS_THRESHOLD;
+    private final int MAX_BREEDING_COOLDOWN;
 
     /// How far beyond VIEW_DISTANCE a wolf can search for a breeding partner. Must stay at or below 2.0 --
     /// the meeting point is the midpoint between the two wolves, so it's never more than half their distance
@@ -37,15 +37,24 @@ public class Wolf extends Entity {
     private Entity prey = null;
     private Wolf breedingPartner = null;
 
-    public Wolf() {
-        super(Identifier.of("entity:wolf"));
-        breedingCooldown = 750;
+    public Wolf(Simulation sim) {
+        super(Identifier.of("entity:wolf"), sim);
+        MIN_MEAL_FULLNESS = (int) Util.tickSpeedDependant(sim, 12.5);
+        MAX_MEAL_FULLNESS = (int) Util.tickSpeedDependant(sim, 17.5);
+        MAX_STOMACH_FULLNESS = (int) Util.tickSpeedDependant(sim, 40);
+        REPRODUCTION_COST = (int) Util.tickSpeedDependant(sim, 30);
+        BREEDING_FULLNESS_THRESHOLD = (int) Util.tickSpeedDependant(sim, 30);
+        MAX_BREEDING_COOLDOWN = (int) Util.tickSpeedDependant(sim, 60);
+
+
+
+        breedingCooldown = (int) Util.tickSpeedDependant(sim, 25);
         stomachFullness = (double) MAX_STOMACH_FULLNESS / 2;
         VIEW_DISTANCE = 9;
-        HUNGER_THRESHOLD = 200;
+        HUNGER_THRESHOLD = (int) Util.tickSpeedDependant(sim, 20);
         ACTIVITY = EntityActivity.WANDERING;
-        ONSET_AGE = 15000d;
-        AGING_RATE = 0.00667d;
+        ONSET_AGE = Util.tickSpeedDependant(sim, 500d);
+        AGING_RATE = 0.2d / sim.getTickLoop().getTPS();
     }
 
     @Override
@@ -89,7 +98,7 @@ public class Wolf extends Entity {
     public void renderTarget(Graphics2D graphics, Rectangle cellBounds) {
         //Debug: mark the current target, but not while hunting, because the target is then the deer's own cell
         if (currentTarget != null && DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION) {
-            Rectangle targetCellBounds = Main.board.getCellBounds(currentTarget.x, currentTarget.y);
+            Rectangle targetCellBounds = sim.getBoard().getCellBounds(currentTarget.x, currentTarget.y);
             graphics.setColor(new Color(117, 111, 5));
             graphics.fill(targetCellBounds);
         }
@@ -229,7 +238,7 @@ public class Wolf extends Entity {
         Point spawnPos = findEmptyNeighborCell();
         if (spawnPos == null) return; //no free tile for a baby right now, try again next tick
 
-        Wolf baby = new Wolf();
+        Wolf baby = new Wolf(sim);
         double avgGene = (this.getSpeedGene() + partner.getSpeedGene()) / 2.0;
         baby.setSpeedGene(mutateGene(avgGene));
         sim.registerEntity(baby, spawnPos.x, spawnPos.y);

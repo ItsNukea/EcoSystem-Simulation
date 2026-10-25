@@ -10,6 +10,7 @@ import es.sim.util.*;
 import java.awt.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.*;
 
 import static es.sim.Main.*;
 
@@ -19,9 +20,8 @@ public class Simulation {
     public static final int DEFAULT_ROWS = 100;
     public static final int DEFAULT_COLUMNS = 100;
 
-    private static final Identifier WOLF_ID = Identifier.of("entity:wolf");
-
     // World
+    public final int SIMULATION_TICK_LIMIT = 30000;
     private final Cell[][] grid;
     private final CopyOnWriteArrayList<Entity> entities = new CopyOnWriteArrayList<>();
     private final HashMap<Identifier, Integer> entityCounts = new HashMap<>();
@@ -29,14 +29,17 @@ public class Simulation {
     private final int columns;
     private final long seed;
     private final Random random = new Random();
+    private final int id;
+    private final Consumer<Simulation> crashListener;
+    private Board board;
 
     // Statistics
-    public final PopulationStatCollector<Wolf> wolfPopulationCollector = new PopulationStatCollector<>(Wolf.class);
-    public final PopulationStatCollector<Deer> deerPopulationCollector = new PopulationStatCollector<>(Deer.class);
-    public final DeathCauseStatCollector<Wolf> wolfDeathCauseCollector = new DeathCauseStatCollector<>(Wolf.class);
-    public final DeathCauseStatCollector<Deer> deerDeathCauseCollector = new DeathCauseStatCollector<>(Deer.class);
-    public final SpeedGeneStatCollector<Wolf> wolfSpeedGeneCollector = new SpeedGeneStatCollector<>(Wolf.class);
-    public final SpeedGeneStatCollector<Deer> deerSpeedGeneCollector = new SpeedGeneStatCollector<>(Deer.class);
+    public final PopulationStatCollector<Wolf> wolfPopulationCollector;
+    public final PopulationStatCollector<Deer> deerPopulationCollector;
+    public final DeathCauseStatCollector<Wolf> wolfDeathCauseCollector;
+    public final DeathCauseStatCollector<Deer> deerDeathCauseCollector;
+    public final SpeedGeneStatCollector<Wolf> wolfSpeedGeneCollector;
+    public final SpeedGeneStatCollector<Deer> deerSpeedGeneCollector;
     private final StatisticManager statisticManager = new StatisticManager();
 
     // Time
@@ -44,17 +47,21 @@ public class Simulation {
     private final CopyOnWriteArrayList<Runnable> tickListeners = new CopyOnWriteArrayList<>();
     private int currentTick = 0;
 
-    public Simulation(int tps) {
-        this(DEFAULT_ROWS, DEFAULT_COLUMNS, tps);
+    public Simulation(int id, int tps, Consumer<Simulation> crashListener) {
+        this(id, tps, DEFAULT_ROWS, DEFAULT_COLUMNS, crashListener);
     }
 
-    public Simulation(int rows, int columns, int tps) {
+    public Simulation(int id, int tps, int rows, int columns, Consumer<Simulation> crashListener) {
         this.rows = rows;
         this.columns = columns;
+        this.crashListener = crashListener;
+        this.id = id;
+
+
         grid = new Cell[columns][rows];
 
-        for (int x = 0; x < columns; x++) {
-            for (int y = 0; y < rows; y++) {
+        for(int x = 0; x < columns; x++) {
+            for(int y = 0; y < rows; y++) {
                 grid[x][y] = new Cell();
             }
         }
@@ -62,6 +69,14 @@ public class Simulation {
         //I hate that this is the only way to get a random seed
         seed = random.nextLong();
         random.setSeed(seed);
+
+        wolfPopulationCollector = new PopulationStatCollector<>(Wolf.class, this);
+        deerPopulationCollector = new PopulationStatCollector<>(Deer.class, this);
+        wolfDeathCauseCollector = new DeathCauseStatCollector<>(Wolf.class);
+        deerDeathCauseCollector = new DeathCauseStatCollector<>(Deer.class);
+        wolfSpeedGeneCollector = new SpeedGeneStatCollector<>(Wolf.class, this);
+        deerSpeedGeneCollector = new SpeedGeneStatCollector<>(Deer.class, this);
+
 
         statisticManager.addAllCollectors(
                 wolfPopulationCollector,
@@ -72,7 +87,10 @@ public class Simulation {
                 deerSpeedGeneCollector
         );
 
-        tickLoop = new TickLoop(tps, this::tick);
+        tickLoop = new TickLoop("Simulation Ticker #" + id, tps, this::tick, t -> {
+            LOGGER.error("Simulation Crashed", t);
+            crashListener.accept(this);
+        });
     }
 
     // ---------------------------------------------------------------- ticking
@@ -80,13 +98,13 @@ public class Simulation {
     /// Ticks every registered entity and makes them advance 1 step into the future
     public void tick() {
         //Check end conditions before ticking
-        if (shouldEndSimulation()) {
+        if(shouldEndSimulation()) {
             StatisticsSaver.saveSimulationStatistics(this);
             tickLoop.stop();
             return;
         }
 
-        for (Entity entity : entities) {
+        for(Entity entity : entities) {
             //Removed earlier this tick (e.g. eaten by a wolf), so it must not act anymore
             if (!entities.contains(entity)) continue;
             entity.tick();
@@ -98,22 +116,28 @@ public class Simulation {
             }
         }
 
-        for (Runnable listener : tickListeners) {
+        for(Runnable listener : tickListeners) {
             listener.run();
         }
 
-        for (StatCollector collector : statisticManager.collectors) {
-            if (collector instanceof TimeSeriesCollector tsCollector) tsCollector.prepareForNextTick(currentTick);
+        for(StatCollector collector : statisticManager.collectors) {
+            if(collector instanceof TimeSeriesCollector tsCollector) tsCollector.prepareForNextTick(currentTick);
         }
 
         currentTick++;
     }
 
     private boolean shouldEndSimulation() {
-        if (getEntityCount(WOLF_ID) == 0) {
+        if(getEntityCount(Identifier.of("entity:wolf")) == 0) {
             LOGGER.info("Simulation ended: No more wolves");
             return true;
         }
+
+        if(currentTick >= SIMULATION_TICK_LIMIT && DebugVariables.LIMIT_SIMULATION_TICK_LENGTH) {
+            LOGGER.info("Simulation ended: Hit tick length limit");
+            return true;
+        }
+
         return false;
     }
 
@@ -126,13 +150,17 @@ public class Simulation {
 
     /// Gets a cell at a specified coordinate {@code (x, y)}
     public Cell getCell(int x, int y) {
-        if (x < 0 || x >= columns || y < 0 || y >= rows) {
+        if(x < 0 || x >= columns || y < 0 || y >= rows) {
             String message = String.format("Could not provide Cell at coordinate (%d, %d) because the coordinate does not exist", x, y);
             LOGGER.error(message);
             throw new IllegalArgumentException(message);
         }
 
         return grid[x][y];
+    }
+
+    public int getId() {
+        return id;
     }
 
     /// Registers an entity so that it can be ticked and rendered
@@ -151,17 +179,29 @@ public class Simulation {
         entityCounts.merge(e.getEntityID(), -1, Integer::sum);
 
         Cell cell = getCell(e.getPos().x, e.getPos().y);
-        if (cell.holder.isPresent() && cell.holder.get() == e) {
+        if(cell.holder.isPresent() && cell.holder.get() == e) {
             cell.setContents(null);
         }
     }
 
-    public CopyOnWriteArrayList<Entity> getEntities() { return entities; }
-
-    public int getEntityCount(Identifier id) { return entityCounts.getOrDefault(id, 0); }
-
-    public int getRows() { return rows; }
-    public int getColumns() { return columns; }
+    public CopyOnWriteArrayList<Entity> getEntities() {
+        return entities;
+    }
+    public int getEntityCount(Identifier id) {
+        return entityCounts.getOrDefault(id, 0);
+    }
+    public int getRows() {
+        return rows;
+    }
+    public int getColumns() {
+        return columns;
+    }
+    public Board getBoard() {
+        return board;
+    }
+    public void setBoard(Board board) {
+        this.board = board;
+    }
 
     /// Returns the bounds of the grid as a rectangle with a width and height, with coordinate (0, 0)
     public Rectangle getBoundsRect() { return new Rectangle(0, 0, columns, rows); }
@@ -182,11 +222,32 @@ public class Simulation {
 
     // ---------------------------------------------------------- loop control
 
-    public void start() { tickLoop.start(); }
-    public void stop() { tickLoop.stop(); }
-    public void pause() { tickLoop.pause(); }
-    public void resume() { tickLoop.resume(); }
-    public boolean isPaused() { return tickLoop.isPaused(); }
-    public boolean isSprinting() { return tickLoop.isSprinting(); }
-    public void sprint(boolean sprint) { tickLoop.sprint(sprint); }
+    public void start() {
+        tickLoop.start();
+    }
+    public void stop() {
+        tickLoop.stop();
+    }
+    public void pause() {
+        tickLoop.pause();
+    }
+    public void resume() {
+        tickLoop.resume();
+    }
+    public boolean isPaused() {
+        return tickLoop.isPaused();
+    }
+    public boolean isSprinting() {
+        return tickLoop.isSprinting();
+    }
+    public boolean isStopped() {
+        return tickLoop.isStopped();
+    }
+    public void sprint(boolean sprint) {
+        tickLoop.sprint(sprint);
+    }
+
+    public TickLoop getTickLoop() {
+        return tickLoop;
+    }
 }

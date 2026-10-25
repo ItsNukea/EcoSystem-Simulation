@@ -20,26 +20,39 @@ public abstract class Entity {
 
     protected Point pos;
     private final Identifier ENTITY_ID;
-    protected final Simulation sim;
+    public final Simulation sim;
 
     protected int age = 0;
 
     /// Parameters for the age-based death curve. Each species can set its own values in its constructor
-    protected double baselineMortality = 0.0008451d;
-    protected double AGING_RATE = 0.00667d;
-    protected double ONSET_AGE = 6000d;
+    protected double baselineMortality = 0.0025353d;
+    protected double AGING_RATE = 0.02d;
+    protected double ONSET_AGE;
     protected double stomachFullness;
 
     protected int breedingCooldown = 0;
+
+    /// The pathfinder used by {@link #recalculatePath()}, one per thread. It is kept between searches on purpose: it
+    /// counts its searches, and that count is how the reused {@link GridCell}s from
+    /// {@link Surroundings#toGridCellArray()} tell an old search from the current one. A new finder for every search
+    /// would restart that count and mix the searches up
+    private static final ThreadLocal<AStarGridFinder<GridCell>> FINDER = ThreadLocal.withInitial(() -> {
+        //Imagine having options for a gf
+        GridFinderOptions gfOptions = new GridFinderOptions();
+        gfOptions.allowDiagonal = false;
+        gfOptions.isYDown = true;
+        return new AStarGridFinder<>(GridCell.class, gfOptions);
+    });
+
     public Point currentTarget = null;
     protected Surroundings surroundings = null;
     protected ArrayDeque<Direction> moves = new ArrayDeque<>();
     protected int waitTicks = 0;
     public EntityActivity ACTIVITY;
-    /// Ticks needed to cross one tile. 1 = fastest, moves every tick. TPS was raised 5x (again 3x) without changing any
+    /// Ticks needed to cross one tile. 1 = fastest, moves every tick. TPS was raised 5x without changing any
     /// animal's real-world walking speed, so this default of 5 keeps today's speed identical. Will become
     /// a genetic trait later
-    protected int ticksPerMove = 15;
+    protected int ticksPerMove;
     private int moveCooldown = 0;
 
     /// The single evolving trait. 1.0 is the baseline. A higher value means faster movement but a faster-draining
@@ -48,24 +61,16 @@ public abstract class Entity {
 
     /// ticksPerMove at speedGene == 1.0. Kept separate from ticksPerMove itself so applySpeedGene() can be
     /// called more than once (e.g. once at construction, again once the real gene value is known) without compounding
-    protected int baseTicksPerMove = 15;
+    protected int baseTicksPerMove = 5;
 
     /// How much speedGene can drift from a parent's value in one generation, as a fraction of its value
     private static final double MUTATION_STRENGTH = 0.08;
 
-    /// Call once per tick before stepping. Returns whether this entity may move this tick
-    protected boolean readyToMove() {
-        if (moveCooldown > 0) {
-            moveCooldown--;
-            return false;
-        }
-        moveCooldown = ticksPerMove - 1;
-        return true;
-    }
     
-    protected Entity(Identifier entityID) {
+    protected Entity(Identifier entityID, Simulation sim) {
         this.ENTITY_ID = entityID;
-        this.sim = Main.simulation;
+        this.sim = sim;
+        this.ticksPerMove = (int) Util.tickSpeedDependant(sim, 0.5);
     }
 
     /// Ticks an entity, making it move one step further in time.
@@ -132,7 +137,6 @@ public abstract class Entity {
 
     protected void analyzeSurroundings() {}
     
-    /// Finds a random target that lies within the bounds of {@link Main#board}
     protected void findRandomTarget() {
         Random random = sim.getRandom();
         Rectangle bounds = sim.getBoundsRect();
@@ -168,7 +172,6 @@ public abstract class Entity {
         GridFinderOptions gfOptions = new GridFinderOptions();
         gfOptions.allowDiagonal = false;
         gfOptions.isYDown = true;
-
         AStarGridFinder<GridCell> ASGF = new AStarGridFinder<>(GridCell.class, gfOptions);
 
         for (int attempt = 0; attempt < 20; attempt++) {
@@ -205,6 +208,16 @@ public abstract class Entity {
             }
             return;
         }
+    }
+
+    /// Call once per tick before stepping. Returns whether this entity may move this tick
+    protected boolean readyToMove() {
+        if (moveCooldown > 0) {
+            moveCooldown--;
+            return false;
+        }
+        moveCooldown = ticksPerMove - 1;
+        return true;
     }
 
     protected Point findEmptyNeighborCell() {
@@ -246,6 +259,9 @@ public abstract class Entity {
     }
 
     /// A mutated copy of a (typically averaged) parent gene value, for passing a trait on to a baby
+    /// The mutation factor will be a logarithmically distributed value between {@code 1 + MUTATION_STRENGTH} and {@code 1 / (1 + MUTATION_STRENGTH)}.
+    /// The factor will have the greatest chance of occurring around 1, and a factor and its reciprocal will have the
+    /// same probability of occurring
     public double mutateGene(double parentGeneValue) {
         double mutationFactor = Util.linearToLogarithmicDistribution(sim.getRandom().nextDouble(), 1d / (1d + MUTATION_STRENGTH), 1d + MUTATION_STRENGTH, 1.2d);
         return parentGeneValue * mutationFactor;
@@ -270,8 +286,6 @@ public abstract class Entity {
 
     /// The probability, per tick, that this entity dies of old age. Rises sharply once age passes onsetAge
     protected double getDeathProbability() {
-        return 1 - Math.exp(
-                -baselineMortality * Math.exp(AGING_RATE * (age - ONSET_AGE))
-        );
+        return 1 - Math.exp(-baselineMortality * Math.exp(AGING_RATE * (age - ONSET_AGE)));
     }
 }

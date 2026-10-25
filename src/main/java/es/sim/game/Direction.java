@@ -1,7 +1,5 @@
 package es.sim.game;
 
-import java.awt.*;
-
 /// Represents a direction
 public enum Direction {
     UP(0, -1),

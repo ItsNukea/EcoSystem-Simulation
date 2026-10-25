@@ -1,6 +1,5 @@
 package es.sim.io;
 
-import es.sim.*;
 import es.sim.util.*;
 
 import java.io.*;

@@ -1,5 +1,7 @@
 package es.sim.util;
 
+import es.sim.game.*;
+
 import java.awt.*;
 
 public class Util {
@@ -48,5 +50,10 @@ public class Util {
 
     public static int manhattanDistance(Point p1, Point p2) {
         return Math.abs(p2.x - p1.x) + Math.abs(p2.y - p1.y);
+    }
+
+    public static long tickSpeedDependant(Simulation sim, double value) {
+        long tps =  sim.getTickLoop().getTPS();
+        return (long) (tps * value);
     }
 }

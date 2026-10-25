@@ -1,8 +1,8 @@
 
 package es.sim.stats.graphs;
 
-import es.sim.Main;
-import es.sim.stats.collectors.SpeedGeneStatCollector;
+import es.sim.*;
+import es.sim.stats.collectors.*;
 import org.jfree.chart.*;
 import org.jfree.data.xy.*;
 
@@ -41,7 +41,7 @@ public class SpeedGeneGraph {
     }
     
     public void updateGraph() {
-        int tick = Main.simulation.getCurrentTick();
+        int tick = Main.manager.getSelected().getCurrentTick();
         
         double deerAverage = deerCollector.getAverageForTick(tick);
         double wolfAverage = wolfCollector.getAverageForTick(tick);
