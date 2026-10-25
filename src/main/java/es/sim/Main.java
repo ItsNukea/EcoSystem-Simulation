@@ -54,13 +54,13 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             window = new Window();
-            LOGGER.info("Initalizing window");
+            LOGGER.info("Initializing window");
             window.init();
             window.setVisible(true);
             window.toFront();
             window.requestFocus();
             window.setFullScreen();
-            LOGGER.info("Window initalized");
+            LOGGER.info("Window initialized");
             window.showScreen(new TitleScreen());
 
             renderLoop.start();
