@@ -60,17 +60,36 @@ public abstract class Entity {
     protected double speedGene = 1.0;
 
     /// ticksPerMove at speedGene == 1.0. Kept separate from ticksPerMove itself so applySpeedGene() can be
-    /// called more than once (e.g. once at construction, again once the real gene value is known) without compounding
-    protected int baseTicksPerMove = 5;
+    /// called more than once (e.g. once at construction, again once the real gene value is known) without compounding.
+    /// Its value is set in the constructor, because it depends on the tick rate of the {@link Simulation}
+    protected int baseTicksPerMove;
+
+    /// The tick rate (ticks per second) the per-tick values of the simulation were tuned at. Everything that is
+    /// counted per tick, and was not already written in seconds, is scaled by the real tick rate relative to this
+    private static final int TUNED_TPS = 10;
+
+    /// How much stomach one step costs, per unit of speedGene. The stomach is counted in ticks, so at a higher tick
+    /// rate it holds more units and a step has to cost more units to take the same part of the stomach
+    private final double stepEnergyCost;
 
     /// How much speedGene can drift from a parent's value in one generation, as a fraction of its value
     private static final double MUTATION_STRENGTH = 0.08;
 
-    
+
     protected Entity(Identifier entityID, Simulation sim) {
         this.ENTITY_ID = entityID;
         this.sim = sim;
+
+        //How many times more ticks there are per second than there were when the values were tuned
+        double tickScale = (double) Util.tickSpeedDependant(sim, 1) / TUNED_TPS;
+
+        //A step always takes half a second, however many ticks that is
         this.ticksPerMove = (int) Util.tickSpeedDependant(sim, 0.5);
+        this.baseTicksPerMove = this.ticksPerMove;
+        this.stepEnergyCost = tickScale;
+
+        //The chance to die is rolled every tick, so with more ticks per second each roll has to be smaller
+        this.baselineMortality = baselineMortality / tickScale;
     }
 
     /// Ticks an entity, making it move one step further in time.
@@ -127,7 +146,7 @@ public abstract class Entity {
         sim.getCell(pos.x, pos.y).setContents(null);
         pos.move(copy.x, copy.y);
         destination.setContents(this);
-        stomachFullness -= speedGene;
+        stomachFullness -= speedGene * stepEnergyCost;
         return true;
     }
 

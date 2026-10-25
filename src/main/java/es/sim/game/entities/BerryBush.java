@@ -14,11 +14,12 @@ public class BerryBush extends Entity {
     private int MAX_SEED_COOLDOWN;
 
     private int growingStage = 0;
-    private int remainingSeedCooldown = 300;
+    private int remainingSeedCooldown = (int) Util.tickSpeedDependant(sim, 30);
     public double growSpeed = 1f;
 
-    protected BerryBush() {
-        super(Identifier.of("entity:berrybush"));
+    /// @param sim The {@link Simulation} this bush belongs to, the same way {@link Deer} and {@link Wolf} get theirs
+    protected BerryBush(Simulation sim) {
+        super(Identifier.of("entity:berrybush"), sim);
     }
 
     /// Creates a new {@link BerryBush} with random properties
@@ -26,7 +27,7 @@ public class BerryBush extends Entity {
         Rectangle positionBounds = sim.getBoundsRect();
         Random random = sim.getRandom();
         
-        BerryBush created = new BerryBush();
+        BerryBush created = new BerryBush(sim);
 
         created.growingStage = random.nextInt(0, 3);
         created.pos = new Point(random.nextInt(positionBounds.width), random.nextInt(positionBounds.height));
@@ -43,7 +44,8 @@ public class BerryBush extends Entity {
     public void tick() {
         age++;
         remainingSeedCooldown--;
-        if(sim.getRandom().nextInt(2500) <= 25) {
+        //The window is written in seconds, so a bush grows at the same speed whatever the tick rate is
+        if(sim.getRandom().nextInt((int) Util.tickSpeedDependant(sim, 250)) <= 25) {
             growingStage = Math.min(MAX_GROWING_STAGE, growingStage + 1);
         }
 
