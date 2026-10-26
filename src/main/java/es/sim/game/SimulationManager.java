@@ -46,7 +46,7 @@ public class SimulationManager {
     }
 
     public void removeSimulation(Simulation sim) {
-        simulations.remove(sim);
+        //simulations.remove(sim);
     }
 
     public void startAll() {
@@ -101,7 +101,7 @@ public class SimulationManager {
             if (sim.getCell(x, y).holder.isEmpty()) {
                 Wolf wolf = new Wolf(sim);
                 wolf.randomizeAge();
-                wolf.setSpeedGene(Util.linearToLogarithmicDistribution(random.nextDouble(), 0.5, 2.0, 1.5));
+                wolf.setSpeedGene(Util.linearToLogarithmicDistribution(random.nextDouble(), 0.5, 2.0, 1.2));
                 sim.registerEntity(wolf, x, y);
                 sim.wolfPopulationCollector.addEntry();
                 continue;
@@ -117,7 +117,7 @@ public class SimulationManager {
                 Deer deer = new Deer(sim);
                 deer.randomizeAge();
                 deer.randomizeBreedingCooldown(deer.BREEDING_COOLDOWN_TICKS);
-                deer.setSpeedGene(Util.linearToLogarithmicDistribution(random.nextDouble(), 0.5, 2.0, 1.5));
+                deer.setSpeedGene(Util.linearToLogarithmicDistribution(random.nextDouble(), 0.5, 2.0, 1.2));
                 sim.registerEntity(deer, x, y);
                 sim.deerPopulationCollector.addEntry();
                 continue;

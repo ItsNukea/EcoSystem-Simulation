@@ -66,13 +66,12 @@ public class Board extends Screen {
         });
 
         nextSimulationButton = new JButton("Next Simulation");
-        nextSimulationButton.setBounds(506, 10, 120, 30);
+        nextSimulationButton.setBounds(536, 10, 150, 30);
         nextSimulationButton.addActionListener(_ -> Main.manager.selectNext());
         nextSimulationButton.setFocusable(false);
 
-
         previousSimulationButton = new JButton("Previous Simulation");
-        previousSimulationButton.setBounds(382, 10, 120, 30);
+        previousSimulationButton.setBounds(382, 10, 150, 30);
         previousSimulationButton.addActionListener(_ -> Main.manager.selectPrevious());
         previousSimulationButton.setFocusable(false);
 
@@ -82,7 +81,7 @@ public class Board extends Screen {
 
         populationGraph = new PopulationGraph("Deer", simulation.deerPopulationCollector, simulation);
         populationGraph.addCollector("Wolf", simulation.wolfPopulationCollector);
-        speedGeneGraph = new SpeedGeneGraph(simulation.deerSpeedGeneCollector, simulation.wolfSpeedGeneCollector);
+        speedGeneGraph = new SpeedGeneGraph(simulation, simulation.deerSpeedGeneCollector, simulation.wolfSpeedGeneCollector);
 
         ChartPanel chartPanel = populationGraph.getChartPanel();
         chartPanel.setBounds(10, 90, 500, 300);
@@ -254,6 +253,7 @@ public class Board extends Screen {
         g.drawString("Tick #" + simulation.getCurrentTick(), right - 100, 15);
         g.drawString("Deer Count: " + simulation.getEntityCount(Identifier.of("entity:deer")), right - 100, 35);
         g.drawString("Wolf Count: " + simulation.getEntityCount(Identifier.of("entity:wolf")), right - 100, 55);
+        g.drawString("Simulation #" + simulation.getId(), getWidth() / 2 + 50, 25);
     }
 
     public void togglePause() {

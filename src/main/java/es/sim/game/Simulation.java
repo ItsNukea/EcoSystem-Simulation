@@ -22,7 +22,7 @@ public class Simulation {
     public static final int DEFAULT_COLUMNS = 100;
 
     // World
-    public final int SIMULATION_TICK_LIMIT = 3000;
+    public final int SIMULATION_TICK_LIMIT = 30000;
     private final Cell[][] grid;
     private final CopyOnWriteArrayList<Entity> entities = new CopyOnWriteArrayList<>();
     private final HashMap<Identifier, Integer> entityCounts = new HashMap<>();
@@ -224,6 +224,7 @@ public class Simulation {
 
     public void start() {
         tickLoop.start();
+        LOGGER.info("Starting simulation #{}", id);
     }
     public void stop() {
         tickLoop.stop();
