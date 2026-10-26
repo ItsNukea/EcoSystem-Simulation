@@ -31,13 +31,12 @@ public class TitleScreen extends Screen {
                 buttonHeight
         );
         startButton.addActionListener(_ -> {
-            LOGGER.info("Starting New Simulation...");
             Main.startSimulations();
 
             if(!renderLoop.isRunning()) {
                 renderLoop.start();
             }
-            Main.getWindow().showScreen(Main.manager.getSimulations().getFirst().getBoard());
+            Main.getWindow().showScreen(Main.manager.getSelected().getBoard());
         });
         
         continueButton = new JButton("Continue Last Simulation");

@@ -32,16 +32,25 @@ public class SimulationManager {
     /// Creates and starts new simulations until {@code targetCount} of them are running.
     /// Currently only called once at startup. Restarting stopped simulations later means calling this again
     public synchronized void fillFreeSimulationSlots() {
-        LOGGER.info("Starting {} simulations", maxConcurrentSimulations);
-
         for (int running = getRunningCount(); running < maxConcurrentSimulations; running++) {
-            Simulation sim = new Simulation(nextId++, TPS, crashListener);
-            populate(sim);
-            simulations.add(sim);
+            addNew();
         }
     }
 
+    public void addNew() {
+        LOGGER.info("Prepping Simulation #{} for start", nextId);
+        Simulation sim = new Simulation(nextId++, TPS, crashListener);
+        populate(sim);
+        simulations.add(sim);
+        sim.start();
+    }
+
+    public void removeSimulation(Simulation sim) {
+        simulations.remove(sim);
+    }
+
     public void startAll() {
+        LOGGER.info("Starting {} simulations", maxConcurrentSimulations - getRunningCount());
         for(Simulation sim : simulations) sim.start();
     }
 
@@ -67,19 +76,19 @@ public class SimulationManager {
     public void selectNext() {
         if(selected == simulations.size() - 1) {
             selected = 0;
-            return;
+        } else {
+            selected++;
         }
-
-        selected++;
+        Main.getWindow().showScreen(simulations.get(selected).getBoard());
     }
 
     public void selectPrevious() {
         if(selected == 0) {
             selected = simulations.size() - 1;
-            return;
+        } else {
+            selected--;
         }
-
-        selected--;
+        Main.getWindow().showScreen(simulations.get(selected).getBoard());
     }
 
     public void populate(Simulation sim) {

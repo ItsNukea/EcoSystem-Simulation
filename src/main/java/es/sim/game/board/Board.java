@@ -1,5 +1,6 @@
 package es.sim.game.board;
 
+import es.sim.*;
 import es.sim.game.*;
 import es.sim.game.entities.*;
 import es.sim.gui.*;
@@ -24,11 +25,16 @@ public class Board extends Screen {
 
     private final Simulation simulation;
 
+
+
     public final PopulationGraph populationGraph;
     public final SpeedGeneGraph speedGeneGraph;
     public final JButton pauseResumeButton;
     public final JButton stepForwardButton;
     public final JButton sprintTickButton;
+    public final JButton nextSimulationButton;
+    public final JButton previousSimulationButton;
+
 
     private float zoom = 1.0f;
     private float cellSize;
@@ -38,6 +44,8 @@ public class Board extends Screen {
 
     private int panX = 0, panY = 0;
     private Point lastMouseHeldPos = null;
+
+    static {}
 
     public Board(Screen parent, Simulation simulation) {
         super(parent);
@@ -56,6 +64,17 @@ public class Board extends Screen {
             simulation.sprint(!simulation.isSprinting());
             sprintTickButton.setText(simulation.isSprinting() ? "Stop Sprinting" : "Sprint");
         });
+
+        nextSimulationButton = new JButton("Next Simulation");
+        nextSimulationButton.setBounds(506, 10, 120, 30);
+        nextSimulationButton.addActionListener(_ -> Main.manager.selectNext());
+        nextSimulationButton.setFocusable(false);
+
+
+        previousSimulationButton = new JButton("Previous Simulation");
+        previousSimulationButton.setBounds(382, 10, 120, 30);
+        previousSimulationButton.addActionListener(_ -> Main.manager.selectPrevious());
+        previousSimulationButton.setFocusable(false);
 
         pauseResumeButton = new JButton("Pause");
         pauseResumeButton.setBounds(10, 10, 120, 30);
@@ -85,6 +104,8 @@ public class Board extends Screen {
         add(pauseResumeButton);
         add(stepForwardButton);
         add(sprintTickButton);
+        add(previousSimulationButton);
+        add(nextSimulationButton);
         add(toggleGraphButton);
         add(chartPanel);
 

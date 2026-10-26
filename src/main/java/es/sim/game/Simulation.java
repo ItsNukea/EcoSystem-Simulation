@@ -6,6 +6,7 @@ import es.sim.io.*;
 import es.sim.stats.*;
 import es.sim.stats.collectors.*;
 import es.sim.util.*;
+import org.jfree.data.statistics.*;
 
 import java.awt.*;
 import java.util.*;
@@ -21,7 +22,7 @@ public class Simulation {
     public static final int DEFAULT_COLUMNS = 100;
 
     // World
-    public final int SIMULATION_TICK_LIMIT = 30000;
+    public final int SIMULATION_TICK_LIMIT = 3000;
     private final Cell[][] grid;
     private final CopyOnWriteArrayList<Entity> entities = new CopyOnWriteArrayList<>();
     private final HashMap<Identifier, Integer> entityCounts = new HashMap<>();
@@ -99,8 +100,7 @@ public class Simulation {
     public void tick() {
         //Check end conditions before ticking
         if(shouldEndSimulation()) {
-            StatisticsSaver.saveSimulationStatistics(this);
-            tickLoop.stop();
+            stop();
             return;
         }
 
@@ -227,12 +227,17 @@ public class Simulation {
     }
     public void stop() {
         tickLoop.stop();
+        StatisticsSaver.saveSimulationStatistics(this);
+        manager.addNew();
+        manager.removeSimulation(this);
     }
     public void pause() {
         tickLoop.pause();
+        LOGGER.info("Pausing Simulation #{}", id);
     }
     public void resume() {
         tickLoop.resume();
+        LOGGER.info("Resuming Simulation #{}", id);
     }
     public boolean isPaused() {
         return tickLoop.isPaused();

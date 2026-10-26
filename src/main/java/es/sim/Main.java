@@ -66,16 +66,28 @@ public class Main {
             renderLoop.start();
         });
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> manager.getSimulations().forEach(StatisticsSaver::saveSimulationStatistics)));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            for(Simulation sim : manager.getSimulations()) {
+                if(sim.isStopped()) {
+                    continue;
+                }
+
+                StatisticsSaver.saveSimulationStatistics(sim);
+            }
+        }));
     }
 
     /// Stops any running simulations, starts {@code simulationCount} fresh ones in parallel, and creates a
     /// {@link Board} for the first one, which is the one the user watches
     public static void startSimulations() {
-        if (manager != null) manager.stopAll();
+        if (manager != null) {
+            manager.fillFreeSimulationSlots();
+            manager.startAll();
+            return;
+        }
 
         // Change this variable to determine how many simulations should run in parallel
-        int simulationCount = 2;
+        int simulationCount = 5;
         manager = new SimulationManager(simulationCount, Main::onSimulationCrashed);
         manager.fillFreeSimulationSlots();
         manager.startAll();
