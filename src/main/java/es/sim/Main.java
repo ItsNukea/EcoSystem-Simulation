@@ -65,6 +65,8 @@ public class Main {
 
             renderLoop.start();
         });
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> manager.getSimulations().forEach(StatisticsSaver::saveSimulationStatistics)));
     }
 
     /// Stops any running simulations, starts {@code simulationCount} fresh ones in parallel, and creates a

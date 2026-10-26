@@ -44,14 +44,33 @@ public class PopulationStatCollector<T extends Entity> implements TimeSeriesColl
         populationSize.add(currentTick + 1, populationSize.get(currentTick));
     }
 
+
     @Override
     public void save(ObjectNode root) {
         root.put("entityType", entityType.getName());
         ArrayNode sizes = root.putArray("data");
 
-        for(long tick : populationSize) {
-            sizes.add(tick);
+        if (populationSize.isEmpty()) return;
+
+        // Format: Run-Length Encoding (RLE)
+        long streakValue = populationSize.getFirst();
+        int streak = 1;
+
+        for (int i = 1; i < populationSize.size(); i++) {
+            long current = populationSize.get(i);
+            if (current == streakValue) {
+                streak++;
+            } else {
+                sizes.add(streak);
+                sizes.add(streakValue);
+                streakValue = current;
+                streak = 1;
+            }
         }
+
+        // flush the last run
+        sizes.add(streak);
+        sizes.add(streakValue);
     }
 
     @Override

@@ -76,14 +76,39 @@ public class SpeedGeneStatCollector<T extends Entity> implements TimeSeriesColle
 	public void save(ObjectNode root) {
 		root.put("entityType", entityType.getName());
 		ArrayNode averages = root.putArray("data");
-		
-		for (double[] data : data) {
-			double avg = data[1] == 0 ? Double.NaN : data[0] / data[1];
-			if (Double.isFinite(avg)) {
-				averages.add(avg);
+
+		if (data.isEmpty()) return;
+
+		// Format: [count1, value1, count2, value2, ...] where a value of null means "no average this tick"
+		double runValue = averageOf(data.getFirst());
+		int runLength = 1;
+
+		for (int i = 1; i < data.size(); i++) {
+			double current = averageOf(data.get(i));
+			// Double.compare treats NaN as equal to NaN, unlike ==
+			if (Double.compare(current, runValue) == 0) {
+				runLength++;
 			} else {
-				averages.addNull();
+				writeRun(averages, runLength, runValue);
+				runValue = current;
+				runLength = 1;
 			}
+		}
+
+		// flush the last run
+		writeRun(averages, runLength, runValue);
+	}
+
+	private static double averageOf(double[] entry) {
+		return entry[1] == 0 ? Double.NaN : entry[0] / entry[1];
+	}
+
+	private static void writeRun(ArrayNode array, int length, double value) {
+		array.add(length);
+		if (Double.isFinite(value)) {
+			array.add(value);
+		} else {
+			array.addNull();
 		}
 	}
 	
