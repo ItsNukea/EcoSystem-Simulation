@@ -43,6 +43,9 @@ public class SimulationManager {
         populate(sim);
         simulations.add(sim);
         sim.start();
+        if(DebugVariables.AUTOMATIC_TICK_SPRINTING) {
+            sim.sprint(true);
+        }
     }
 
     public void removeSimulation(Simulation sim) {

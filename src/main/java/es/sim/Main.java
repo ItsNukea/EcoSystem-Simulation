@@ -32,6 +32,7 @@ public class Main {
     ///     - {@code --showDebugInfo}: Shows to which square every entity is path finding to.
     ///     - {@code --clearLogFiles}: Clears all log files except {@code latest.log} in the log directory
     ///     - {@code --limitTickLength}: Does not let a simulation simulate forever, but ends it when hitting a certain tick count
+    ///     - {@code --autoSprint}: Lets simulations sprint automatically when they start.
     static void main(String[] args) {
         LOGGER.info("Starting application...");
 
@@ -41,6 +42,7 @@ public class Main {
                 case "--devEnv" -> DebugVariables.IS_DEVELOPMENT_ENVIRONMENT = true;
                 case "--showDebugInfo" -> DebugVariables.SHOW_ENTITY_DEBUG_INFORMATION = true;
                 case "--limitTickLength" -> DebugVariables.LIMIT_SIMULATION_TICK_LENGTH = true;
+                case "--autoSprint" -> DebugVariables.AUTOMATIC_TICK_SPRINTING = true;
             }
         }
 
