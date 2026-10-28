@@ -10,6 +10,7 @@ import org.slf4j.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
+import java.awt.image.TileObserver;
 import java.io.*;
 import java.text.*;
 import java.util.*;
@@ -19,6 +20,7 @@ public class Main {
     private static Window window;
     public static SimulationManager manager;
     public static Timer renderLoop = new Timer(4, _ -> getWindow().repaint());
+    public static Screen TITLE_SCREEN = new TitleScreen();
 
     static {
         String sessionTimestamp = new SimpleDateFormat("dd.MM.yyyy-HH.mm.ss").format(new Date());
@@ -49,7 +51,12 @@ public class Main {
         for(String arg : args) {
             if(arg.equals("--clearLogFiles")) {
                 FileManager.clearLogs();
+                continue;
             }
+            if(arg.equals("--compressSaves")) {
+                JsonCompressor.compressSaves();
+            }
+            
         }
 
         FileManager.generateFiles();
@@ -63,7 +70,7 @@ public class Main {
             window.requestFocus();
             window.setFullScreen();
             LOGGER.info("Window initialized");
-            window.showScreen(new TitleScreen());
+            window.showScreen(TITLE_SCREEN);
 
             renderLoop.start();
         });
@@ -89,7 +96,7 @@ public class Main {
         }
 
         // Change this variable to determine how many simulations should run in parallel
-        int simulationCount = 5;
+        int simulationCount = Runtime.getRuntime().availableProcessors() - 4;
         manager = new SimulationManager(simulationCount, Main::onSimulationCrashed);
         manager.fillFreeSimulationSlots();
         manager.startAll();
