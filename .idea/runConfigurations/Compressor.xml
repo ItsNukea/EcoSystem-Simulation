@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Compressor" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="es.sim.Main" />
+    <module name="EcoSystemSimulation.main" />
+    <option name="PROGRAM_PARAMETERS" value="--compressSaves --devEnv" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
