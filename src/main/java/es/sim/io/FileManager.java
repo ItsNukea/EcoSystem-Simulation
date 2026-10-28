@@ -40,7 +40,7 @@ public class FileManager {
         } else {
             runDir = Paths.get(System.getenv("APPDATA"), "EcoSystemSimulation");
         }
-        return runDir;
+        return runDir.toAbsolutePath();
     }
 
     ///Does the same as {@link FileManager#getRunDirectory()}, but returns it as a {@link File} instead of {@link Path}
