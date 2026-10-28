@@ -1,5 +1,6 @@
 package es.sim.game;
 
+import es.sim.Main;
 import es.sim.game.board.*;
 import es.sim.game.entities.*;
 import es.sim.io.*;
@@ -224,13 +225,15 @@ public class Simulation {
 
     public void start() {
         tickLoop.start();
-        LOGGER.info("Starting simulation #{}", id);
+        LOGGER.info("Starting Simulation #{}", id);
     }
     public void stop() {
         tickLoop.stop();
         StatisticsSaver.saveSimulationStatistics(this);
         manager.addNew();
         manager.removeSimulation(this);
+        board = null;
+        Main.getWindow().showScreen(manager.getSelected().getBoard());
     }
     public void pause() {
         tickLoop.pause();
