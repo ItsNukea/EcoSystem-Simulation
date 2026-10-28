@@ -89,7 +89,6 @@ public class Deer extends Entity {
 
         if(ACTIVITY == EntityActivity.GATHERING) {
             if(!targetedBush.hasBerries()) {
-                analyzeSurroundings();
                 recalculatePath();
             }
             if(pos.distance(targetedBush.getPos()) == 1) {

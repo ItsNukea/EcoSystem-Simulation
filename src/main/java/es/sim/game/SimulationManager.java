@@ -38,7 +38,6 @@ public class SimulationManager {
     }
 
     public void addNew() {
-        LOGGER.info("Prepping Simulation #{} for start", nextId);
         Simulation sim = new Simulation(nextId++, TPS, crashListener);
         populate(sim);
         simulations.add(sim);
@@ -49,7 +48,7 @@ public class SimulationManager {
     }
 
     public void removeSimulation(Simulation sim) {
-        //simulations.remove(sim);
+        simulations.remove(sim);
     }
 
     public void startAll() {
@@ -137,6 +136,6 @@ public class SimulationManager {
             }
         }
 
-        sim.setBoard(new Board(Main.getWindow().getScreen(), sim));
+        sim.setBoard(new Board(Main.TITLE_SCREEN, sim));
     }
 }
