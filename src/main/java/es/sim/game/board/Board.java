@@ -121,6 +121,11 @@ public class Board extends Screen {
             revalidate();
             repaint();
         });
+        
+        if(DebugVariables.AUTOMATIC_TICK_SPRINTING) {
+            speedGenePanel.setVisible(true);
+            chartPanel.setVisible(true);
+        }
 
         toggleSpeedGeneButton.setFocusable(false);
         add(toggleSpeedGeneButton);
